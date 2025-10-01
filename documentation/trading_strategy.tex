@@ -1,0 +1,403 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amsfonts,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{float}
+
+% Define colors for code
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\title{TGT QR Week 1 Trading Strategy}
+\author{Ethan Chen \\ Georgia Institute of Technology}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This document presents a comprehensive ultra-conservative moving average trading strategy implemented for the TGT QR Week 1 assignment. The strategy employs rigorous risk management protocols with position limits of \$1.00 USDT, daily loss limits of \$2.00 USDT, and total loss limits of \$5.00 USDT to ensure minimal financial exposure while learning quantitative trading methodologies.
+\end{abstract}
+
+\section{Strategy Overview}
+
+\subsection{Core Trading Logic}
+The strategy implements a simple moving average crossover system designed for perpetual futures contracts on the Bybit exchange. The primary signal generation mechanism uses a 60-minute moving average calculated from 1-minute price data.
+
+\subsubsection{Signal Generation}
+The trading signal is determined by comparing the current price to the moving average:
+
+\begin{equation}
+Signal = \begin{cases}
+1 & \text{if } P_t > MA_t \times 1.001 \\
+-1 & \text{if } P_t < MA_t \times 0.999 \\
+0 & \text{otherwise}
+\end{cases}
+\end{equation}
+
+where:
+\begin{itemize}
+\item $P_t$ is the current price at time $t$
+\item $MA_t$ is the 60-minute moving average at time $t$
+\item The 0.1\% threshold prevents noise-induced false signals
+\end{itemize}
+
+\subsection{Position Management}
+The strategy maintains binary position states (long/short/neutral) with the following constraints:
+
+\begin{itemize}
+\item Maximum of 1 position at any time
+\item Only 2 trading pairs initially: BTCUSDT, ETHUSDT
+\item Minimum 24h volume requirement: \$1,000,000 USD
+\item No leverage (1x only)
+\end{itemize}
+
+\section{Risk Management Framework}
+
+\subsection{Ultra-Conservative Risk Controls}
+The system implements multiple layers of risk management to prevent significant losses:
+
+\subsubsection{Position-Level Controls}
+\begin{itemize}
+\item Maximum position value: \$1.00 USDT
+\item Stop loss: 1\% of entry price
+\item Take profit: 2\% of entry price
+\item Single position limit enforced
+\end{itemize}
+
+\subsubsection{Daily Risk Limits}
+\begin{itemize}
+\item Maximum daily loss: \$2.00 USDT
+\item Automatic position closure on limit breach
+\item 24-hour loss tracking and reset
+\end{itemize}
+
+\subsubsection{System-Level Safeguards}
+\begin{itemize}
+\item Total loss limit: \$5.00 USDT (emergency stop)
+\item Volume filtering: Only trade highly liquid pairs
+\item Circuit breaker: Automatic shutdown on loss limits
+\end{itemize}
+
+\subsection{Risk Metrics}
+The system tracks comprehensive risk metrics:
+
+\begin{table}[H]
+\centering
+\caption{Risk Management Parameters}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Parameter & Value & Purpose \\
+\midrule
+Max Position Size & \$1.00 USDT & Limit exposure per trade \\
+Daily Loss Limit & \$2.00 USDT & Prevent significant daily losses \\
+Total Loss Limit & \$5.00 USDT & Absolute maximum loss threshold \\
+Stop Loss & 1\% & Quick exit on adverse moves \\
+Take Profit & 2\% & Secure profits early \\
+Leverage & 1x & Maximum safety \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Technical Implementation}
+
+\subsection{System Architecture}
+The trading system consists of several interconnected modules:
+
+\begin{figure}[H]
+\centering
+\begin{minipage}{0.8\textwidth}
+\begin{verbatim}
+TGT QR Trading System Architecture
+
+┌─────────────────────────────────────┐
+│           Dashboard (Flask)         │
+│     - Real-time monitoring          │
+│     - Mobile responsive             │
+│     - PnL visualization             │
+└─────────────────┬───────────────────┘
+                  │ HTTP/WebSocket
+                  ▼
+┌─────────────────────────────────────┐
+│         Strategy Engine             │
+│     - Signal generation             │
+│     - Position management           │
+│     - Order execution               │
+└─────────────────┬───────────────────┘
+                  │ Database queries
+                  ▼
+┌─────────────────────────────────────┐
+│        Risk Manager                 │
+│     - Pre-trade validation          │
+│     - Loss limit enforcement        │
+│     - Emergency stops               │
+└─────────────────┬───────────────────┘
+                  │ API calls
+                  ▼
+┌─────────────────────────────────────┐
+│         Bybit API                   │
+│     - Market data retrieval         │
+│     - Order placement               │
+│     - Position monitoring           │
+└─────────────────────────────────────┘
+\end{verbatim}
+\end{minipage}
+\end{figure}
+
+\subsection{Database Schema}
+The system uses SQLite for persistent data storage:
+
+\begin{lstlisting}[language=SQL, caption=Database Schema]
+-- Price data for historical analysis
+CREATE TABLE price_data (
+    id INTEGER PRIMARY KEY,
+    symbol TEXT NOT NULL,
+    timestamp DATETIME NOT NULL,
+    open_price REAL NOT NULL,
+    high_price REAL NOT NULL,
+    low_price REAL NOT NULL,
+    close_price REAL NOT NULL,
+    volume REAL NOT NULL
+);
+
+-- Trading records for performance tracking
+CREATE TABLE trade_records (
+    id INTEGER PRIMARY KEY,
+    symbol TEXT NOT NULL,
+    side TEXT NOT NULL,
+    quantity REAL NOT NULL,
+    price REAL NOT NULL,
+    value_usdt REAL NOT NULL,
+    timestamp DATETIME NOT NULL,
+    pnl REAL DEFAULT 0,
+    fees REAL DEFAULT 0
+);
+
+-- Position snapshots for monitoring
+CREATE TABLE position_records (
+    id INTEGER PRIMARY KEY,
+    symbol TEXT NOT NULL,
+    position_size REAL NOT NULL,
+    entry_price REAL NOT NULL,
+    current_price REAL NOT NULL,
+    unrealized_pnl REAL NOT NULL,
+    timestamp DATETIME NOT NULL
+);
+
+-- Trading signals for analysis
+CREATE TABLE signal_records (
+    id INTEGER PRIMARY KEY,
+    symbol TEXT NOT NULL,
+    signal INTEGER NOT NULL,
+    ma_value REAL NOT NULL,
+    current_price REAL NOT NULL,
+    timestamp DATETIME NOT NULL
+);
+\end{lstlisting}
+
+\subsection{Key Algorithm}
+
+\begin{lstlisting}[language=Python, caption=Main Strategy Logic]
+def run_strategy(self):
+    """Execute trading strategy with risk management"""
+
+    # Check risk status before trading
+    if not risk_manager.can_trade():
+        self.logger.error("Risk management prevents trading")
+        return
+
+    # Update price data for all symbols
+    for symbol in SYMBOLS:
+        prices = self.get_historical_prices(symbol)
+        if prices:
+            self.price_history[symbol] = prices[-MA_PERIOD:]
+
+    # Generate and execute signals
+    for symbol in SYMBOLS:
+        if len(self.price_history[symbol]) >= MA_PERIOD:
+            signal = self.calculate_ma_signal(symbol)
+
+            # Risk check before opening position
+            if signal == 1 and not current_position:
+                if risk_manager.can_open_position(symbol, MAX_POSITION_USDT):
+                    self.place_order(symbol, "Buy", MAX_POSITION_USDT)
+
+            elif signal == -1 and not current_position:
+                if risk_manager.can_open_position(symbol, MAX_POSITION_USDT):
+                    self.place_order(symbol, "Sell", MAX_POSITION_USDT)
+
+            elif signal == 0 and current_position:
+                self.close_position(symbol)
+\end{lstlisting}
+
+\section{Performance Monitoring}
+
+\subsection{Dashboard Features}
+The system includes a mobile-responsive web dashboard with:
+
+\begin{itemize}
+\item Real-time PnL visualization (24-hour charts)
+\item Current position monitoring
+\item Trading signal history
+\item Risk status indicators
+\item Emergency shutdown controls
+\item Parameter adjustment interface
+\end{itemize}
+
+\subsection{Logging System}
+Comprehensive logging captures all system activities:
+
+\begin{lstlisting}[language=Python, caption=Logging Configuration]
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('logs/trading_system.log'),
+        logging.StreamHandler()
+    ]
+)
+\end{lstlisting}
+
+\section{Deployment and Operations}
+
+\subsection{AWS Deployment}
+The system includes automated deployment for AWS EC2:
+
+\begin{lstlisting}[bash, caption=AWS Deployment Script]
+#!/bin/bash
+# Automated deployment script
+sudo apt update
+sudo apt install python3 python3-pip python3-venv git
+git clone https://github.com/echen347/TGT-QR.git
+cd TGT-QR
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+# Setup systemd service for 24/7 operation
+sudo tee /etc/systemd/system/tgt-trading.service > /dev/null <<EOF
+[Unit]
+Description=TGT QR Trading System
+After=network.target
+
+[Service]
+Type=simple
+User=trading
+WorkingDirectory=/home/trading/TGT-QR
+ExecStart=/home/trading/TGT-QR/venv/bin/python3 src/run_trading_system.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+\end{lstlisting}
+
+\subsection{Operational Monitoring}
+The system provides multiple monitoring interfaces:
+
+\begin{itemize}
+\item Web dashboard for visual monitoring
+\item Comprehensive logging for detailed analysis
+\item Database persistence for historical review
+\item Real-time position and PnL tracking
+\end{itemize}
+
+\section{Configuration}
+
+\subsection{Environment Variables}
+System configuration via environment variables:
+
+\begin{lstlisting}[language=bash, caption=Environment Configuration]
+# Bybit API Configuration
+BYBIT_TESTNET=true
+BYBIT_API_KEY=your_api_key
+BYBIT_API_SECRET=your_api_secret
+
+# Risk Management (Ultra-Conservative)
+MAX_POSITION_USDT=1.00
+MAX_DAILY_LOSS_USDT=2.00
+STOP_LOSS_PCT=0.01
+TAKE_PROFIT_PCT=0.02
+LEVERAGE=1
+
+# Strategy Settings
+MA_PERIOD=60
+STRATEGY_INTERVAL_MINUTES=15
+\end{lstlisting}
+
+\section{Testing and Validation}
+
+\subsection{Testing Framework}
+Comprehensive testing ensures system reliability:
+
+\begin{lstlisting}[language=Python, caption=Test Coverage]
+def test_imports():
+    """Test all module imports"""
+
+def test_database():
+    """Test database operations"""
+
+def test_risk_manager():
+    """Test risk management enforcement"""
+
+def test_strategy():
+    """Test strategy logic (no live trading)"""
+
+def test_dashboard():
+    """Test dashboard functionality"""
+\end{lstlisting}
+
+\subsection{Backtesting Considerations}
+While not implemented in Week 1, future enhancements should include:
+
+\begin{itemize}
+\item Historical performance analysis
+\item Strategy optimization
+\item Risk-adjusted return metrics
+\item Maximum drawdown analysis
+\end{itemize}
+
+\section{Conclusion}
+
+This Week 1 implementation demonstrates a production-ready trading system with:
+
+\begin{itemize}
+\item Robust moving average strategy implementation
+\item Ultra-conservative risk management
+\item Comprehensive monitoring and logging
+\item Mobile-responsive user interface
+\item Automated deployment capabilities
+\end{itemize}
+
+The system prioritizes capital preservation while providing a solid foundation for learning quantitative trading methodologies. All components are tested, documented, and ready for production deployment with appropriate risk monitoring.
+
+\end{document}
