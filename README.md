@@ -79,10 +79,12 @@ chmod +x deploy_aws.sh
 - **📱 Mobile-Friendly**: Optimized for phone access
 
 ## Files Structure
-- **README.md**: This overview and documentation
+- **README.md**: Project overview and documentation
 - **requirements.txt**: Python dependencies
-- **ALTERNATIVE_DATA_SOURCES.md**: Research on alternative signals
-- **deploy_aws.sh**: AWS deployment automation
+- **documentation/trading\_strategy.tex**: Comprehensive LaTeX documentation
+- **src/**: Core application modules
+- **config/**: Configuration files
+- **.gitignore**: Excludes sensitive files (.env, logs, etc.)
 
 ## Week 1 Deliverables ✅
 - ✅ **Funding Rate Understanding**: Complete mechanism documentation
