@@ -83,28 +83,29 @@ The strategy maintains binary position states (long/short/neutral) with the foll
 
 \section{Risk Management Framework}
 
-\subsection{Ultra-Conservative Risk Controls}
-The system implements multiple layers of risk management to prevent significant losses:
+\subsection{Risk Management Framework}
+The system implements balanced risk controls optimized for learning while maintaining safety:
 
 \subsubsection{Position-Level Controls}
 \begin{itemize}
-\item Maximum position value: \$1.00 USDT
-\item Stop loss: 1\% of entry price
-\item Take profit: 2\% of entry price
+\item Maximum position value: \$0.50 USDT (50¢ risk per trade)
+\item Leverage: 10x for smaller nominal sizes
+\item Stop loss: 2\% of entry price
+\item Take profit: 4\% of entry price (2:1 reward:risk ratio)
 \item Single position limit enforced
 \end{itemize}
 
 \subsubsection{Daily Risk Limits}
 \begin{itemize}
-\item Maximum daily loss: \$2.00 USDT
+\item Maximum daily loss: \$5.00 USDT (aligns with 5 USDT minimum order)
 \item Automatic position closure on limit breach
 \item 24-hour loss tracking and reset
 \end{itemize}
 
 \subsubsection{System-Level Safeguards}
 \begin{itemize}
-\item Total loss limit: \$5.00 USDT (emergency stop)
-\item Volume filtering: Only trade highly liquid pairs
+\item Total loss limit: \$10.00 USDT (emergency stop)
+\item Volume filtering: Only trade highly liquid pairs (1M+ USD volume)
 \item Circuit breaker: Automatic shutdown on loss limits
 \end{itemize}
 
@@ -118,12 +119,12 @@ The system tracks comprehensive risk metrics:
 \toprule
 Parameter & Value & Purpose \\
 \midrule
-Max Position Size & \$1.00 USDT & Limit exposure per trade \\
-Daily Loss Limit & \$2.00 USDT & Prevent significant daily losses \\
-Total Loss Limit & \$5.00 USDT & Absolute maximum loss threshold \\
-Stop Loss & 1\% & Quick exit on adverse moves \\
-Take Profit & 2\% & Secure profits early \\
-Leverage & 1x & Maximum safety \\
+Max Position Size & \$0.50 USDT & 50¢ risk per trade \\
+Daily Loss Limit & \$5.00 USDT & Aligns with 5 USDT minimum order \\
+Total Loss Limit & \$10.00 USDT & Absolute maximum loss threshold \\
+Stop Loss & 2\% & Quick exit on adverse moves \\
+Take Profit & 4\% & 2:1 reward:risk ratio \\
+Leverage & 10x & Smaller nominal sizes \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -342,12 +343,12 @@ BYBIT_TESTNET=true
 BYBIT_API_KEY=your_api_key
 BYBIT_API_SECRET=your_api_secret
 
-# Risk Management (Ultra-Conservative)
-MAX_POSITION_USDT=1.00
-MAX_DAILY_LOSS_USDT=2.00
-STOP_LOSS_PCT=0.01
-TAKE_PROFIT_PCT=0.02
-LEVERAGE=1
+# Risk Management (Balanced Approach)
+MAX_POSITION_USDT=0.50
+MAX_DAILY_LOSS_USDT=5.00
+STOP_LOSS_PCT=0.02
+TAKE_PROFIT_PCT=0.04
+LEVERAGE=10
 
 # Strategy Settings
 MA_PERIOD=60
@@ -392,7 +393,7 @@ This Week 1 implementation demonstrates a production-ready trading system with:
 
 \begin{itemize}
 \item Robust moving average strategy implementation
-\item Ultra-conservative risk management
+\item Balanced risk management (50¢ per trade, 10x leverage)
 \item Comprehensive monitoring and logging
 \item Mobile-responsive user interface
 \item Automated deployment capabilities

@@ -1,13 +1,13 @@
 # TGT QR Trading System
 
 ## Overview
-**Ultra-conservative automated trading system** designed for minimum risk exposure while learning quantitative trading strategies. Built for Week 1 QR assignment with comprehensive risk management and educational focus.
+**Balanced-risk automated trading system** designed for learning quantitative trading strategies while maintaining safety. Built for Week 1 QR assignment with 50¢ risk per trade and 10x leverage. Features comprehensive risk management and educational focus.
 
 ## ⚠️ Risk Management Philosophy
-- **Maximum Position Size**: $1.00 USDT
-- **Daily Loss Limit**: $2.00 USDT
-- **Total Loss Limit**: $5.00 USDT
-- **No Leverage**: 1x only for maximum safety
+- **Maximum Position Size**: $0.50 USDT (50¢ risk per trade)
+- **Daily Loss Limit**: $5.00 USDT (aligns with 5 USDT minimum)
+- **Total Loss Limit**: $10.00 USDT
+- **Leverage**: 10x for smaller position sizes
 - **Only 2 Assets**: BTCUSDT, ETHUSDT initially
 - **Emergency Stop**: Automatic shutdown on loss limits
 
@@ -90,7 +90,7 @@ chmod +x deploy_aws.sh
 - ✅ **Funding Rate Understanding**: Complete mechanism documentation
 - ✅ **Bybit API Integration**: Full API setup and testing
 - ✅ **Simple Strategy**: 1-hour MA strategy implemented
-- ✅ **Risk Management**: Ultra-conservative $1 position limits
+- ✅ **Risk Management**: Balanced approach with 50¢ position limits, 10x leverage
 - ✅ **Data Persistence**: SQLite database with crash recovery
 - ✅ **Comprehensive Logging**: Position, PnL, fees, signals tracked
 - ✅ **Mobile Dashboard**: Charts, controls, real-time monitoring
