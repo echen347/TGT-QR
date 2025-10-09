@@ -3,6 +3,9 @@ import plotly.graph_objs as go
 import plotly.utils
 import pandas as pd
 from datetime import datetime, timedelta
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from config.config import *
 from database import db_manager
 from risk_manager import risk_manager

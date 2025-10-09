@@ -1,0 +1,56 @@
+\contentsline {section}{\numberline {1}Development Journey}{3}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Initial Strategy Design}{3}{subsection.1.1}%
+\contentsline {subsubsection}{\numberline {1.1.1}Strategy Concept}{3}{subsubsection.1.1.1}%
+\contentsline {subsubsection}{\numberline {1.1.2}Technical Implementation}{3}{subsubsection.1.1.2}%
+\contentsline {subsection}{\numberline {1.2}API Integration Challenges}{3}{subsection.1.2}%
+\contentsline {subsubsection}{\numberline {1.2.1}Initial Connection Issues}{3}{subsubsection.1.2.1}%
+\contentsline {subsubsection}{\numberline {1.2.2}Solution Implementation}{4}{subsubsection.1.2.2}%
+\contentsline {subsection}{\numberline {1.3}Live Trading Execution}{4}{subsection.1.3}%
+\contentsline {subsubsection}{\numberline {1.3.1}First Live Trade}{4}{subsubsection.1.3.1}%
+\contentsline {subsubsection}{\numberline {1.3.2}Lessons Learned}{4}{subsubsection.1.3.2}%
+\contentsline {subsection}{\numberline {1.4}Backtesting Framework Development}{4}{subsection.1.4}%
+\contentsline {subsubsection}{\numberline {1.4.1}Framework Requirements}{4}{subsubsection.1.4.1}%
+\contentsline {subsubsection}{\numberline {1.4.2}Technical Implementation}{5}{subsubsection.1.4.2}%
+\contentsline {subsection}{\numberline {1.5}Mathematical Analysis of Strategy Performance}{5}{subsection.1.5}%
+\contentsline {subsubsection}{\numberline {1.5.1}Formal Strategy Formulation}{5}{subsubsection.1.5.1}%
+\contentsline {subsubsection}{\numberline {1.5.2}Statistical Signal Analysis}{5}{subsubsection.1.5.2}%
+\contentsline {subsubsection}{\numberline {1.5.3}Parameter Sensitivity Analysis}{5}{subsubsection.1.5.3}%
+\contentsline {subsubsection}{\numberline {1.5.4}Backtesting Results: Quantitative Analysis}{6}{subsubsection.1.5.4}%
+\contentsline {subsubsection}{\numberline {1.5.5}Maximum Drawdown Analysis}{6}{subsubsection.1.5.5}%
+\contentsline {subsubsection}{\numberline {1.5.6}Parameter Testing Results: Mathematical Interpretation}{6}{subsubsection.1.5.6}%
+\contentsline {subsubsection}{\numberline {1.5.7}Symbol Performance Analysis}{7}{subsubsection.1.5.7}%
+\contentsline {subsubsection}{\numberline {1.5.8}Optimal Parameter Selection}{7}{subsubsection.1.5.8}%
+\contentsline {subsubsection}{\numberline {1.5.9}Mathematical Justification for Risk Management}{7}{subsubsection.1.5.9}%
+\contentsline {subsubsection}{\numberline {1.5.10}Statistical Significance Analysis}{8}{subsubsection.1.5.10}%
+\contentsline {subsubsection}{\numberline {1.5.11}Market Regime Analysis}{8}{subsubsection.1.5.11}%
+\contentsline {subsubsection}{\numberline {1.5.12}Future Optimization Directions}{8}{subsubsection.1.5.12}%
+\contentsline {section}{\numberline {2}System Architecture and Implementation}{8}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Modular Design Philosophy}{8}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Inter-Module Communication}{9}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Error Handling and Recovery}{9}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Performance Optimization}{9}{subsection.2.4}%
+\contentsline {subsection}{\numberline {2.5}Configuration Management}{9}{subsection.2.5}%
+\contentsline {subsection}{\numberline {2.6}Security Considerations}{10}{subsection.2.6}%
+\contentsline {section}{\numberline {3}Deployment and Operations}{10}{section.3}%
+\contentsline {subsection}{\numberline {3.1}AWS Deployment Architecture}{10}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Systemd Service Configuration}{10}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Monitoring and Alerting}{10}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}Backup and Recovery}{11}{subsection.3.4}%
+\contentsline {section}{\numberline {4}Testing and Validation}{11}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Unit Testing Framework}{11}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Integration Testing}{11}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Backtesting Validation}{11}{subsection.4.3}%
+\contentsline {section}{\numberline {5}Performance Analysis}{12}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Metric Definitions}{12}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Performance Attribution}{12}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Risk-Adjusted Performance}{12}{subsection.5.3}%
+\contentsline {section}{\numberline {6}Conclusion and Future Work}{12}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Summary of Achievements}{12}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Lessons Learned}{12}{subsection.6.2}%
+\contentsline {subsubsection}{\numberline {6.2.1}Technical Insights}{12}{subsubsection.6.2.1}%
+\contentsline {subsubsection}{\numberline {6.2.2}Market Insights}{13}{subsubsection.6.2.2}%
+\contentsline {subsection}{\numberline {6.3}Future Research Directions}{13}{subsection.6.3}%
+\contentsline {subsubsection}{\numberline {6.3.1}Strategy Enhancement}{13}{subsubsection.6.3.1}%
+\contentsline {subsubsection}{\numberline {6.3.2}Technical Improvements}{13}{subsubsection.6.3.2}%
+\contentsline {subsubsection}{\numberline {6.3.3}Risk Management Evolution}{13}{subsubsection.6.3.3}%
+\contentsline {subsection}{\numberline {6.4}Closing Remarks}{13}{subsection.6.4}%

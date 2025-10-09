@@ -3,6 +3,9 @@ import numpy as np
 import time
 from datetime import datetime, timedelta
 from pybit.unified_trading import HTTP
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from config.config import *
 import logging
 from database import db_manager
@@ -15,7 +18,8 @@ class MovingAverageStrategy:
     """
 
     def __init__(self):
-        self.client = HTTP(
+        # Use the working API setup from day1_test.py
+        self.session = HTTP(
             testnet=BYBIT_TESTNET,
             api_key=BYBIT_API_KEY,
             api_secret=BYBIT_API_SECRET
@@ -23,7 +27,6 @@ class MovingAverageStrategy:
         self.positions = {}
         self.price_history = {}
         self.signals = {}
-        self.session = HTTP(testnet=BYBIT_TESTNET)
 
         # Initialize price history for each symbol
         for symbol in SYMBOLS:
@@ -73,14 +76,21 @@ class MovingAverageStrategy:
                 prices = []
 
                 for kline in reversed(klines):  # Reverse to get chronological order
-                    prices.append({
-                        'timestamp': datetime.fromtimestamp(int(kline[0]) / 1000),
-                        'open': float(kline[1]),
-                        'high': float(kline[2]),
-                        'low': float(kline[3]),
-                        'close': float(kline[4]),
-                        'volume': float(kline[5])
-                    })
+                    try:
+                        # Debug: print kline structure
+                        self.logger.debug(f"Kline data: {kline}")
+
+                        prices.append({
+                            'timestamp': datetime.fromtimestamp(int(kline[0]) / 1000),
+                            'open': float(kline[1]),
+                            'high': float(kline[2]),
+                            'low': float(kline[3]),
+                            'close': float(kline[4]),
+                            'volume': float(kline[5])
+                        })
+                    except Exception as e:
+                        self.logger.error(f"Error processing kline {kline}: {str(e)}")
+                        continue
 
                 return prices
             else:
@@ -111,7 +121,7 @@ class MovingAverageStrategy:
     def get_current_positions(self):
         """Get current positions for all symbols"""
         try:
-            response = self.client.get_positions(
+            response = self.session.get_positions(
                 category="linear",
                 settleCoin="USDT"
             )
@@ -175,12 +185,13 @@ class MovingAverageStrategy:
                 self.logger.error(f"Leverage mismatch: requested {leverage}, configured {LEVERAGE}")
                 return False
 
-            response = self.client.place_order(
+            # Use the working order placement from day1_test.py
+            response = self.session.place_order(
                 category="linear",
                 symbol=symbol,
                 side=side,
                 orderType="Market",
-                qty=str(qty_contracts),
+                qty=str(qty_usdt),  # USDT amount for quote currency orders
                 leverage=str(leverage),
                 marketUnit="quoteCurrency"
             )

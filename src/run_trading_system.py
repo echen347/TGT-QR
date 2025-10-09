@@ -13,6 +13,9 @@ from threading import Thread
 # Add src to path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from config.config import DASHBOARD_HOST, DASHBOARD_PORT
 
 def run_dashboard():

@@ -9,9 +9,9 @@ BYBIT_API_KEY = os.getenv('BYBIT_API_KEY')
 BYBIT_API_SECRET = os.getenv('BYBIT_API_SECRET')
 
 # Trading Configuration - ADJUSTED FOR 50¢ RISK PER TRADE
-SYMBOLS = ['BTCUSDT', 'ETHUSDT']  # Start with 2 symbols
+SYMBOLS = ['BTCUSDT', 'ETHUSDT', 'XRPUSDT']  # Start with 3 symbols including XRP
 LEVERAGE = 10  # 10x leverage for smaller position sizes
-MAX_POSITION_USDT = 0.50  # 50¢ risk per position (5¢ per 1% move with 10x leverage)
+MAX_POSITION_USDT = 10.00  # Temporarily increased for XRPUSDT test (50¢ risk per position normally)
 TIMEFRAME = '1m'  # 1 minute candles for strategy
 MA_PERIOD = 60  # 1 hour moving average (60 minutes)
 
