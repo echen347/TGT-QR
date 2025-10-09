@@ -119,7 +119,7 @@ class MovingAverageStrategy:
             return 0
 
     def get_current_positions(self):
-        """Get current positions for all symbols"""
+        """Get current open positions for all symbols"""
         try:
             response = self.session.get_positions(
                 category="linear",
@@ -132,9 +132,11 @@ class MovingAverageStrategy:
 
                 for pos in positions:
                     symbol = pos['symbol']
-                    if symbol in SYMBOLS:
+                    position_size = float(pos['size'])
+                    if symbol in SYMBOLS and position_size > 0:
                         current_positions[symbol] = {
-                            'position_size': float(pos['size']),
+                            'symbol': symbol,
+                            'position_size': position_size,
                             'position_value': float(pos['positionValue']),
                             'entry_price': float(pos['avgPrice']),
                             'unrealized_pnl': float(pos['unrealisedPnl']),
@@ -149,6 +151,47 @@ class MovingAverageStrategy:
         except Exception as e:
             self.logger.error(f"Exception getting positions: {str(e)}")
             return {}
+
+    def close_position(self, symbol, side, size):
+        """Places a closing order for a specific position using base currency size."""
+        try:
+            self.logger.info(f"Attempting to place closing order for {symbol}: {side} {size}")
+            response = self.session.place_order(
+                category="linear",
+                symbol=symbol,
+                side=side,
+                orderType="Market",
+                qty=str(size),
+                reduceOnly=True,
+                marketUnit="baseCurrency"
+            )
+            if response.get('retCode') == 0:
+                self.logger.info(f"Successfully placed closing order for {symbol} of size {size}.")
+            else:
+                self.logger.error(f"Failed to place closing order for {symbol}. Response: {response}")
+        except Exception as e:
+            self.logger.exception(f"Exception while placing closing order for {symbol}: {e}")
+
+    def close_all_positions(self):
+        """Close all open positions."""
+        self.logger.warning("EMERGENCY STOP: Attempting to close all open positions.")
+        open_positions = self.get_current_positions()
+
+        if not open_positions:
+            self.logger.info("No open positions to close.")
+            return
+
+        for symbol, position in open_positions.items():
+            try:
+                size = position['position_size']
+                side = position['side']  # 'Buy' for long, 'Sell' for short
+
+                if size > 0:
+                    close_side = 'Sell' if side == 'Buy' else 'Buy'
+                    self.logger.info(f"Closing {side} position for {symbol} of size {size} by placing a {close_side} order.")
+                    self.close_position(symbol, close_side, size)
+            except Exception as e:
+                self.logger.exception(f"Failed to process and close position for {symbol}: {position}. Error: {e}")
 
     def get_symbol_volume(self, symbol):
         """Get 24h volume for symbol in USDT"""
@@ -226,9 +269,9 @@ class MovingAverageStrategy:
         # Check risk status first
         risk_status = risk_manager.get_risk_status()
         if not risk_status['can_trade']:
-            self.logger.error("❌ Risk management prevents trading")
-            self.logger.error(f"Daily Loss: ${risk_status['daily_loss']:.2f}/${risk_status['daily_loss_limit']:.2f}")
-            self.logger.error(f"Total Loss: ${risk_status['total_loss']:.2f}/${risk_status['total_loss_limit']:.2f}")
+            self.logger.error("❌ Risk management prevents trading.")
+            self.logger.error(f"Daily Loss: ${risk_status['daily_loss']:.2f}/${risk_status['max_daily_loss_usdt']:.2f}")
+            self.logger.error(f"Total Loss: ${risk_status['total_loss']:.2f}/${risk_status['max_total_loss_usdt']:.2f}")
             return
 
         # Update price history for all symbols
