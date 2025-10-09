@@ -108,6 +108,30 @@
         .signal-buy { color: #2ecc71; font-weight: bold; }
         .signal-sell { color: #e74c3c; font-weight: bold; }
         .signal-hold { color: #95a5a6; }
+        .status-active { color: #2ecc71; font-weight: bold; }
+        .status-inactive { color: #e74c3c; font-weight: bold; }
+        .status-warning { color: #f39c12; font-weight: bold; }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .alerts-list {
+            max-height: 150px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        .alert-item {
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        .alert-danger { background-color: rgba(231, 76, 60, 0.2); border-left: 3px solid #e74c3c; }
+        .alert-warning { background-color: rgba(243, 156, 18, 0.2); border-left: 3px solid #f39c12; }
+        .alert-success { background-color: rgba(46, 204, 113, 0.2); border-left: 3px solid #2ecc71; }
         @media (max-width: 768px) {
             .status-grid {
                 grid-template-columns: 1fr;
@@ -152,6 +176,37 @@
                     <span class="metric-value {{ 'positive' if risk_status.can_trade else 'negative' }}">
                         {{ '✅ YES' if risk_status.can_trade else '❌ NO' }}
                     </span>
+                </div>
+            </div>
+
+            <div class="grid-item">
+                <div class="card">
+                    <h3>System Status</h3>
+                    <div class="status-grid">
+                        <div>
+                            <p>Dashboard: <span class="status-active">{{ system_status.dashboard_status }}</span></p>
+                            <p>Trading Bot: <span class="status-inactive">{{ system_status.bot_status }}</span></p>
+                        </div>
+                        <div>
+                            <p>API Status: <span class="status-active">{{ system_status.api_status }}</span></p>
+                            <p>DB Status: <span class="status-active">Connected</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-item">
+                <div class="card">
+                    <h3>Alerts</h3>
+                    <div class="alerts-list">
+                        {% if alerts %}
+                            {% for alert in alerts %}
+                                <p class="alert-item alert-{{ alert.level }}">{{ alert.message }}</p>
+                            {% endfor %}
+                        {% else %}
+                            <p class="alert-item alert-success">No issues</p>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
 

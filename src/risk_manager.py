@@ -7,17 +7,26 @@ from config.config import *
 from database import db_manager
 
 class RiskManager:
-    """
-    Ultra-conservative risk management system
-    Designed to prevent significant losses at all costs
-    """
+    """Ultra-conservative risk management for educational purposes"""
 
     def __init__(self):
-        self.logger = logging.getLogger('RiskManager')
-        self.daily_loss = 0.0
-        self.total_loss = 0.0
-        self.positions_count = 0
-        self.last_reset = datetime.utcnow()
+        """Initialize risk manager with conservative defaults"""
+        self.daily_loss = 0
+        self.total_loss = 0
+        self.is_stopped = False
+        self.last_daily_reset = datetime.now().date()
+        self.alerts = []
+
+    def add_alert(self, level, message):
+        """Add a new alert."""
+        # Prepend to show newest first
+        self.alerts.insert(0, {'level': level, 'message': f"[{datetime.now().strftime('%H:%M:%S')}] {message}"})
+        # Keep only the last 5 alerts
+        self.alerts = self.alerts[:5]
+
+    def get_alerts(self):
+        """Return current alerts."""
+        return self.alerts
 
     def reset_daily_loss(self):
         """Reset daily loss counter if it's a new day"""
@@ -112,17 +121,12 @@ class RiskManager:
         self.logger.info(f"Daily loss: ${self.daily_loss:.4f}/${MAX_DAILY_LOSS_USDT:.2f}")
 
     def emergency_stop(self):
-        """Emergency stop - close all positions and halt trading"""
-        self.logger.critical("=" * 80)
-        self.logger.critical("EMERGENCY STOP ACTIVATED!")
-        self.logger.critical(f"Daily Loss: ${self.daily_loss:.2f}")
-        self.logger.critical(f"Total Loss: ${self.total_loss:.2f}")
-        self.logger.critical("All trading operations should cease immediately!")
-        self.logger.critical("=" * 80)
-
-        # In a real system, this would close all positions
-        # For now, just log the emergency
-        return True
+        """Trigger emergency stop and add a critical alert"""
+        self.is_stopped = True
+        message = f"EMERGENCY STOP! Total loss ${self.total_loss:.2f} exceeded limit of ${MAX_TOTAL_LOSS_USDT:.2f}"
+        self.add_alert('danger', message)
+        logger.critical(message)
+        # In a real system, this would also trigger closing all positions
 
     def get_risk_status(self):
         """Get current risk status"""

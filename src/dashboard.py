@@ -21,6 +21,18 @@ class TradingDashboard:
     def __init__(self):
         self.db = db_manager
 
+    def get_system_status(self):
+        """Get current system status (placeholders for now)"""
+        return {
+            'dashboard_status': 'Active',
+            'bot_status': 'Inactive',
+            'api_status': 'OK',
+        }
+
+    def get_alerts(self):
+        """Get current alerts from the risk manager"""
+        return risk_manager.get_alerts()
+
     def get_pnl_chart_data(self):
         """Get PnL data for charting"""
         try:
@@ -131,14 +143,22 @@ class TradingDashboard:
 
 @app.route('/')
 def dashboard():
-    """Main dashboard page"""
-    dashboard = TradingDashboard()
+    """Render the main dashboard"""
+    trading_dashboard = TradingDashboard()
+    pnl_chart_data = trading_dashboard.get_pnl_chart_data()
+    positions_data = trading_dashboard.get_positions_data()
+    signals_data = trading_dashboard.get_signals_data()
+    risk_status = trading_dashboard.get_risk_status()
+    system_status = trading_dashboard.get_system_status()
+    alerts = trading_dashboard.get_alerts()
 
     return render_template('dashboard.html',
-                         pnl_chart=dashboard.create_pnl_chart(),
-                         positions=dashboard.get_positions_data(),
-                         signals=dashboard.get_signals_data(),
-                         risk_status=dashboard.get_risk_status())
+                           pnl_data=json.dumps(pnl_chart_data),
+                           positions=positions_data,
+                           signals=signals_data,
+                           risk=risk_status,
+                           system_status=system_status,
+                           alerts=alerts)
 
 @app.route('/api/status')
 def api_status():
