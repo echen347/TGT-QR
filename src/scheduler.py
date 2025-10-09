@@ -3,12 +3,14 @@ import time
 import logging
 from strategy import MovingAverageStrategy
 from config.config import STRATEGY_INTERVAL_MINUTES
+from risk_manager import risk_manager
 
 class TradingScheduler:
     """Schedule trading strategy execution"""
 
     def __init__(self):
         self.strategy = MovingAverageStrategy()
+        risk_manager.set_strategy(self.strategy)  # Link strategy to risk manager
         self.logger = logging.getLogger('TradingScheduler')
 
         # Setup logging
