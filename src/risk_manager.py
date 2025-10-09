@@ -16,6 +16,7 @@ class RiskManager:
         self.is_stopped = False
         self.last_daily_reset = datetime.now().date()
         self.alerts = []
+        self.positions_count = 0
 
     def add_alert(self, level, message):
         """Add a new alert."""
