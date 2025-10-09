@@ -154,29 +154,10 @@
         <div class="status-grid">
             <!-- Risk Status Card -->
             <div class="card risk-card">
-                <h3>🛡️ Risk Management</h3>
-                <div class="metric">
-                    <span>Daily Loss</span>
-                    <span class="metric-value {{ 'negative' if risk_status.daily_loss > 0 else 'neutral' }}">
-                        ${{ "%.4f"|format(risk_status.daily_loss) }} / ${{ "%.2f"|format(risk_status.daily_loss_limit) }}
-                    </span>
-                </div>
-                <div class="metric">
-                    <span>Total Loss</span>
-                    <span class="metric-value {{ 'negative' if risk_status.total_loss > 0 else 'neutral' }}">
-                        ${{ "%.4f"|format(risk_status.total_loss) }} / ${{ "%.2f"|format(risk_status.total_loss_limit) }}
-                    </span>
-                </div>
-                <div class="metric">
-                    <span>Open Positions</span>
-                    <span class="metric-value">{{ risk_status.positions_count }} / {{ risk_status.max_positions }}</span>
-                </div>
-                <div class="metric">
-                    <span>Can Trade</span>
-                    <span class="metric-value {{ 'positive' if risk_status.can_trade else 'negative' }}">
-                        {{ '✅ YES' if risk_status.can_trade else '❌ NO' }}
-                    </span>
-                </div>
+                <h3>Risk Management</h3>
+                <p><strong>Max Position:</strong> ${{ risk.max_position_usdt }}</p>
+                <p><strong>Daily Loss Limit:</strong> ${{ risk.max_daily_loss_usdt }}</p>
+                <p><strong>Total Loss Limit:</strong> ${{ risk.max_total_loss_usdt }}</p>
             </div>
 
             <div class="grid-item">
@@ -232,38 +213,35 @@
             <!-- Positions Card -->
             <div class="card positions-card">
                 <h3>📊 Current Positions</h3>
-                {% if positions %}
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Symbol</th>
-                            <th>Size</th>
-                            <th>Entry</th>
-                            <th>Current</th>
-                            <th>PnL</th>
-                            <th>PnL%</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for pos in positions %}
-                        <tr>
-                            <td><strong>{{ pos.symbol }}</strong></td>
-                            <td>{{ "%.6f"|format(pos.size) }}</td>
-                            <td>${{ "%.2f"|format(pos.entry_price) }}</td>
-                            <td>${{ "%.2f"|format(pos.current_price) }}</td>
-                            <td class="{{ 'positive' if pos.pnl > 0 else 'negative' if pos.pnl < 0 else 'neutral' }}">
-                                ${{ "%.4f"|format(pos.pnl) }}
-                            </td>
-                            <td class="{{ 'positive' if pos.pnl_pct > 0 else 'negative' if pos.pnl_pct < 0 else 'neutral' }}">
-                                {{ "%.2f"|format(pos.pnl_pct) }}%
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                <p style="color: #95a5a6; font-style: italic;">No open positions</p>
-                {% endif %}
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Size</th>
+                                <th>Entry Price</th>
+                                <th>Current Price</th>
+                                <th>Unrealized PnL</th>
+                            </tr>
+                        </thead>
+                        <tbody id="positionsTable">
+                            <!-- Data will be injected here -->
+                            {% for position in positions %}
+                            <tr>
+                                <td>{{ position.symbol }}</td>
+                                <td>{{ position.position_size }}</td>
+                                <td>${{ "%.2f"|format(position.entry_price) }}</td>
+                                <td>${{ "%.2f"|format(position.current_price) }}</td>
+                                <td class="{{ 'positive' if position.unrealized_pnl >= 0 else 'negative' }}">${{ "%.4f"|format(position.unrealized_pnl) }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5">No active positions</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Signals Card -->
