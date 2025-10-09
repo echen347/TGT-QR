@@ -10,8 +10,10 @@ from config.config import *
 from database import db_manager
 from risk_manager import risk_manager
 import json
+from flask_moment import Moment
 
 app = Flask(__name__)
+moment = Moment(app)
 
 class TradingDashboard:
     """Simple mobile-friendly trading dashboard"""
