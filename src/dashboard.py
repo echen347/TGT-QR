@@ -22,11 +22,12 @@ class TradingDashboard:
         self.db = db_manager
 
     def get_system_status(self):
-        """Get current system status (placeholders for now)"""
+        """Get current system status from the risk manager"""
+        bot_is_active = not risk_manager.is_stopped
         return {
             'dashboard_status': 'Active',
-            'bot_status': 'Inactive',
-            'api_status': 'OK',
+            'bot_status': 'Active' if bot_is_active else 'Inactive',
+            'api_status': 'OK',  # Placeholder - can be improved
         }
 
     def get_alerts(self):

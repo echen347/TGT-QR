@@ -166,7 +166,7 @@
                     <div class="status-grid">
                         <div>
                             <p>Dashboard: <span class="status-active">{{ system_status.dashboard_status }}</span></p>
-                            <p>Trading Bot: <span class="status-inactive">{{ system_status.bot_status }}</span></p>
+                            <p>Trading Bot: <span class="{{ 'status-active' if system_status.bot_status == 'Active' else 'status-inactive' }}">{{ system_status.bot_status }}</span></p>
                         </div>
                         <div>
                             <p>API Status: <span class="status-active">{{ system_status.api_status }}</span></p>

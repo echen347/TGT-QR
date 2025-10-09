@@ -6,6 +6,9 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from config.config import *
 from database import db_manager
 
+# Initialize logger for this module
+logger = logging.getLogger(__name__)
+
 class RiskManager:
     """Ultra-conservative risk management for educational purposes"""
 
@@ -17,6 +20,11 @@ class RiskManager:
         self.last_daily_reset = datetime.now().date()
         self.alerts = []
         self.positions_count = 0
+        self.strategy = None  # To hold a reference to the strategy instance
+
+    def set_strategy(self, strategy):
+        """Set the strategy instance to allow for closing positions."""
+        self.strategy = strategy
 
     def add_alert(self, level, message):
         """Add a new alert."""
@@ -32,10 +40,10 @@ class RiskManager:
     def reset_daily_loss(self):
         """Reset daily loss counter if it's a new day"""
         now = datetime.utcnow()
-        if now.date() != self.last_reset.date():
+        if now.date() != self.last_daily_reset:
             self.logger.info(f"Resetting daily loss from ${self.daily_loss:.2f} to $0.00")
             self.daily_loss = 0.0
-            self.last_reset = now
+            self.last_daily_reset = now.date()
 
     def check_volume_filter(self, symbol, current_volume):
         """Check if symbol meets minimum volume requirements"""
@@ -127,7 +135,12 @@ class RiskManager:
         message = f"EMERGENCY STOP! Total loss ${self.total_loss:.2f} exceeded limit of ${MAX_TOTAL_LOSS_USDT:.2f}"
         self.add_alert('danger', message)
         logger.critical(message)
-        # In a real system, this would also trigger closing all positions
+        
+        if self.strategy:
+            logger.warning("Attempting to close all positions immediately.")
+            self.strategy.close_all_positions()
+        else:
+            logger.error("Strategy object not set in RiskManager. Cannot close positions immediately.")
 
     def get_risk_status(self):
         """Get current risk status"""
@@ -135,12 +148,12 @@ class RiskManager:
             'daily_loss': self.daily_loss,
             'total_loss': self.total_loss,
             'positions_count': self.positions_count,
-            'daily_loss_limit': MAX_DAILY_LOSS_USDT,
-            'total_loss_limit': MAX_TOTAL_LOSS_USDT,
+            'max_position_usdt': MAX_POSITION_USDT,
+            'max_daily_loss_usdt': MAX_DAILY_LOSS_USDT,
+            'max_total_loss_usdt': MAX_TOTAL_LOSS_USDT,
             'max_positions': MAX_POSITIONS,
-            'can_trade': (self.daily_loss < MAX_DAILY_LOSS_USDT and
-                         self.total_loss < MAX_TOTAL_LOSS_USDT and
-                         self.positions_count < MAX_POSITIONS)
+            'is_stopped': self.is_stopped,
+            'can_trade': not self.is_stopped and self.daily_loss < MAX_DAILY_LOSS_USDT and self.total_loss < MAX_TOTAL_LOSS_USDT
         }
 
 # Global risk manager instance
