@@ -110,6 +110,28 @@
             background-color: #ff8a80;
         }
 
+        .alerts-list {
+            flex-grow: 1;
+        }
+        .alert-item {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+        .alert-success { background-color: #03dac6; color: #121212; }
+        .alert-warning { background-color: #f39c12; color: #121212; }
+        .alert-error { background-color: #cf6679; color: #121212; }
+        .empty-placeholder {
+            color: #777;
+            font-style: italic;
+            text-align: center;
+            padding: 20px 0;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
     </style>
 </head>
 <body>
@@ -175,7 +197,7 @@
                         <p class="alert-item alert-{{ alert.level }}">{{ alert.message }}</p>
                     {% endfor %}
                 {% else %}
-                    <p class="alert-item alert-success">No issues</p>
+                    <p class="empty-placeholder">No issues</p>
                 {% endif %}
             </div>
         </div>
@@ -212,7 +234,9 @@
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="5">No active positions</td>
+                            <td colspan="5">
+                                <p class="empty-placeholder" style="padding: 0;">No active positions</p>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -256,7 +280,7 @@
             </table>
             </div>
             {% else %}
-            <p style="color: #95a5a6; font-style: italic;">No recent signals</p>
+            <p class="empty-placeholder">No recent signals</p>
             {% endif %}
         </div>
 
