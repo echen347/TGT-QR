@@ -282,6 +282,15 @@ def api_backtest_chart_data():
         'timestamp': datetime.now().isoformat()
     })
 
+@app.route('/api/clear_backtests', methods=['POST'])
+def api_clear_backtests():
+    """API endpoint to delete all backtest data."""
+    try:
+        db_manager.clear_all_backtests()
+        return jsonify({'success': True, 'message': 'All backtest data has been cleared.'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @app.route('/api/backtest_runs')
 def api_backtest_runs():
     """API endpoint for backtest runs"""

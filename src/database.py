@@ -372,19 +372,16 @@ class DatabaseManager:
             results = []
             for r in records:
                 results.append({
-                    'id': r.id,
-                    'run_id': r.run_id,
+                    'id': int(r.id),
+                    'run_id': int(r.run_id),
                     'symbol': r.symbol,
                     'start_date': r.start_date.strftime('%Y-%m-%d'),
                     'end_date': r.end_date.strftime('%Y-%m-%d'),
-                    'total_return_pct': r.total_return_pct,
-                    'total_trades': r.total_trades,
-                    'win_rate_pct': r.win_rate_pct,
-                    'sharpe_ratio': r.sharpe_ratio,
-                    'max_drawdown_pct': r.max_drawdown_pct,
-                    # This field does not exist on the model, so we can't query for it directly.
-                    # We will need to calculate it or add it to the model.
-                    # For now, we will just return a placeholder.
+                    'total_return_pct': float(r.total_return_pct),
+                    'total_trades': int(r.total_trades),
+                    'win_rate_pct': float(r.win_rate_pct),
+                    'sharpe_ratio': float(r.sharpe_ratio),
+                    'max_drawdown_pct': float(r.max_drawdown_pct),
                     'pnl': 0, # Placeholder
                     'timestamp': r.timestamp.strftime('%Y-%m-%d %H:%M:%S')
                 })
@@ -434,6 +431,18 @@ class DatabaseManager:
         except Exception as e:
             print(f"Error getting trades for run {run_id}: {e}")
             return []
+
+    def clear_all_backtests(self):
+        """Deletes all backtest runs, results, and trades from the database."""
+        try:
+            self.session.query(BacktestTrade).delete()
+            self.session.query(BacktestResult).delete()
+            self.session.query(BacktestRun).delete()
+            self.session.commit()
+            print("All backtest data has been cleared.")
+        except Exception as e:
+            self.session.rollback()
+            print(f"Error clearing backtest data: {e}")
 
     def get_recent_prices(self, symbol, limit=100):
         """Get recent price data for a symbol"""
