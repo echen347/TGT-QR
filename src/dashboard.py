@@ -136,26 +136,41 @@ class TradingDashboard:
             return {'error': 'Unable to load PnL data'}
 
     def get_positions_data(self):
-        """Get current positions data"""
+        """Get current positions data from Bybit API"""
         try:
-            positions = self.db.session.query(PositionRecord)\
-                .filter(PositionRecord.timestamp >= datetime.utcnow() - timedelta(minutes=30))\
-                .all()
-
-            current_positions = {}
-            for pos in positions:
-                if pos.symbol not in current_positions:
-                    current_positions[pos.symbol] = pos
-
-            return [{
-                'symbol': pos.symbol,
-                'size': pos.position_size,
-                'entry_price': pos.entry_price,
-                'current_price': pos.current_price,
-                'pnl': pos.unrealized_pnl,
-                'pnl_pct': (pos.unrealized_pnl / (pos.position_size * pos.entry_price)) * 100 if pos.position_size > 0 else 0
-            } for pos in current_positions.values()]
+            # Get positions directly from the strategy (which queries Bybit)
+            current_positions = self.strategy.get_current_positions()
+            
+            positions_list = []
+            for symbol, pos in current_positions.items():
+                position_size = pos.get('position_size', 0)
+                if position_size != 0:  # Only show open positions
+                    entry_price = pos.get('entry_price', 0)
+                    current_price = pos.get('current_price', 0)
+                    side = pos.get('side', 'N/A')
+                    
+                    # Calculate PnL
+                    if entry_price > 0 and current_price > 0:
+                        direction = 1 if side == 'Buy' else -1
+                        pnl = (current_price - entry_price) * abs(position_size) * direction
+                        pnl_pct = ((current_price - entry_price) / entry_price) * 100 * direction
+                    else:
+                        pnl = 0
+                        pnl_pct = 0
+                    
+                    positions_list.append({
+                        'symbol': symbol,
+                        'size': position_size,
+                        'side': side,
+                        'entry_price': entry_price,
+                        'current_price': current_price,
+                        'pnl': pnl,
+                        'pnl_pct': pnl_pct
+                    })
+            
+            return positions_list
         except Exception as e:
+            logging.error(f"Error fetching positions: {e}")
             return []
 
     def get_signals_data(self):

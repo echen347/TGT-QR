@@ -288,12 +288,12 @@
                     <p><strong>Total Loss Limit:</strong> ${{ "%.2f"|format(risk.max_total_loss_usdt) }}</p>
                 </div>
                 <div class="risk-item">
-                    <p><strong>Active Positions:</strong> {{ risk.positions_count }} / {{ risk.max_positions }}</p>
-                    <p><strong>Emergency Stopped:</strong> <span class="{{ 'status-inactive' if risk.is_stopped else 'status-active' }}">{{ risk.is_stopped }}</span></p>
+                    <p><strong>Active Positions:</strong> <span id="active-positions-count">{{ risk.positions_count }}</span> / {{ risk.max_positions }}</p>
+                    <p><strong>Emergency Stopped:</strong> <span id="emergency-status" class="{{ 'status-inactive' if risk.is_stopped else 'status-active' }}">{{ risk.is_stopped }}</span></p>
                 </div>
             </div>
         </div>
-
+        
         <!-- Current Market Context -->
         <div class="card" id="market-context">
             <h3><i class="fas fa-globe-americas"></i> Current Market Context</h3>
@@ -507,7 +507,7 @@
                 </div>
             </div>
         </div>
-
+        
         <div class="card" id="current-positions">
             <h3><i class="fas fa-folder-open"></i>Current Positions</h3>
             <div class="table-container">
@@ -607,26 +607,26 @@
                     },
                     body: JSON.stringify({ password: password })
                 })
-                .then(response => response.json())
-                .then(data => {
-                    const statusEl = document.getElementById('shutdown-status');
-                    if (data.status === 'success') {
-                        statusEl.style.color = 'var(--green-color)';
-                        statusEl.innerText = data.message;
-                        alert('Emergency Stop Activated!');
-                    } else {
-                        statusEl.style.color = 'var(--red-color)';
-                        statusEl.innerText = 'Error: ' + data.message;
+                    .then(response => response.json())
+                    .then(data => {
+                        const statusEl = document.getElementById('shutdown-status');
+                        if (data.status === 'success') {
+                            statusEl.style.color = 'var(--green-color)';
+                            statusEl.innerText = data.message;
+                            alert('Emergency Stop Activated!');
+                        } else {
+                            statusEl.style.color = 'var(--red-color)';
+                            statusEl.innerText = 'Error: ' + data.message;
                         alert('Failed to activate Emergency Stop: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    const statusEl = document.getElementById('shutdown-status');
-                    statusEl.style.color = 'var(--red-color)';
-                    statusEl.innerText = 'A network error occurred.';
-                    alert('An error occurred while trying to stop the bot.');
-                });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        const statusEl = document.getElementById('shutdown-status');
+                        statusEl.style.color = 'var(--red-color)';
+                        statusEl.innerText = 'A network error occurred.';
+                        alert('An error occurred while trying to stop the bot.');
+                    });
             }
         });
 
@@ -669,15 +669,39 @@
             });
         });
         
-        // Auto-refresh charts every 30 seconds instead of full page reload
+        // Function to update emergency status and positions
+        function updateSystemStatus() {
+            fetch('/api/status')
+                .then(response => response.json())
+                .then(data => {
+                    // Update emergency stop status
+                    const emergencyStatus = document.getElementById('emergency-status');
+                    if (emergencyStatus) {
+                        const isStoppedValue = data.risk?.is_stopped || false;
+                        emergencyStatus.textContent = isStoppedValue;
+                        emergencyStatus.className = isStoppedValue ? 'status-inactive' : 'status-active';
+                    }
+                    
+                    // Update active positions count
+                    const positionsCount = document.getElementById('active-positions-count');
+                    if (positionsCount && data.risk) {
+                        positionsCount.textContent = data.risk.positions_count;
+                    }
+                })
+                .catch(error => console.error('Error updating status:', error));
+        }
+        
+        // Auto-refresh charts and status every 10 seconds
         setInterval(() => {
             if (document.visibilityState === 'visible') {
+                updateSystemStatus();
                 loadChartData();
             }
         }, 30000);
         // Render PnL Chart
         const pnlData = {{ pnl_chart | tojson }};
-        if (pnlData && !pnlData.error) {
+        console.log('PnL Data:', pnlData);
+        if (pnlData && !pnlData.error && pnlData.cumulative_pnl && pnlData.cumulative_pnl.length > 0) {
             const layout = {
                 xaxis: { title: 'Time' },
                 yaxis: { title: 'PnL (USDT)' },
@@ -686,9 +710,17 @@
                 font: { color: 'var(--text-color)' },
                 margin: { l: 40, r: 20, t: 0, b: 30 }
             };
-            Plotly.newPlot('pnlChart', pnlData, layout);
+            Plotly.newPlot('pnlChart', [{
+                x: pnlData.timestamps,
+                y: pnlData.cumulative_pnl,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Cumulative PnL',
+                line: { color: '#2ecc71', width: 2 }
+            }], layout);
         } else {
-            document.getElementById('pnlChart').innerHTML = '<div class="empty-placeholder">No PnL data to display</div>';
+            const errorMsg = pnlData?.error || 'No PnL data available yet';
+            document.getElementById('pnlChart').innerHTML = '<div class="empty-placeholder">' + errorMsg + '</div>';
         }
 
         // Advanced Market Charts - optimized loading
