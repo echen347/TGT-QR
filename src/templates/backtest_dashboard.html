@@ -561,9 +561,13 @@
                     runSelect.innerHTML = '<option value="">Select a backtest run...</option>';
 
                     data.runs.forEach(run => {
+                        const runDate = new Date(run.created_at).toLocaleDateString();
+                        const runTime = new Date(run.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        const symbolCount = run.symbols.length;
+
                         const option = document.createElement('option');
                         option.value = run.id;
-                        option.textContent = `${run.name} (${run.symbols.join(', ')})`;
+                        option.textContent = `${runDate} ${runTime} - ${symbolCount} symbols`;
                         runSelect.appendChild(option);
                     });
                 })
@@ -583,17 +587,28 @@
                         const symbolSelect = document.getElementById('viz-symbol-select');
                         symbolSelect.innerHTML = '<option value="">Select symbols...</option>';
 
-                        const symbols = [...new Set(data.results.map(r => r.symbol))];
-                        symbols.forEach(symbol => {
+                        if (data.results && data.results.length > 0) {
+                            const symbols = [...new Set(data.results.map(r => r.symbol))];
+                            symbols.forEach(symbol => {
+                                const option = document.createElement('option');
+                                option.value = symbol;
+                                option.textContent = symbol;
+                                symbolSelect.appendChild(option);
+                            });
+                        } else {
                             const option = document.createElement('option');
-                            option.value = symbol;
-                            option.textContent = symbol;
+                            option.value = "";
+                            option.textContent = "No symbols available for this run";
+                            option.disabled = true;
                             symbolSelect.appendChild(option);
-                        });
+                        }
 
                         document.getElementById('generate-viz-btn').disabled = false;
                     })
-                    .catch(error => console.error('Error loading symbols:', error));
+                    .catch(error => {
+                        console.error('Error loading symbols:', error);
+                        document.getElementById('generate-viz-btn').disabled = true;
+                    });
             } else {
                 document.getElementById('generate-viz-btn').disabled = true;
                 document.getElementById('export-charts-btn').disabled = true;
@@ -604,6 +619,17 @@
         document.getElementById('viz-symbol-select').addEventListener('change', function() {
             selectedSymbols = Array.from(this.selectedOptions).map(option => option.value);
             document.getElementById('export-charts-btn').disabled = selectedSymbols.length === 0;
+
+            // Update visual feedback for selected symbols
+            const selectedCount = selectedSymbols.length;
+            const helpText = document.querySelector('#viz-symbol-select + small');
+            if (selectedCount > 0) {
+                helpText.textContent = `${selectedCount} symbol(s) selected - Click Generate to create visualizations`;
+                helpText.style.color = 'var(--primary-color)';
+            } else {
+                helpText.textContent = 'Hold Ctrl/Cmd to select multiple';
+                helpText.style.color = 'var(--text-secondary-color)';
+            }
         });
 
         // Generate visualizations button
