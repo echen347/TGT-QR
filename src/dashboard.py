@@ -512,10 +512,10 @@ def logs_page():
 @app.route('/api/logs')
 def api_logs():
     try:
-        log_file_path = os.path.join(os.path.dirname(__file__), '..', 'logs', 'trading_system.log')
+        log_file_path = os.path.join(os.path.dirname(__file__), '..', 'logs', 'trading.log')
         if not os.path.exists(log_file_path):
             return jsonify({'error': 'Log file not found.'}), 404
-        
+
         with open(log_file_path, 'r') as f:
             # Read the last 200 lines for performance
             lines = f.readlines()[-200:]
