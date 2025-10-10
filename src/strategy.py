@@ -9,7 +9,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from config.config import (
     BYBIT_API_KEY, BYBIT_API_SECRET, BYBIT_TESTNET, SYMBOLS, LEVERAGE,
     MAX_POSITION_USDT, TIMEFRAME, MA_PERIOD, LOG_FILE, LOG_LEVEL,
-    LOG_ROTATION, LOG_RETENTION_DAYS
+    LOG_ROTATION, LOG_RETENTION_DAYS, MIN_TREND_STRENGTH,
+    VOLATILITY_THRESHOLD_HIGH, VOLATILITY_THRESHOLD_LOW
 )
 import logging
 from logging.handlers import TimedRotatingFileHandler
@@ -144,17 +145,19 @@ class MovingAverageStrategy:
         trend_strength = abs(ma_slope) / current_price
 
         # Only trade if trend is reasonably strong (>0.1% per period)
-        if trend_strength < 0.001:  # 0.1% minimum trend strength
+        if trend_strength < MIN_TREND_STRENGTH:  # Use configurable minimum trend strength
             return 0
 
         # Calculate volatility for better signal filtering
         recent_volatility = prices['close'].pct_change().rolling(window=10).std().iloc[-1]
 
         # Adjust thresholds based on volatility
-        if recent_volatility > 0.02:  # High volatility
+        if recent_volatility > VOLATILITY_THRESHOLD_HIGH:  # High volatility
             threshold = 0.003  # 0.3% threshold
-        else:  # Normal volatility
+        elif recent_volatility > VOLATILITY_THRESHOLD_LOW:  # Normal volatility
             threshold = 0.001  # 0.1% threshold
+        else:  # Low volatility
+            threshold = 0.0005  # 0.05% threshold for very calm markets
 
         # Improved signal logic with trend confirmation
         if current_price > ma * (1 + threshold):

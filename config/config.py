@@ -31,9 +31,14 @@ MA_PERIOD = 20  # A shorter MA period will be more sensitive to price changes
 ATR_PERIOD = 14
 
 # Strategy Configuration - MODERATE RISK
-STRATEGY_INTERVAL_MINUTES = 5  # Run strategy every 15 minutes
-MAX_DAILY_LOSS_USDT = 1.00 # Max aggregate loss per day in USDT before pausing trading
-MAX_TOTAL_LOSS_USDT = 3.00 # Max total loss from starting capital before stopping the bot
+STRATEGY_INTERVAL_MINUTES = 15  # Run strategy every 15 minutes
+MAX_DAILY_LOSS_USDT = 0.50 # Max aggregate loss per day in USDT before pausing trading
+MAX_TOTAL_LOSS_USDT = 1.00 # Max total loss from starting capital before stopping the bot
+
+# Signal Filtering - More lenient for live trading vs backtesting
+MIN_TREND_STRENGTH = 0.0005  # Reduced from 0.001 for more trading opportunities
+VOLATILITY_THRESHOLD_HIGH = 0.025  # Increased from 0.02
+VOLATILITY_THRESHOLD_LOW = 0.015   # Increased from 0.01
 
 # Database Configuration
 DATABASE_URL = 'sqlite:///data/trading_data.db'
