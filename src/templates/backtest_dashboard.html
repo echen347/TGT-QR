@@ -209,10 +209,11 @@
                         </select>
                     </div>
                     <div>
-                        <label for="viz-symbol-select">Select Symbol:</label>
-                        <select id="viz-symbol-select" style="width: 100%; padding: 8px; border-radius: 4px; background-color: var(--card-background-color); color: var(--text-color); border: 1px solid var(--border-color);">
-                            <option value="">Select a symbol...</option>
+                        <label for="viz-symbol-select">Select Symbol(s):</label>
+                        <select id="viz-symbol-select" multiple style="width: 100%; padding: 8px; border-radius: 4px; background-color: var(--card-background-color); color: var(--text-color); border: 1px solid var(--border-color); min-height: 120px;">
+                            <option value="">Select symbols...</option>
                         </select>
+                        <small style="color: var(--text-secondary-color); font-size: 0.8em;">Hold Ctrl/Cmd to select multiple</small>
                     </div>
                 </div>
                 <button id="generate-viz-btn" style="padding: 12px 24px; background-color: var(--primary-color); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 1em; margin-right: 10px;" disabled>
@@ -549,7 +550,7 @@
 
         // Backtest Visualization Controls
         let selectedRunId = null;
-        let selectedSymbol = null;
+        let selectedSymbols = [];
 
         // Load backtest runs for visualization selector
         function loadVizRuns() {
@@ -572,7 +573,7 @@
         // Handle run selection change
         document.getElementById('viz-run-select').addEventListener('change', function() {
             selectedRunId = this.value;
-            selectedSymbol = null;
+            selectedSymbols = [];
 
             if (selectedRunId) {
                 // Load symbols for this run
@@ -580,7 +581,7 @@
                     .then(response => response.json())
                     .then(data => {
                         const symbolSelect = document.getElementById('viz-symbol-select');
-                        symbolSelect.innerHTML = '<option value="">Select a symbol...</option>';
+                        symbolSelect.innerHTML = '<option value="">Select symbols...</option>';
 
                         const symbols = [...new Set(data.results.map(r => r.symbol))];
                         symbols.forEach(symbol => {
@@ -599,15 +600,15 @@
             }
         });
 
-        // Handle symbol selection change
+        // Handle symbol selection change (multiple)
         document.getElementById('viz-symbol-select').addEventListener('change', function() {
-            selectedSymbol = this.value;
-            document.getElementById('export-charts-btn').disabled = !selectedSymbol;
+            selectedSymbols = Array.from(this.selectedOptions).map(option => option.value);
+            document.getElementById('export-charts-btn').disabled = selectedSymbols.length === 0;
         });
 
         // Generate visualizations button
         document.getElementById('generate-viz-btn').addEventListener('click', function() {
-            if (!selectedRunId || !selectedSymbol) return;
+            if (!selectedRunId || selectedSymbols.length === 0) return;
 
             const statusDiv = document.getElementById('viz-status');
             const btn = document.getElementById('generate-viz-btn');
@@ -617,27 +618,34 @@
             statusDiv.style.display = 'block';
             statusDiv.style.backgroundColor = 'rgba(157, 114, 255, 0.1)';
             statusDiv.style.border = '1px solid var(--primary-color)';
-            statusDiv.innerHTML = '<i class="fas fa-info-circle"></i> Generating visualizations...';
+            statusDiv.innerHTML = `<i class="fas fa-info-circle"></i> Generating visualizations for ${selectedSymbols.length} symbol(s)...`;
 
-            // Generate visualizations for the selected run and symbol
-            generateBacktestVisualizations(selectedRunId, selectedSymbol);
+            // Generate visualizations for the selected run and symbols
+            generateBacktestVisualizations(selectedRunId, selectedSymbols);
         });
 
-        function generateBacktestVisualizations(runId, symbol) {
+        function generateBacktestVisualizations(runId, symbols) {
             // For now, show placeholder charts - in a real implementation,
             // this would fetch specific backtest data and create detailed visualizations
             setTimeout(() => {
-                createBacktestPriceChart(symbol);
-                createBacktestSignalChart(symbol);
-                createBacktestTradeChart(symbol);
-                createBacktestDrawdownChart(symbol);
+                // Create charts for the first symbol as an example
+                const primarySymbol = symbols[0];
+                createBacktestPriceChart(primarySymbol);
+                createBacktestSignalChart(primarySymbol);
+                createBacktestTradeChart(primarySymbol);
+                createBacktestDrawdownChart(primarySymbol);
+
+                // If multiple symbols selected, show a note
+                if (symbols.length > 1) {
+                    document.getElementById('viz-status').innerHTML += `<br><small>Showing charts for ${primarySymbol}. Select individual symbols for detailed analysis.</small>`;
+                }
 
                 document.getElementById('viz-container').style.display = 'block';
 
                 const statusDiv = document.getElementById('viz-status');
                 statusDiv.style.backgroundColor = 'rgba(46, 204, 113, 0.1)';
                 statusDiv.style.border = '1px solid var(--green-color)';
-                statusDiv.innerHTML = '<i class="fas fa-check-circle"></i> Visualizations generated!';
+                statusDiv.innerHTML = `<i class="fas fa-check-circle"></i> Visualizations generated for ${symbols.length} symbol(s)!`;
 
                 document.getElementById('generate-viz-btn').innerHTML = '<i class="fas fa-magic"></i> Generate Visualizations';
                 document.getElementById('generate-viz-btn').disabled = false;
