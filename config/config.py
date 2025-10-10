@@ -30,10 +30,10 @@ TIMEFRAME = '60'  # 1-hour candles for less noise
 MA_PERIOD = 20  # A shorter MA period will be more sensitive to price changes
 ATR_PERIOD = 14
 
-# Strategy Configuration - CONSERVATIVE RISK
+# Strategy Configuration - ULTRA CONSERVATIVE RISK
 STRATEGY_INTERVAL_MINUTES = 5  # Run strategy every 5 minutes
-MAX_DAILY_LOSS_USDT = 0.30 # Max aggregate loss per day in USDT before pausing trading
-MAX_TOTAL_LOSS_USDT = 0.50 # Max total loss from starting capital before stopping the bot
+MAX_DAILY_LOSS_USDT = 0.20 # Max aggregate loss per day in USDT before pausing trading (10% of $2)
+MAX_TOTAL_LOSS_USDT = 0.20 # Max total loss from starting capital before stopping the bot (10% of $2)
 
 # Signal Filtering - More lenient for live trading vs backtesting
 MIN_TREND_STRENGTH = 0.0005  # Reduced from 0.001 for more trading opportunities
@@ -51,9 +51,9 @@ LOG_BACKUP_COUNT = 5
 LOG_ROTATION = 'daily'  # Daily log rotation for live trading
 LOG_RETENTION_DAYS = 30  # Keep 30 days of logs
 
-# Risk Management - CONSERVATIVE APPROACH
-STOP_LOSS_PCT = 0.015  # 1.5% stop loss (tighter)
-TAKE_PROFIT_PCT = 0.03  # 3% take profit (2:1 reward:risk ratio)
+# Risk Management - ULTRA CONSERVATIVE APPROACH
+STOP_LOSS_PCT = 0.01  # 1% stop loss (very tight)
+TAKE_PROFIT_PCT = 0.02  # 2% take profit (2:1 reward:risk ratio)
 
 # Dashboard Configuration
 DASHBOARD_PORT = 5000
