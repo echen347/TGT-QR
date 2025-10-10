@@ -31,7 +31,7 @@ MA_PERIOD = 20  # A shorter MA period will be more sensitive to price changes
 ATR_PERIOD = 14
 
 # Strategy Configuration - MODERATE RISK
-STRATEGY_INTERVAL_MINUTES = 15  # Run strategy every 15 minutes
+STRATEGY_INTERVAL_MINUTES = 5  # Run strategy every 5 minutes
 MAX_DAILY_LOSS_USDT = 0.50 # Max aggregate loss per day in USDT before pausing trading
 MAX_TOTAL_LOSS_USDT = 1.00 # Max total loss from starting capital before stopping the bot
 

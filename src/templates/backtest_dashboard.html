@@ -579,16 +579,34 @@
         });
 
         function loadBacktestRuns() {
+            const container = document.getElementById('runs-container');
+            if (!container) {
+                console.error('runs-container element not found');
+                return Promise.resolve([]);
+            }
+            
+            container.innerHTML = '<p class="secondary-text"><i class="fas fa-spinner fa-spin"></i> Loading backtest runs...</p>';
+            
             return fetch('/api/backtest_runs')
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
+                    console.log('Loaded backtest data:', data);
+                    if (!data || !data.runs) {
+                        throw new Error('Invalid response format');
+                    }
                     backtestRunsData = data.runs;
                     displayBacktestRuns(backtestRunsData);
                     return backtestRunsData;
                 })
                 .catch(error => {
                     console.error('Error loading runs:', error);
-                    document.getElementById('runs-container').innerHTML = '<p class="secondary-text">Error loading backtest runs. Please refresh.</p>';
+                    container.innerHTML = `<p class="secondary-text" style="color: var(--red-color);"><i class="fas fa-exclamation-triangle"></i> Error loading backtest runs: ${error.message}. <button onclick="loadBacktestRuns()" style="margin-left: 10px; padding: 4px 8px; cursor: pointer;">Retry</button></p>`;
+                    return [];
                 });
         }
 
