@@ -724,6 +724,7 @@
         }
 
         function loadChartData(selectedTicker = '', chartType = 'price') {
+            console.log('loadChartData called with:', selectedTicker, chartType);
             fetch('/api/market_data')
                 .then(response => {
                     if (!response.ok) {
@@ -732,6 +733,7 @@
                     return response.json();
                 })
                 .then(data => {
+                    console.log('API data received:', data);
                     if (!data.labels || data.labels.length === 0) {
                         throw new Error('No chart data available from API');
                     }
@@ -916,7 +918,11 @@
         }
 
         function updateIndicators(indicators) {
-            if (!indicators) return;
+            console.log('updateIndicators called with:', indicators);
+            if (!indicators) {
+                console.log('No indicators data provided');
+                return;
+            }
 
             // Get average or representative values for each indicator
             const symbols = Object.keys(indicators);
