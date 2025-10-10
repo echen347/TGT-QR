@@ -267,8 +267,8 @@ class MovingAverageStrategy:
             for symbol in SYMBOLS:
                 prices = self.get_historical_prices(symbol, MA_PERIOD + 10)
                 if not prices:
-                    self.logger.warning(f"Could not fetch price data for {symbol}. Skipping this cycle.")
-                    return # Exit the entire strategy run if any symbol fails
+                    self.logger.warning(f"Could not fetch price data for {symbol}. Skipping this symbol for now.")
+                    continue # Don't exit, just skip to the next symbol
                     
                 self.price_history[symbol] = prices[-MA_PERIOD:]
                 # Save price data to database
