@@ -102,13 +102,18 @@ class MovingAverageStrategy:
 
         return logger
 
-    def get_historical_prices(self, symbol, limit=100):
-        """Get historical price data"""
+    def get_historical_prices(self, symbol, limit=200):
+        """Get historical price data. Uses get_mark_price_kline for better reliability."""
         try:
-            response = self.session.get_kline(
+            # Calculate start time for the request
+            end_time = int(datetime.now().timestamp() * 1000)
+            start_time = end_time - (limit * 60 * 1000) # limit is in minutes
+
+            response = self.session.get_mark_price_kline(
                 category="linear",
                 symbol=symbol,
                 interval=TIMEFRAME,
+                start=start_time,
                 limit=limit
             )
 
@@ -117,22 +122,13 @@ class MovingAverageStrategy:
                 prices = []
 
                 for kline in reversed(klines):  # Reverse to get chronological order
-                    try:
-                        # Debug: print kline structure
-                        self.logger.debug(f"Kline data: {kline}")
-
-                        prices.append({
-                            'timestamp': datetime.fromtimestamp(int(kline[0]) / 1000),
-                            'open': float(kline[1]),
-                            'high': float(kline[2]),
-                            'low': float(kline[3]),
-                            'close': float(kline[4]),
-                            'volume': float(kline[5])
-                        })
-                    except Exception as e:
-                        self.logger.error(f"Error processing kline {kline}: {str(e)}")
-                        continue
-
+                    prices.append({
+                        'timestamp': datetime.fromtimestamp(int(kline[0]) / 1000),
+                        'open': float(kline[1]),
+                        'high': float(kline[2]),
+                        'low': float(kline[3]),
+                        'close': float(kline[4])
+                    })
                 return prices
             else:
                 self.logger.error(f"Error getting prices for {symbol}: {response['retMsg']}")

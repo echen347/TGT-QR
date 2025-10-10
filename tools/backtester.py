@@ -42,7 +42,14 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 # Ensure the project root is in the Python path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from config.config import BYBIT_TESTNET, SYMBOLS, MA_PERIOD, TIMEFRAME
+
+# Load environment variables from the project root
+dotenv_path = os.path.join(os.path.dirname(__file__), '..', '.env')
+load_dotenv(dotenv_path=dotenv_path)
+
+from config.config import BYBIT_TESTNET, SYMBOLS, MA_PERIOD, TIMEFRAME, LEVERAGE
+from config.config import BYBIT_API_KEY, BYBIT_API_SECRET
+
 
 class Backtester:
     """
@@ -54,45 +61,41 @@ class Backtester:
         self.symbols = symbols
         self.start_date = start_date
         self.end_date = end_date
-        # Force mainnet for historical data fetching
-        self.session = HTTP(testnet=False)
+        # Force mainnet and provide keys for historical data fetching
+        self.session = HTTP(
+            testnet=False,
+            api_key=BYBIT_API_KEY,
+            api_secret=BYBIT_API_SECRET
+        )
         self.historical_data = {}
 
     def fetch_historical_data(self):
         """Fetches historical kline data from Bybit for the given date range."""
         logging.info("Fetching historical data...")
         for symbol in self.symbols:
-            all_klines = []
-            start_ms = int(self.start_date.timestamp() * 1000)
-            end_ms = int(self.end_date.timestamp() * 1000)
-            
-            while start_ms < end_ms:
-                try:
-                    response = self.session.get_kline(
-                        category="linear",
-                        symbol=symbol,
-                        interval=TIMEFRAME,
-                        start=start_ms,
-                        limit=1000  # Max limit per request
-                    )
+            # Using get_mark_price_kline which is more reliable for historical data
+            try:
+                response = self.session.get_mark_price_kline(
+                    category="linear",
+                    symbol=symbol,
+                    interval=TIMEFRAME,
+                    start=int(self.start_date.timestamp() * 1000),
+                    end=int(self.end_date.timestamp() * 1000)
+                )
 
-                    if response['retCode'] == 0 and response['result']['list']:
-                        klines = response['result']['list']
-                        all_klines.extend(klines)
-                        # Move to the next time window
-                        start_ms = int(klines[-1][0]) + (60000) # Add one minute
-                    else:
-                        break # Stop if no more data or error
-                except Exception as e:
-                    logging.error(f"Error fetching data for {symbol}: {e}")
-                    break
-                
-            df = pd.DataFrame(all_klines, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume', 'turnover'])
-            df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
-            df.set_index('timestamp', inplace=True)
-            df = df.astype(float)
-            self.historical_data[symbol] = df.sort_index()
-            logging.info(f"Fetched {len(df)} candles for {symbol} from {df.index.min()} to {df.index.max()}")
+                if response['retCode'] == 0 and response['result']['list']:
+                    klines = response['result']['list']
+                    df = pd.DataFrame(klines, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume', 'turnover'])
+                    df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
+                    df.set_index('timestamp', inplace=True)
+                    df = df.astype(float)
+                    self.historical_data[symbol] = df.sort_index()
+                    logging.info(f"Fetched {len(df)} candles for {symbol} from {df.index.min()} to {df.index.max()}")
+                else:
+                    logging.error(f"Could not fetch data for {symbol}. Response: {response.get('retMsg', 'Unknown Error')}")
+
+            except Exception as e:
+                logging.error(f"An exception occurred while fetching data for {symbol}: {e}")
 
     def _get_signal(self, historical_prices):
         """Calculates the MA signal. Replicates the logic from strategy.py."""
@@ -196,7 +199,7 @@ class Backtester:
             
             # --- Print Results ---
             print("\n" + "="*50)
-            print(f"SYMBOL: {symbol}")
+            print(f"SYMBOL: {symbol} | PERIOD: {self.start_date.strftime('%Y-%m-%d')} to {self.end_date.strftime('%Y-%m-%d')}")
             print("="*50)
             print(f"Total Return:       {total_return_pct:.2f}%")
             print(f"Total Trades:       {total_trades}")
