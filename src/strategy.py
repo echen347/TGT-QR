@@ -220,6 +220,33 @@ class MovingAverageStrategy:
 
         return atr
 
+    def sync_positions_with_bybit(self):
+        """CRITICAL: Sync market_state with actual Bybit positions"""
+        try:
+            positions = self.get_current_positions()
+            self.logger.info(f"🔄 Syncing positions with Bybit: Found {len(positions)} open positions")
+            
+            # Reset all position tracking first
+            for symbol in SYMBOLS:
+                self.market_state[symbol]['position_size'] = 0
+                self.market_state[symbol]['position_value'] = 0
+                self.market_state[symbol]['side'] = 'N/A'
+                self.market_state[symbol]['entry_price'] = 0
+                self.market_state[symbol]['stop_loss'] = 0
+                self.market_state[symbol]['take_profit'] = 0
+            
+            # Update with actual positions
+            for symbol, pos in positions.items():
+                self.market_state[symbol]['position_size'] = pos['position_size']
+                self.market_state[symbol]['position_value'] = pos['position_value']
+                self.market_state[symbol]['side'] = pos['side']
+                self.market_state[symbol]['entry_price'] = pos['entry_price']
+                self.market_state[symbol]['current_price'] = pos['current_price']
+                self.logger.info(f"✅ Synced {symbol}: {pos['side']} {pos['position_size']} contracts")
+                
+        except Exception as e:
+            self.logger.error(f"❌ Failed to sync positions with Bybit: {e}")
+
     def check_exit_conditions(self, symbol, current_price):
         """Check if position should be closed due to stop loss or take profit"""
         if self.market_state[symbol]['position_size'] == 0:
@@ -426,6 +453,10 @@ class MovingAverageStrategy:
                 return
 
             self.logger.info("Running trading strategy...")
+            
+            # CRITICAL: Sync positions with Bybit first
+            self.sync_positions_with_bybit()
+            
             # Check risk management first
             risk_status = self.risk_manager.get_risk_status()
             if not risk_status['can_trade']:
@@ -481,6 +512,10 @@ class MovingAverageStrategy:
                         success = self.place_order(symbol, "Buy", MAX_POSITION_USDT)
                         if success:
                             self.logger.info(f"🚀 LONG position opened for {symbol}")
+                            # Update position tracking
+                            self.market_state[symbol]['position_size'] = MAX_POSITION_USDT
+                            self.market_state[symbol]['side'] = 'Buy'
+                            self.market_state[symbol]['entry_price'] = current_price
                             # Set stop loss and take profit
                             self.set_stop_loss_take_profit(symbol, current_price, MAX_POSITION_USDT, "Buy")
                     else:
@@ -492,6 +527,10 @@ class MovingAverageStrategy:
                         success = self.place_order(symbol, "Sell", MAX_POSITION_USDT)
                         if success:
                             self.logger.info(f"🔻 SHORT position opened for {symbol}")
+                            # Update position tracking
+                            self.market_state[symbol]['position_size'] = -MAX_POSITION_USDT
+                            self.market_state[symbol]['side'] = 'Sell'
+                            self.market_state[symbol]['entry_price'] = current_price
                             # Set stop loss and take profit
                             self.set_stop_loss_take_profit(symbol, current_price, -MAX_POSITION_USDT, "Sell")
                     else:
