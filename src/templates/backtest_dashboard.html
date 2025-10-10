@@ -619,8 +619,7 @@
         function loadDetailedResultsAndCharts(runId, runText) {
             const resultsBody = document.getElementById('results-body');
             resultsBody.innerHTML = '<tr><td colspan="8" style="text-align: center;" class="secondary-text">Loading results...</td></tr>';
-            document.getElementById('results-history-title').innerText = `Results History for: ${runText}`;
-            
+
             // Fetch detailed results for the table
             fetch(`/api/backtest_results?run_id=${runId}`)
                 .then(response => response.json())
