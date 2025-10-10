@@ -291,6 +291,22 @@ def api_clear_backtests():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/api/delete_backtest/<int:run_id>', methods=['DELETE'])
+def api_delete_backtest(run_id):
+    """API endpoint to delete a specific backtest run."""
+    try:
+        # Delete trades first (foreign key constraint)
+        db_manager.session.query(db_manager.BacktestTrade).filter(db_manager.BacktestTrade.run_id == run_id).delete()
+        # Delete results
+        db_manager.session.query(db_manager.BacktestResult).filter(db_manager.BacktestResult.run_id == run_id).delete()
+        # Delete the run
+        db_manager.session.query(db_manager.BacktestRun).filter(db_manager.BacktestRun.id == run_id).delete()
+        db_manager.session.commit()
+        return jsonify({'success': True, 'message': f'Backtest run {run_id} has been deleted.'})
+    except Exception as e:
+        db_manager.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @app.route('/api/backtest_runs')
 def api_backtest_runs():
     """API endpoint for backtest runs"""

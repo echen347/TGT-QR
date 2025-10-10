@@ -469,6 +469,25 @@ class DatabaseManager:
             print(f"Error getting recent prices: {e}")
             return []
 
+    def save_price_data(self, symbol, price, volume):
+        """Save current price data for a symbol"""
+        try:
+            from datetime import datetime
+            price_record = PriceData(
+                symbol=symbol,
+                timestamp=datetime.utcnow(),
+                open_price=price,
+                high_price=price,
+                low_price=price,
+                close_price=price,
+                volume=volume
+            )
+            self.session.add(price_record)
+            self.session.commit()
+        except Exception as e:
+            self.session.rollback()
+            print(f"Error saving price data for {symbol}: {e}")
+
     def get_pnl_summary(self, hours=24):
         """Get PnL summary for the last N hours"""
         try:

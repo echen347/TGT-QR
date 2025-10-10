@@ -289,13 +289,18 @@ class MovingAverageStrategy:
                     ticker_data = ticker_response['result']['list'][0]
                     current_price = float(ticker_data.get('lastPrice', 0))
                     volume_24h = float(ticker_data.get('volume24h', 0))
-                    
+
                     self.market_state[symbol]['price'] = current_price
                     self.market_state[symbol]['volume_24h'] = volume_24h
-                    
+
                     # Update the latest price in our history for consistency
                     if self.price_history[symbol]:
                         self.price_history[symbol][-1]['close'] = current_price
+
+                    # Save current price data to database for main dashboard charts
+                    if current_price > 0:
+                        from datetime import datetime
+                        db_manager.save_price_data(symbol, current_price, volume_24h)
                 else:
                     self.logger.warning(f"Could not fetch ticker data for {symbol}. Using last k-line price.")
                     if self.price_history[symbol]:
