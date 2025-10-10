@@ -19,14 +19,14 @@ SYMBOLS = [
     'AVAXUSDT', 'MATICUSDT', 'LINKUSDT', 'UNIUSDT', 'DOTUSDT'
 ]  # Mix of major and mid-tier coins
 LEVERAGE = 5  # Reduced leverage for better risk management
-MAX_POSITION_USDT = 0.50  # Keep conservative 50¢ per position (leverage handles the rest)
+MAX_POSITION_USDT = 0.10  # 10¢ per position (ultra-conservative for quant research)
 TIMEFRAME = '60'  # 1-hour candles for less noise
 MA_PERIOD = 20  # 20-period MA on 1-hour data
 
 # Strategy Configuration - MODERATE RISK
 STRATEGY_INTERVAL_MINUTES = 15  # Run strategy every 15 minutes
-MAX_DAILY_LOSS_USDT = 1.50  # Maximum daily loss (reasonable for 50¢ positions × 3)
-MAX_TOTAL_LOSS_USDT = 3.00  # Absolute maximum loss before stopping (conservative) 
+MAX_DAILY_LOSS_USDT = 0.20  # Maximum daily loss (conservative for 10¢ positions × 5)
+MAX_TOTAL_LOSS_USDT = 0.50  # Absolute maximum loss before stopping (ultra-conservative) 
 
 # Database Configuration
 DATABASE_URL = 'sqlite:///data/trading_data.db'
@@ -42,7 +42,7 @@ LOG_RETENTION_DAYS = 30  # Keep 30 days of logs
 # Risk Management - BALANCED APPROACH
 STOP_LOSS_PCT = 0.02  # 2% stop loss
 TAKE_PROFIT_PCT = 0.04  # 4% take profit (2:1 reward:risk ratio)
-MAX_POSITIONS = 3  # Allow up to 3 positions at once (diversified risk)
+MAX_POSITIONS = 5  # Allow up to 5 positions at once (broader diversification)
 MIN_VOLUME_USDT = 500000  # Only trade reasonably liquid pairs (500K+ USD volume)
 
 # Dashboard Configuration

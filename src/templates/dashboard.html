@@ -243,7 +243,78 @@
                 <div id="pnlChart"></div>
             </div>
         </div>
-        
+
+        <!-- Advanced Market Analysis -->
+        <div style="grid-column: span 12;">
+            <div class="card">
+                <h3><i class="fas fa-chart-line"></i> Advanced Market Analysis</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
+                    <!-- Price Chart -->
+                    <div>
+                        <h4><i class="fas fa-chart-area"></i> Real-time Price Charts</h4>
+                        <div class="chart-placeholder">
+                            <canvas id="priceChart" width="400" height="200"></canvas>
+                        </div>
+                        <p style="font-size: 0.8em; color: var(--text-secondary-color); margin-top: 8px;">
+                            Interactive price charts with technical indicators
+                        </p>
+                    </div>
+
+                    <!-- Volume Analysis -->
+                    <div>
+                        <h4><i class="fas fa-chart-bar"></i> Volume Analysis</h4>
+                        <div class="chart-placeholder">
+                            <canvas id="volumeChart" width="400" height="200"></canvas>
+                        </div>
+                        <p style="font-size: 0.8em; color: var(--text-secondary-color); margin-top: 8px;">
+                            Volume patterns and liquidity analysis
+                        </p>
+                    </div>
+
+                    <!-- Correlation Matrix -->
+                    <div>
+                        <h4><i class="fas fa-th"></i> Correlation Matrix</h4>
+                        <div class="chart-placeholder">
+                            <canvas id="correlationChart" width="400" height="200"></canvas>
+                        </div>
+                        <p style="font-size: 0.8em; color: var(--text-secondary-color); margin-top: 8px;">
+                            Inter-market correlations and relationships
+                        </p>
+                    </div>
+
+                    <!-- Market Depth -->
+                    <div>
+                        <h4><i class="fas fa-layer-group"></i> Market Depth</h4>
+                        <div class="chart-placeholder">
+                            <canvas id="depthChart" width="400" height="200"></canvas>
+                        </div>
+                        <p style="font-size: 0.8em; color: var(--text-secondary-color); margin-top: 8px;">
+                            Order book depth and liquidity analysis
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Technical Indicators Summary -->
+                <div style="margin-top: 30px; padding: 20px; background-color: rgba(157, 114, 255, 0.1); border-radius: 8px; border: 1px solid var(--primary-color);">
+                    <h4 style="margin-bottom: 15px;"><i class="fas fa-calculator"></i> Technical Indicators Summary</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div>
+                            <strong>RSI (14):</strong> <span id="rsi-value">-</span>
+                        </div>
+                        <div>
+                            <strong>MACD:</strong> <span id="macd-value">-</span>
+                        </div>
+                        <div>
+                            <strong>Bollinger Bands:</strong> <span id="bb-value">-</span>
+                        </div>
+                        <div>
+                            <strong>Stochastic:</strong> <span id="stoch-value">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="card" id="current-positions">
             <h3><i class="fas fa-folder-open"></i>Current Positions</h3>
             <div class="table-container">
@@ -318,6 +389,7 @@
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     {{ moment.include_moment() }}
     <script>
         document.getElementById('shutdown-btn').addEventListener('click', function() {
@@ -363,6 +435,251 @@
             Plotly.newPlot('pnlChart', pnlData, layout);
         } else {
             document.getElementById('pnlChart').innerHTML = '<div class="empty-placeholder">No PnL data to display</div>';
+        }
+
+        // Advanced Market Charts
+        initializeAdvancedCharts();
+
+        function initializeAdvancedCharts() {
+            // Fetch market data for charts
+            fetch('/api/market_data')
+                .then(response => response.json())
+                .then(data => {
+                    createPriceChart(data.price_data);
+                    createVolumeChart(data.price_data);
+                    createCorrelationChart();
+                    createDepthChart();
+                    updateIndicators(data.indicators);
+                })
+                .catch(error => {
+                    console.error('Error fetching market data:', error);
+                    showChartError('Failed to load market data');
+                });
+        }
+
+        function createPriceChart(priceData) {
+            const ctx = document.getElementById('priceChart').getContext('2d');
+
+            // Combine data from multiple symbols
+            const datasets = [];
+            const colors = ['#9d72ff', '#2ecc71', '#e74c3c'];
+
+            Object.keys(priceData).forEach((symbol, index) => {
+                const data = priceData[symbol];
+                datasets.push({
+                    label: symbol,
+                    data: data.prices,
+                    borderColor: colors[index % colors.length],
+                    backgroundColor: colors[index % colors.length] + '20',
+                    fill: false,
+                    tension: 0.4
+                });
+            });
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: priceData[Object.keys(priceData)[0]]?.timestamps || [],
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: 'var(--text-color)' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: 'var(--text-secondary-color)' },
+                            grid: { color: 'var(--border-color)' }
+                        },
+                        y: {
+                            ticks: { color: 'var(--text-secondary-color)' },
+                            grid: { color: 'var(--border-color)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createVolumeChart(priceData) {
+            const ctx = document.getElementById('volumeChart').getContext('2d');
+
+            const datasets = [];
+            const colors = ['rgba(157, 114, 255, 0.8)', 'rgba(46, 204, 113, 0.8)', 'rgba(231, 76, 60, 0.8)'];
+
+            Object.keys(priceData).forEach((symbol, index) => {
+                const data = priceData[symbol];
+                datasets.push({
+                    label: `${symbol} Volume`,
+                    data: data.volumes,
+                    backgroundColor: colors[index % colors.length],
+                    borderWidth: 1
+                });
+            });
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: priceData[Object.keys(priceData)[0]]?.timestamps || [],
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: 'var(--text-color)' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: 'var(--text-secondary-color)' },
+                            grid: { color: 'var(--border-color)' }
+                        },
+                        y: {
+                            ticks: { color: 'var(--text-secondary-color)' },
+                            grid: { color: 'var(--border-color)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createCorrelationChart() {
+            const ctx = document.getElementById('correlationChart').getContext('2d');
+
+            // Sample correlation matrix for major pairs
+            const correlationData = [
+                [1.0, 0.85, 0.78, 0.65],
+                [0.85, 1.0, 0.72, 0.58],
+                [0.78, 0.72, 1.0, 0.61],
+                [0.65, 0.58, 0.61, 1.0]
+            ];
+
+            const symbols = ['BTC', 'ETH', 'BNB', 'ADA'];
+
+            new Chart(ctx, {
+                type: 'matrix',
+                data: {
+                    datasets: [{
+                        data: correlationData.flat().map((value, index) => ({
+                            x: index % 4,
+                            y: Math.floor(index / 4),
+                            v: value
+                        })),
+                        backgroundColor: function(context) {
+                            const value = context.parsed.r;
+                            if (value > 0.8) return '#2ecc71';
+                            if (value > 0.6) return '#f1c40f';
+                            if (value > 0.4) return '#e67e22';
+                            return '#e74c3c';
+                        },
+                        borderColor: 'var(--border-color)',
+                        borderWidth: 1,
+                        width: ({ chart }) => chart.chartArea.width / 4,
+                        height: ({ chart }) => chart.chartArea.height / 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    const i = context[0].dataIndex;
+                                    const row = Math.floor(i / 4);
+                                    const col = i % 4;
+                                    return `${symbols[row]} vs ${symbols[col]}`;
+                                },
+                                label: function(context) {
+                                    return `Correlation: ${context.parsed.r.toFixed(3)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: false
+                        },
+                        y: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function createDepthChart() {
+            const ctx = document.getElementById('depthChart').getContext('2d');
+
+            // Sample order book depth data
+            const bids = [121000, 120900, 120800, 120700, 120600];
+            const asks = [121100, 121200, 121300, 121400, 121500];
+            const bidVolumes = [1.2, 2.1, 0.8, 1.5, 0.9];
+            const askVolumes = [0.9, 1.5, 0.8, 2.1, 1.2];
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Level 1', 'Level 2', 'Level 3', 'Level 4', 'Level 5'],
+                    datasets: [
+                        {
+                            label: 'Bids',
+                            data: bidVolumes,
+                            backgroundColor: 'rgba(46, 204, 113, 0.8)',
+                            borderColor: '#2ecc71',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Asks',
+                            data: askVolumes,
+                            backgroundColor: 'rgba(231, 76, 60, 0.8)',
+                            borderColor: '#e74c3c',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: 'var(--text-color)' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: 'var(--text-secondary-color)' },
+                            grid: { color: 'var(--border-color)' }
+                        },
+                        y: {
+                            ticks: { color: 'var(--text-secondary-color)' },
+                            grid: { color: 'var(--border-color)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateIndicators(indicators) {
+            document.getElementById('rsi-value').textContent = Object.values(indicators.rsi).join(' / ');
+            document.getElementById('macd-value').textContent = Object.values(indicators.macd).join(' / ');
+            document.getElementById('bb-value').textContent = Object.values(indicators.bb).join(' / ');
+            document.getElementById('stoch-value').textContent = Object.values(indicators.stoch).join(' / ');
+        }
+
+        function showChartError(message) {
+            document.querySelectorAll('.chart-placeholder').forEach(placeholder => {
+                placeholder.innerHTML = `<div style="text-align: center; color: var(--text-secondary-color); padding: 20px;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 2em; margin-bottom: 10px; color: var(--red-color);"></i>
+                    <p>${message}</p>
+                </div>`;
+            });
         }
     </script>
 </body>

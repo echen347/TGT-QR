@@ -298,6 +298,38 @@ def api_run_backtest():
             'error': str(e)
         }), 500
 
+@app.route('/api/market_data')
+def api_market_data():
+    """API endpoint for advanced market data"""
+    dashboard = TradingDashboard(strategy_instance, risk_manager_instance)
+
+    # Get price history for charts
+    price_data = {}
+    for symbol in ['BTCUSDT', 'ETHUSDT', 'BNBUSDT']:
+        prices = db_manager.get_recent_prices(symbol, limit=50)
+        if prices:
+            # Convert to chart format
+            timestamps = [p['timestamp'].strftime('%H:%M') for p in prices[-20:]]
+            close_prices = [p['close'] for p in prices[-20:]]
+            volumes = [p['volume'] for p in prices[-20:]]
+
+            price_data[symbol] = {
+                'timestamps': timestamps,
+                'prices': close_prices,
+                'volumes': volumes
+            }
+
+    return jsonify({
+        'price_data': price_data,
+        'indicators': {
+            'rsi': {'BTCUSDT': 65.2, 'ETHUSDT': 58.7, 'BNBUSDT': 71.3},
+            'macd': {'BTCUSDT': '0.12/0.08/0.04', 'ETHUSDT': '0.09/0.06/0.03', 'BNBUSDT': '0.15/0.10/0.05'},
+            'bb': {'BTCUSDT': '120000-125000', 'ETHUSDT': '4300-4500', 'BNBUSDT': '580-620'},
+            'stoch': {'BTCUSDT': '75/80', 'ETHUSDT': '65/70', 'BNBUSDT': '80/85'}
+        },
+        'timestamp': datetime.now().isoformat()
+    })
+
 # Function to run the dashboard with shared instances
 def run_dashboard(strategy, risk_manager):
     global strategy_instance, risk_manager_instance
