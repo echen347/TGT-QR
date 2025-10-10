@@ -259,41 +259,11 @@ def api_backtest_results():
 
     results = db_manager.get_backtest_results(run_id=run_id, limit=500)
 
-    # Calculate summary statistics on the fly
-    summary = {
-        'total_trades': len(results),
-        'pnl': 0,
-        'win_rate': 0,
-        'sharpe_ratio': 0,
-        'max_drawdown': 0,
-        'average_return': 0
-    }
-
-    if results:
-        df = pd.DataFrame(results)
-        
-        # Ensure pnl is numeric
-        df['pnl'] = pd.to_numeric(df['pnl'], errors='coerce').fillna(0)
-
-        summary['pnl'] = round(df['pnl'].sum(), 4)
-        
-        winning_trades = df[df['pnl'] > 0].shape[0]
-        summary['win_rate'] = round((winning_trades / len(df)) * 100, 2) if len(df) > 0 else 0
-        
-        # Use a single, representative value for other metrics from the first record
-        first_result = results[0]
-        summary['sharpe_ratio'] = round(first_result.get('sharpe_ratio', 0), 2)
-        summary['max_drawdown'] = round(first_result.get('max_drawdown', 0) * 100, 2)
-        summary['average_return'] = round(df['pnl'].mean(), 4)
-
-    # Convert all numpy types to native Python types for JSON serialization
-    for key, value in summary.items():
-        if hasattr(value, 'item'):
-            summary[key] = value.item()
+    # The summary is now pre-calculated and fetched with the run list.
+    # This endpoint now only needs to return the detailed results.
 
     return jsonify({
         'results': results,
-        'summary': summary,
         'timestamp': datetime.now().isoformat()
     })
 

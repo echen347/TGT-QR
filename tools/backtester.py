@@ -373,6 +373,7 @@ class Backtester:
         self.signal_data = self._collect_signal_data()
 
         self.calculate_metrics(all_results)
+        self.calculate_and_save_run_summary(all_results)
 
     def _collect_signal_data(self):
         """Collect signal data for visualization"""
@@ -576,6 +577,50 @@ class Backtester:
         if self.run_id:
             db_manager.update_backtest_run_status(self.run_id, 'completed')
             print(f"✅ Backtest run {self.run_id} completed!")
+
+    def calculate_and_save_run_summary(self, all_results):
+        """Calculates the overall summary for the entire run and saves it."""
+        all_trades = pd.concat(all_results.values()).dropna(subset=['pnl'])
+        
+        if all_trades.empty:
+            print("No trades executed in the entire run, cannot generate summary.")
+            return
+
+        total_trades = len(all_trades)
+        pnl_with_leverage = (all_trades['pnl'] * LEVERAGE) + 1
+        
+        # Win Rate
+        wins = all_trades[all_trades['pnl'] > 0]
+        win_rate = (len(wins) / total_trades) * 100 if total_trades > 0 else 0
+        
+        # Overall Sharpe (simplified - should ideally use portfolio returns)
+        daily_returns = all_trades.set_index('exit_date')['pnl'].resample('D').sum() * LEVERAGE
+        sharpe_ratio = (daily_returns.mean() / daily_returns.std()) * np.sqrt(365) if daily_returns.std() > 0 else 0
+
+        # Overall Max Drawdown
+        # This is a simplified calculation. A true portfolio drawdown would track equity curve over time.
+        portfolio_curve = (1 + daily_returns).cumprod()
+        cumulative_max = portfolio_curve.cummax()
+        drawdown = (portfolio_curve - cumulative_max) / cumulative_max
+        max_drawdown = drawdown.min() if not np.isnan(drawdown.min()) else 0
+        
+        summary = {
+            'total_pnl': all_trades['pnl'].sum() * LEVERAGE, # Note: This is a simple sum, not compounded return
+            'total_trades': total_trades,
+            'win_rate': win_rate,
+            'sharpe_ratio': sharpe_ratio,
+            'max_drawdown': max_drawdown,
+            'avg_return': all_trades['pnl'].mean() * LEVERAGE
+        }
+        
+        # Convert numpy types to native python types
+        for key, value in summary.items():
+            if hasattr(value, 'item'):
+                summary[key] = value.item()
+        
+        if self.run_id:
+            print(f"📈 Saving overall run summary for run_id {self.run_id}...")
+            db_manager.update_backtest_run_summary(self.run_id, summary)
 
 
 if __name__ == "__main__":

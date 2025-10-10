@@ -84,6 +84,14 @@ class BacktestRun(Base):
     status = Column(String(20), nullable=False, default='completed')  # running, completed, failed
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
+    # Pre-calculated summary metrics for the entire run
+    total_pnl = Column(Float, nullable=True)
+    total_trades = Column(Integer, nullable=True)
+    win_rate = Column(Float, nullable=True)
+    sharpe_ratio = Column(Float, nullable=True)
+    max_drawdown = Column(Float, nullable=True)
+    avg_return = Column(Float, nullable=True)
+
 class BacktestResult(Base):
     """Store backtest results"""
     __tablename__ = 'backtest_results'
@@ -232,6 +240,22 @@ class DatabaseManager:
             self.session.rollback()
             print(f"Error updating backtest run status: {e}")
 
+    def update_backtest_run_summary(self, run_id, summary):
+        """Update a backtest run with its calculated summary metrics."""
+        try:
+            run = self.session.query(BacktestRun).filter(BacktestRun.id == run_id).first()
+            if run:
+                run.total_pnl = summary.get('total_pnl')
+                run.total_trades = summary.get('total_trades')
+                run.win_rate = summary.get('win_rate')
+                run.sharpe_ratio = summary.get('sharpe_ratio')
+                run.max_drawdown = summary.get('max_drawdown')
+                run.avg_return = summary.get('avg_return')
+                self.session.commit()
+        except Exception as e:
+            self.session.rollback()
+            print(f"Error updating backtest run summary for run_id {run_id}: {e}")
+
     def save_backtest_result(self, run_id, symbol, start_date, end_date, metrics):
         """Save backtest results to database with run_id"""
         try:
@@ -277,7 +301,16 @@ class DatabaseManager:
                 'end_date': r.end_date.strftime('%Y-%m-%d'),
                 'status': r.status,
                 'parameters': json.loads(r.parameters) if r.parameters else {},
-                'created_at': r.created_at.strftime('%Y-%m-%d %H:%M:%S')
+                'created_at': r.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                # Include the pre-calculated summary data
+                'summary': {
+                    'total_pnl': r.total_pnl,
+                    'total_trades': r.total_trades,
+                    'win_rate': r.win_rate,
+                    'sharpe_ratio': r.sharpe_ratio,
+                    'max_drawdown': r.max_drawdown,
+                    'avg_return': r.avg_return
+                }
             } for r in runs]
         except Exception as e:
             print(f"Error getting backtest runs: {e}")

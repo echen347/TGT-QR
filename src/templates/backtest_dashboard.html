@@ -453,77 +453,18 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Backtest functionality
-        document.getElementById('run-backtest-btn').addEventListener('click', function() {
-            const symbols = Array.from(document.getElementById('symbols-select').selectedOptions).map(option => option.value);
-            const days = parseInt(document.getElementById('days-select').value);
+        let backtestRunsData = []; // Cache the runs data
 
-            const statusDiv = document.getElementById('backtest-status');
-            const btn = document.getElementById('run-backtest-btn');
-
-            // Show loading state
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Running...';
-            btn.disabled = true;
-            statusDiv.style.display = 'block';
-            statusDiv.style.backgroundColor = 'rgba(157, 114, 255, 0.1)';
-            statusDiv.style.border = '1px solid var(--primary-color)';
-            statusDiv.innerHTML = '<i class="fas fa-info-circle"></i> Starting backtest...';
-
-            // Run backtest
-            fetch('/api/run_backtest', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    symbols: symbols,
-                    days: days
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    statusDiv.style.backgroundColor = 'rgba(46, 204, 113, 0.1)';
-                    statusDiv.style.border = '1px solid var(--green-color)';
-                    statusDiv.innerHTML = '<i class="fas fa-check-circle"></i> ' + data.message;
-
-                    // Refresh results table
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 2000);
-                } else {
-                    statusDiv.style.backgroundColor = 'rgba(231, 76, 60, 0.1)';
-                    statusDiv.style.border = '1px solid var(--red-color)';
-                    statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error: ' + data.error;
-                }
-
-                // Reset button
-                btn.innerHTML = '<i class="fas fa-play"></i> Run Backtest';
-                btn.disabled = false;
-            })
-            .catch(error => {
-                statusDiv.style.backgroundColor = 'rgba(231, 76, 60, 0.1)';
-                statusDiv.style.border = '1px solid var(--red-color)';
-                statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Network error: ' + error.message;
-
-                // Reset button
-                btn.innerHTML = '<i class="fas fa-play"></i> Run Backtest';
-                btn.disabled = false;
-            });
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBacktestRuns();
         });
-
-        // Load backtest runs and results
-        let currentRunId = null;
 
         function loadBacktestRuns() {
             fetch('/api/backtest_runs')
                 .then(response => response.json())
                 .then(data => {
-                    displayBacktestRuns(data.runs);
-                    if (data.runs.length > 0 && !currentRunId) {
-                        currentRunId = data.runs[0].id;
-                        loadBacktestResults(currentRunId);
-                    }
+                    backtestRunsData = data.runs; // Cache the data
+                    displayBacktestRuns(backtestRunsData);
                 })
                 .catch(error => console.error('Error fetching backtest runs:', error));
         }
@@ -575,68 +516,61 @@
                 card.classList.remove('active-run');
             });
             element.classList.add('active-run');
+            
+            // --- NEW: Instantaneously update summary from cached data ---
+            const selectedRun = backtestRunsData.find(run => run.id == runId);
+            if (selectedRun && selectedRun.summary) {
+                populatePerformanceOverview(selectedRun.summary);
+                populateStrategyInsights(selectedRun.summary);
+            } else {
+                // Fallback for runs without a summary
+                document.getElementById('performance-overview-container').innerHTML = '<p class="secondary-text">No summary data available for this run. Re-run the backtest to generate it.</p>';
+                document.getElementById('strategy-insights-content').innerHTML = '<p class="secondary-text">No insights available for this run.</p>';
+            }
 
-            currentRunId = runId;
-            loadBacktestResults(runId, runName);
+            // --- NEW: Asynchronously load the detailed results table ---
+            loadDetailedResults(runId, runName);
         }
 
-        function loadBacktestResults(runId, runText) {
-            const overviewContainer = document.getElementById('performance-overview-container');
-            const insightsContainer = document.getElementById('strategy-insights-content');
+        function loadDetailedResults(runId, runText) {
             const resultsBody = document.getElementById('results-body');
-
-            // Set loading states
-            overviewContainer.innerHTML = '<p class="secondary-text">Loading Performance Overview...</p>';
-            insightsContainer.innerHTML = '<p class="secondary-text">Loading Strategy Insights...</p>';
             resultsBody.innerHTML = '<tr><td colspan="8" style="text-align: center;" class="secondary-text">Loading results...</td></tr>';
-
-            // Update titles
-            document.getElementById('performance-overview-title').innerText = `Performance Overview for: ${runText}`;
-            document.getElementById('insights-title').innerText = `Strategy Insights for: ${runText}`;
             document.getElementById('results-history-title').innerText = `Results History for: ${runText}`;
             
             fetch(`/api/backtest_results?run_id=${runId}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Network response was not ok: ${response.statusText}`);
-                    }
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
-                    populatePerformanceOverview(data.summary);
-                    populateStrategyInsights(data.summary);
                     populateResultsTable(data.results);
                 })
                 .catch(error => {
-                    console.error('Error fetching backtest results:', error);
-                    overviewContainer.innerHTML = '<p class="error-message">Error loading performance data.</p>';
-                    insightsContainer.innerHTML = '<p class="error-message">Error loading insights data.</p>';
-                    resultsBody.innerHTML = '<tr><td colspan="8" class="error-message">Error loading results.</td></tr>';
+                    console.error('Error fetching detailed results:', error);
+                    resultsBody.innerHTML = '<tr><td colspan="8" class="error-message">Error loading detailed results.</td></tr>';
                 });
         }
 
         function populatePerformanceOverview(summary) {
             const container = document.getElementById('performance-overview-container');
-            if (!summary) {
-                container.innerHTML = '<p class="secondary-text">No summary data available for this run.</p>';
+            // Handle runs that may not have summary data (e.g., old runs)
+            if (!summary || summary.total_pnl === null) {
+                container.innerHTML = '<p class="secondary-text">No summary data available for this run. Re-run the backtest to generate it.</p>';
                 return;
             }
-            const pnlClass = summary.pnl >= 0 ? 'pnl-positive' : 'pnl-negative';
+            const pnlClass = summary.total_pnl >= 0 ? 'pnl-positive' : 'pnl-negative';
             container.innerHTML = `
                 <div class="card-grid">
-                    <div class="metric-card"><h4>Total PnL</h4><p class="${pnlClass}">${summary.pnl} USDT</p></div>
+                    <div class="metric-card"><h4>Total PnL</h4><p class="${pnlClass}">${summary.total_pnl.toFixed(2)} USDT</p></div>
                     <div class="metric-card"><h4>Total Trades</h4><p>${summary.total_trades}</p></div>
-                    <div class="metric-card"><h4>Win Rate</h4><p>${summary.win_rate}%</p></div>
-                    <div class="metric-card"><h4>Avg. Return</h4><p>${summary.average_return} USDT</p></div>
-                    <div class="metric-card"><h4>Sharpe Ratio</h4><p>${summary.sharpe_ratio}</p></div>
-                    <div class="metric-card"><h4>Max Drawdown</h4><p>${summary.max_drawdown}%</p></div>
+                    <div class="metric-card"><h4>Win Rate</h4><p>${summary.win_rate.toFixed(2)}%</p></div>
+                    <div class="metric-card"><h4>Avg. Return</h4><p>${summary.avg_return.toFixed(4)} USDT</p></div>
+                    <div class="metric-card"><h4>Sharpe Ratio</h4><p>${summary.sharpe_ratio.toFixed(2)}</p></div>
+                    <div class="metric-card"><h4>Max Drawdown</h4><p>${(summary.max_drawdown * 100).toFixed(2)}%</p></div>
                 </div>
             `;
         }
 
         function populateStrategyInsights(summary) {
             const container = document.getElementById('strategy-insights-content');
-            if (!summary || summary.total_trades === 0) {
+            if (!summary || summary.total_trades === 0 || summary.win_rate === null) {
                 container.innerHTML = '<p class="secondary-text">Not enough trade data to generate insights.</p>';
                 return;
             }
@@ -645,7 +579,7 @@
             else if (summary.win_rate < 45) insightHtml += '<li><i class="fas fa-exclamation-triangle" style="color: var(--yellow-color);"></i> Low Win Rate: Consider adjusting entry/exit criteria to improve trade success.</li>';
             if (summary.sharpe_ratio > 1) insightHtml += '<li><i class="fas fa-chart-line" style="color: var(--green-color);"></i> Excellent Risk-Adjusted Returns: Good performance for the risk taken.</li>';
             else insightHtml += '<li><i class="fas fa-chart-area" style="color: var(--text-secondary-color);"></i> Moderate Risk-Adjusted Returns: Sharpe Ratio could be improved.</li>';
-            if (summary.max_drawdown > 20) insightHtml += '<li><i class="fas fa-arrow-down" style="color: var(--red-color);"></i> High Drawdown: The strategy experienced significant drawdowns, indicating high risk.</li>';
+            if (summary.max_drawdown * 100 > 20) insightHtml += '<li><i class="fas fa-arrow-down" style="color: var(--red-color);"></i> High Drawdown: The strategy experienced significant drawdowns, indicating high risk.</li>';
             insightHtml += '</ul>';
             container.innerHTML = insightHtml;
         }
@@ -673,17 +607,6 @@
             });
             resultsBody.innerHTML = tableHtml;
         }
-
-        // Load runs on page load
-        loadBacktestRuns();
-
-        // Auto-refresh backtest results every 30 seconds
-        setInterval(function() {
-            if (currentRunId) {
-                loadBacktestResults(currentRunId);
-            }
-            loadBacktestRuns(); // Also refresh runs in case new ones were added
-        }, 30000);
 
         // Backtest Visualization Controls
         let selectedRunId = null;
