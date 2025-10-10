@@ -88,7 +88,7 @@ class Backtester:
                     )
 
                     if response['retCode'] == 0 and response['result']['list']:
-                    klines = response['result']['list']
+                        klines = response['result']['list']
                         all_klines.extend(klines)
                         # The next request starts after the last candle's timestamp
                         start_ms = int(klines[-1][0]) + 60000 # Add one minute in ms
@@ -207,8 +207,8 @@ class Backtester:
             daily_returns = trades_df.set_index('exit_date')['pnl'].resample('D').sum() * LEVERAGE
             if daily_returns.std() > 0:
                 sharpe_ratio = (daily_returns.mean() / daily_returns.std()) * np.sqrt(365)
-        else:
-            sharpe_ratio = 0
+            else:
+                sharpe_ratio = 0
 
             # --- Print Results ---
             print("\n" + "="*50)
