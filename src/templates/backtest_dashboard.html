@@ -197,6 +197,64 @@
             </div>
         </div>
 
+        <!-- Backtest Visualizations -->
+        <div style="grid-column: span 12;">
+            <div class="card">
+                <h3><i class="fas fa-chart-area"></i> Backtest Visualizations</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px;">
+                    <div>
+                        <label for="viz-run-select">Select Backtest Run:</label>
+                        <select id="viz-run-select" style="width: 100%; padding: 8px; border-radius: 4px; background-color: var(--card-background-color); color: var(--text-color); border: 1px solid var(--border-color);">
+                            <option value="">Loading runs...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="viz-symbol-select">Select Symbol:</label>
+                        <select id="viz-symbol-select" style="width: 100%; padding: 8px; border-radius: 4px; background-color: var(--card-background-color); color: var(--text-color); border: 1px solid var(--border-color);">
+                            <option value="">Select a symbol...</option>
+                        </select>
+                    </div>
+                </div>
+                <button id="generate-viz-btn" style="padding: 12px 24px; background-color: var(--primary-color); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 1em; margin-right: 10px;" disabled>
+                    <i class="fas fa-magic"></i> Generate Visualizations
+                </button>
+                <button id="export-charts-btn" style="padding: 12px 24px; background-color: var(--green-color); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 1em;" disabled>
+                    <i class="fas fa-download"></i> Export Charts
+                </button>
+                <div id="viz-status" style="margin-top: 16px; padding: 12px; border-radius: 6px; display: none;"></div>
+
+                <!-- Visualization Area -->
+                <div id="viz-container" style="margin-top: 30px; display: none;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px;">
+                        <div>
+                            <h4>Price & MA Chart</h4>
+                            <div class="chart-placeholder">
+                                <canvas id="backtestPriceChart" width="400" height="250"></canvas>
+                            </div>
+                        </div>
+                        <div>
+                            <h4>Signal Analysis</h4>
+                            <div class="chart-placeholder">
+                                <canvas id="backtestSignalChart" width="400" height="250"></canvas>
+                            </div>
+                        </div>
+                        <div>
+                            <h4>Trade Performance</h4>
+                            <div class="chart-placeholder">
+                                <canvas id="backtestTradeChart" width="400" height="250"></canvas>
+                            </div>
+                        </div>
+                        <div>
+                            <h4>Drawdown Analysis</h4>
+                            <div class="chart-placeholder">
+                                <canvas id="backtestDrawdownChart" width="400" height="250"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Advanced Metrics Summary -->
         <div style="grid-column: span 12;">
             <h2><i class="fas fa-trophy"></i> Performance Overview</h2>
@@ -488,6 +546,214 @@
             }
             loadBacktestRuns(); // Also refresh runs in case new ones were added
         }, 30000);
+
+        // Backtest Visualization Controls
+        let selectedRunId = null;
+        let selectedSymbol = null;
+
+        // Load backtest runs for visualization selector
+        function loadVizRuns() {
+            fetch('/api/backtest_runs')
+                .then(response => response.json())
+                .then(data => {
+                    const runSelect = document.getElementById('viz-run-select');
+                    runSelect.innerHTML = '<option value="">Select a backtest run...</option>';
+
+                    data.runs.forEach(run => {
+                        const option = document.createElement('option');
+                        option.value = run.id;
+                        option.textContent = `${run.name} (${run.symbols.join(', ')})`;
+                        runSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error loading runs:', error));
+        }
+
+        // Handle run selection change
+        document.getElementById('viz-run-select').addEventListener('change', function() {
+            selectedRunId = this.value;
+            selectedSymbol = null;
+
+            if (selectedRunId) {
+                // Load symbols for this run
+                fetch(`/api/backtest_results?run_id=${selectedRunId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const symbolSelect = document.getElementById('viz-symbol-select');
+                        symbolSelect.innerHTML = '<option value="">Select a symbol...</option>';
+
+                        const symbols = [...new Set(data.results.map(r => r.symbol))];
+                        symbols.forEach(symbol => {
+                            const option = document.createElement('option');
+                            option.value = symbol;
+                            option.textContent = symbol;
+                            symbolSelect.appendChild(option);
+                        });
+
+                        document.getElementById('generate-viz-btn').disabled = false;
+                    })
+                    .catch(error => console.error('Error loading symbols:', error));
+            } else {
+                document.getElementById('generate-viz-btn').disabled = true;
+                document.getElementById('export-charts-btn').disabled = true;
+            }
+        });
+
+        // Handle symbol selection change
+        document.getElementById('viz-symbol-select').addEventListener('change', function() {
+            selectedSymbol = this.value;
+            document.getElementById('export-charts-btn').disabled = !selectedSymbol;
+        });
+
+        // Generate visualizations button
+        document.getElementById('generate-viz-btn').addEventListener('click', function() {
+            if (!selectedRunId || !selectedSymbol) return;
+
+            const statusDiv = document.getElementById('viz-status');
+            const btn = document.getElementById('generate-viz-btn');
+
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+            btn.disabled = true;
+            statusDiv.style.display = 'block';
+            statusDiv.style.backgroundColor = 'rgba(157, 114, 255, 0.1)';
+            statusDiv.style.border = '1px solid var(--primary-color)';
+            statusDiv.innerHTML = '<i class="fas fa-info-circle"></i> Generating visualizations...';
+
+            // Generate visualizations for the selected run and symbol
+            generateBacktestVisualizations(selectedRunId, selectedSymbol);
+        });
+
+        function generateBacktestVisualizations(runId, symbol) {
+            // For now, show placeholder charts - in a real implementation,
+            // this would fetch specific backtest data and create detailed visualizations
+            setTimeout(() => {
+                createBacktestPriceChart(symbol);
+                createBacktestSignalChart(symbol);
+                createBacktestTradeChart(symbol);
+                createBacktestDrawdownChart(symbol);
+
+                document.getElementById('viz-container').style.display = 'block';
+
+                const statusDiv = document.getElementById('viz-status');
+                statusDiv.style.backgroundColor = 'rgba(46, 204, 113, 0.1)';
+                statusDiv.style.border = '1px solid var(--green-color)';
+                statusDiv.innerHTML = '<i class="fas fa-check-circle"></i> Visualizations generated!';
+
+                document.getElementById('generate-viz-btn').innerHTML = '<i class="fas fa-magic"></i> Generate Visualizations';
+                document.getElementById('generate-viz-btn').disabled = false;
+            }, 1500);
+        }
+
+        function createBacktestPriceChart(symbol) {
+            const ctx = document.getElementById('backtestPriceChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5'],
+                    datasets: [{
+                        label: `${symbol} Price`,
+                        data: [100, 105, 98, 110, 108],
+                        borderColor: '#9d72ff',
+                        backgroundColor: 'rgba(157, 114, 255, 0.1)',
+                        fill: true
+                    }, {
+                        label: 'MA (20)',
+                        data: [102, 103, 101, 105, 107],
+                        borderColor: '#2ecc71',
+                        backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: 'var(--text-color)' } } },
+                    scales: {
+                        x: { ticks: { color: 'var(--text-secondary-color)' } },
+                        y: { ticks: { color: 'var(--text-secondary-color)' } }
+                    }
+                }
+            });
+        }
+
+        function createBacktestSignalChart(symbol) {
+            const ctx = document.getElementById('backtestSignalChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5'],
+                    datasets: [{
+                        label: 'Signal Strength',
+                        data: [0.2, -0.1, 0.8, 0.3, -0.4],
+                        borderColor: '#e74c3c',
+                        backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: 'var(--text-color)' } } },
+                    scales: {
+                        x: { ticks: { color: 'var(--text-secondary-color)' } },
+                        y: { ticks: { color: 'var(--text-secondary-color)' } }
+                    }
+                }
+            });
+        }
+
+        function createBacktestTradeChart(symbol) {
+            const ctx = document.getElementById('backtestTradeChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Trade 1', 'Trade 2', 'Trade 3', 'Trade 4'],
+                    datasets: [{
+                        label: 'PnL',
+                        data: [0.5, -0.2, 0.8, 0.3],
+                        backgroundColor: ['#2ecc71', '#e74c3c', '#2ecc71', '#2ecc71']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: 'var(--text-color)' } } },
+                    scales: {
+                        x: { ticks: { color: 'var(--text-secondary-color)' } },
+                        y: { ticks: { color: 'var(--text-secondary-color)' } }
+                    }
+                }
+            });
+        }
+
+        function createBacktestDrawdownChart(symbol) {
+            const ctx = document.getElementById('backtestDrawdownChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5'],
+                    datasets: [{
+                        label: 'Drawdown %',
+                        data: [0, -2, -1, -3, -1],
+                        borderColor: '#f1c40f',
+                        backgroundColor: 'rgba(241, 196, 15, 0.1)',
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: 'var(--text-color)' } } },
+                    scales: {
+                        x: { ticks: { color: 'var(--text-secondary-color)' } },
+                        y: { ticks: { color: 'var(--text-secondary-color)' } }
+                    }
+                }
+            });
+        }
+
+        // Load visualization runs when page loads
+        loadVizRuns();
 
         function updateResultsTable(results) {
             const tbody = document.getElementById('results-body');

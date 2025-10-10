@@ -437,25 +437,60 @@
             document.getElementById('pnlChart').innerHTML = '<div class="empty-placeholder">No PnL data to display</div>';
         }
 
-        // Advanced Market Charts
-        initializeAdvancedCharts();
+        // Advanced Market Charts - wait for DOM to be ready and retry if needed
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                initializeAdvancedCharts();
+            }, 100);
+        });
 
+        // Retry chart initialization if it fails initially
+        let chartRetryCount = 0;
         function initializeAdvancedCharts() {
-            // Fetch market data for charts
-            fetch('/api/market_data')
-                .then(response => response.json())
-                .then(data => {
-                    createPriceChart(data.price_data);
-                    createVolumeChart(data.price_data);
-                    createCorrelationChart();
-                    createDepthChart();
-                    updateIndicators(data.indicators);
-                })
-                .catch(error => {
-                    console.error('Error fetching market data:', error);
-                    showChartError('Failed to load market data');
-                });
+            try {
+                // Check if canvas elements exist
+                const canvasElements = ['priceChart', 'volumeChart', 'correlationChart', 'depthChart'];
+                const missingElements = canvasElements.filter(id => !document.getElementById(id));
+
+                if (missingElements.length > 0) {
+                    if (chartRetryCount < 3) {
+                        chartRetryCount++;
+                        setTimeout(initializeAdvancedCharts, 200);
+                        return;
+                    } else {
+                        console.error('Chart canvas elements not found:', missingElements);
+                        return;
+                    }
+                }
+
+                // Fetch market data for charts
+                fetch('/api/market_data')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (!data.price_data || Object.keys(data.price_data).length === 0) {
+                            throw new Error('No price data available');
+                        }
+                        createPriceChart(data.price_data);
+                        createVolumeChart(data.price_data);
+                        createCorrelationChart();
+                        createDepthChart();
+                        updateIndicators(data.indicators);
+                    })
+                    .catch(error => {
+                        console.error('Error initializing charts:', error);
+                        showChartError(`Chart Error: ${error.message}`);
+                    });
+            } catch (error) {
+                console.error('Chart initialization error:', error);
+                showChartError('Failed to initialize charts');
+            }
         }
+
 
         function createPriceChart(priceData) {
             const ctx = document.getElementById('priceChart').getContext('2d');
