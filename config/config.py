@@ -18,7 +18,7 @@ BYBIT_API_SECRET = os.getenv('BYBIT_API_SECRET')
 # List of symbols to trade
 SYMBOLS = [
     'BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'ADAUSDT', 'SOLUSDT', 
-    'XRPUSDT', 'AVAXUSDT', 'MATICUSDT', 'LINKUSDT', 'UNIUSDT', 'DOTUSDT'
+    'XRPUSDT', 'AVAXUSDT', 'LINKUSDT', 'UNIUSDT', 'DOTUSDT'
 ]
 
 # --- Position Sizing & Leverage ---

@@ -150,6 +150,11 @@
             border: 2px solid var(--primary-color);
             box-shadow: 0 0 10px rgba(157, 114, 255, 0.3);
         }
+        .metric-card.run-card.active-run {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 8px rgba(var(--primary-color-rgb), 0.5);
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
@@ -525,46 +530,54 @@
 
         function displayBacktestRuns(runs) {
             const container = document.getElementById('runs-container');
+            if (!container) return;
 
-            if (runs.length === 0) {
+            if (!runs || runs.length === 0) {
                 container.innerHTML = '<p>No backtest runs found. Run a backtest to see results here.</p>';
                 return;
             }
 
-            let html = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-bottom: 20px;">';
-
+            let html = '<div class="card-grid" style="margin-bottom: 20px;">';
             runs.forEach(run => {
                 const statusClass = run.status === 'completed' ? 'status-good' :
                                   run.status === 'running' ? 'status-neutral' : 'status-bad';
-
                 html += `
-                    <div class="metric-card" style="cursor: pointer;" onclick="selectRun(${run.id}, '${run.name}')">
+                    <div class="metric-card run-card" style="cursor: pointer;" data-run-id="${run.id}" data-run-name="${run.name}">
                         <h4>${run.name}</h4>
-                        <p style="font-size: 0.9em; color: var(--text-secondary-color); margin-bottom: 8px;">
-                            ${run.symbols.join(', ')} • ${run.start_date} → ${run.end_date}
+                        <p class="secondary-text">
+                            ${run.symbols.join(', ')}
                         </p>
+                        <p class="secondary-text" style="font-size: 0.8em;">${run.start_date} → ${run.end_date}</p>
                         <span class="status-badge ${statusClass}">${run.status}</span>
-                        <p style="font-size: 0.8em; color: var(--text-secondary-color); margin-top: 8px;">
+                        <p class="secondary-text" style="font-size: 0.8em; margin-top: 8px;">
                             ${run.created_at}
                         </p>
                     </div>
                 `;
             });
-
             html += '</div>';
             container.innerHTML = html;
+
+            document.querySelectorAll('.run-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    selectRun(this);
+                });
+            });
         }
 
-        function selectRun(runId, runText) {
-            currentRunId = runId;
-            loadBacktestResults(runId, runText);
+        function selectRun(element) {
+            if (!element) return;
+            const runId = element.dataset.runId;
+            const runName = element.dataset.runName;
 
-            // This is a simplified visual selection that should work
-            document.querySelectorAll('#runs-container .metric-card').forEach(card => {
-                card.style.border = '1px solid var(--border-color)';
+            // Update visual selection
+            document.querySelectorAll('.run-card').forEach(card => {
+                card.classList.remove('active-run');
             });
-            // This is not ideal, but it will work for now
-            event.currentTarget.style.border = '2px solid var(--primary-color)';
+            element.classList.add('active-run');
+
+            currentRunId = runId;
+            loadBacktestResults(runId, runName);
         }
 
         function loadBacktestResults(runId, runText) {
