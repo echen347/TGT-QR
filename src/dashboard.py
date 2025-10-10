@@ -167,7 +167,7 @@ def dashboard():
     risk = trading_dashboard.get_risk_status()
     system_status = trading_dashboard.get_system_status()
     alerts = trading_dashboard.get_alerts()
-    market_data = trading_dashboard.get_market_data()
+    market_context = trading_dashboard.get_market_data() # Renamed for clarity
 
     return render_template('dashboard.html',
                            pnl_chart=pnl_chart_data,
@@ -176,8 +176,8 @@ def dashboard():
                            risk=risk,
                            system_status=system_status,
                            alerts=alerts,
-                           market_data=market_data,
-                           last_updated=datetime.now())
+                           market_context=market_context, # Pass with the new name
+                           utc_now=datetime.utcnow())
 
 @app.route('/api/status')
 def api_status():

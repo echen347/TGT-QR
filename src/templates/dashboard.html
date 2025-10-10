@@ -245,9 +245,26 @@
                 </div>
             </div>
         </div>
+
+        <!-- Current Market Context -->
+        <div class="card" id="market-context">
+            <h3><i class="fas fa-globe-americas"></i> Current Market Context</h3>
+            <div class="card-grid">
+                {% for symbol, data in market_context.items() %}
+                <div class="card market-card">
+                    <h4>{{ symbol }}</h4>
+                    <p>Price: ${{ "%.2f"|format(data.get('price', 0)) }}</p>
+                    <p>MA (m): ${{ "%.2f"|format(data.get('ma_value', 0)) }}</p>
+                    <p>24h Vol: ${{ "{:,.0f}".format(data.get('volume_24h', 0)) }}</p>
+                    <p>Signal: <span class="signal-{{ data.get('signal', 'NEUTRAL')|string|lower }}">{{ data.get('signal', 'NEUTRAL') }}</span></p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
         
+        <!-- Risk Management -->
         <div class="card" id="risk-management">
-            <h3><i class="fas fa-shield-alt"></i>Risk Management</h3>
+            <h3><i class="fas fa-shield-alt"></i> Risk Management</h3>
             <div class="risk-grid">
                 <div class="risk-item">
                     <p><strong>Max Position:</strong> ${{ "%.2f"|format(risk.max_position_usdt) }}</p>
