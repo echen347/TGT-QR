@@ -396,7 +396,7 @@ def api_market_data():
         
         for symbol in symbols:
             # This is a simplified fetch, ideally this would be cached or more robust
-            klines = db_manager.get_recent_prices(symbol, limit=200) # Fetch last 200 candles
+            klines = db_manager.get_recent_prices(symbol, limit=100) # Fetch last 100 candles for faster loading
             if klines:
                 df = pd.DataFrame(klines)
                 df['timestamp'] = pd.to_datetime(df['timestamp'])
@@ -436,21 +436,34 @@ def api_market_data():
             atr = tr.rolling(window=14, min_periods=1).mean()
             volatility[symbol.replace('USDT', '').lower()] = atr.fillna(0).tolist()
 
-        # 4. MACD Data (using BTC as an example)
-        btc_df = all_data['BTCUSDT']
-        exp1 = btc_df['close'].ewm(span=12, adjust=False).mean()
-        exp2 = btc_df['close'].ewm(span=26, adjust=False).mean()
-        macd_line = exp1 - exp2
-        signal_line = macd_line.ewm(span=9, adjust=False).mean()
+        # 4. MACD Data (calculate for each symbol)
+        macd_data = {}
+        for symbol, df in all_data.items():
+            if len(df) >= 26:  # Need enough data for MACD
+                exp1 = df['close'].ewm(span=12, adjust=False).mean()
+                exp2 = df['close'].ewm(span=26, adjust=False).mean()
+                macd_line = exp1 - exp2
+                signal_line = macd_line.ewm(span=9, adjust=False).mean()
+                macd_data[symbol] = {
+                    'macd': macd_line.fillna(0).tolist(),
+                    'signal': signal_line.fillna(0).tolist()
+                }
+            else:
+                # Default values for insufficient data
+                macd_data[symbol] = {
+                    'macd': [0] * len(df),
+                    'signal': [0] * len(df)
+                }
+
         macd = {
-            'btc_macd': macd_line.fillna(0).tolist(),
-            'btc_signal': signal_line.fillna(0).tolist()
+            'btc_macd': macd_data.get('BTCUSDT', {}).get('macd', [0]),
+            'btc_signal': macd_data.get('BTCUSDT', {}).get('signal', [0])
         }
 
         # 5. Technical Indicators
         indicators = {}
         for symbol, df in all_data.items():
-            if len(df) < 20:  # Need enough data for indicators
+            if len(df) < 14:  # Minimum data for basic calculations
                 indicators[symbol.replace('USDT', '').lower()] = {
                     'rsi': 50,  # Neutral RSI
                     'macd': '0.00/0.00/0.00',
@@ -459,27 +472,37 @@ def api_market_data():
                 }
                 continue
 
-            # RSI Calculation
+            # RSI Calculation (use available window size)
+            window_size = min(14, len(df) - 1)
             delta = df['close'].diff()
-            gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
-            loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
-            rs = gain / loss
+            gain = (delta.where(delta > 0, 0)).rolling(window=window_size).mean()
+            loss = (-delta.where(delta < 0, 0)).rolling(window=window_size).mean()
+
+            # Avoid division by zero
+            rs = gain / loss.replace(0, 1e-10)  # Replace 0 with small value
             rsi = 100 - (100 / (1 + rs.iloc[-1]))
 
-            # Bollinger Bands
-            sma = df['close'].rolling(window=20).mean().iloc[-1]
-            std = df['close'].rolling(window=20).std().iloc[-1]
+            # Bollinger Bands (use available data)
+            bb_window = min(20, len(df))
+            sma = df['close'].rolling(window=bb_window).mean().iloc[-1]
+            std = df['close'].rolling(window=bb_window).std().iloc[-1]
             bb_upper = sma + (std * 2)
             bb_lower = sma - (std * 2)
 
-            # Stochastic Oscillator
-            lowest_low = df['low'].rolling(window=14).min().iloc[-1]
-            highest_high = df['high'].rolling(window=14).max().iloc[-1]
-            stoch_k = 100 * ((df['close'].iloc[-1] - lowest_low) / (highest_high - lowest_low))
+            # Stochastic Oscillator (use available data)
+            stoch_window = min(14, len(df))
+            lowest_low = df['low'].rolling(window=stoch_window).min().iloc[-1]
+            highest_high = df['high'].rolling(window=stoch_window).max().iloc[-1]
+            stoch_k = 100 * ((df['close'].iloc[-1] - lowest_low) / max(highest_high - lowest_low, 1e-10))
+
+            # Get MACD for current symbol
+            symbol_macd = macd_data.get(symbol, {}).get('macd', [0])
+            symbol_signal = macd_data.get(symbol, {}).get('signal', [0])
+            macd_value = f"{symbol_macd[-1]:.2f}/{symbol_signal[-1]:.2f}/{symbol_macd[-1] - symbol_signal[-1]:.2f}" if symbol_macd else '0.00/0.00/0.00'
 
             indicators[symbol.replace('USDT', '').lower()] = {
                 'rsi': round(rsi, 1),
-                'macd': f"{macd['btc_macd'][-1]:.2f}/{macd['btc_signal'][-1]:.2f}/{macd['btc_macd'][-1] - macd['btc_signal'][-1]:.2f}" if symbol == 'BTCUSDT' else '0.00/0.00/0.00',
+                'macd': macd_value,
                 'bb': f"{bb_lower:.0f}-{bb_upper:.0f}",
                 'stoch': f"{stoch_k:.0f}/50"
             }

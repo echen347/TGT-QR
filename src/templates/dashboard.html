@@ -544,12 +544,16 @@
                     <tr>
                         <td><strong>{{ signal.symbol }}</strong></td>
                         <td class="
-                            {% if signal.signal == 1 %}signal-buy
+                            {% if signal.signal == 'STRONG_BUY' %}signal-strong-buy
+                            {% elif signal.signal == 1 %}signal-buy
                             {% elif signal.signal == -1 %}signal-sell
+                            {% elif signal.signal == 'STRONG_SELL' %}signal-strong-sell
                             {% else %}signal-hold{% endif %}
                         ">
-                            {% if signal.signal == 1 %}<i class="fas fa-arrow-up"></i> BUY
+                            {% if signal.signal == 'STRONG_BUY' %}<i class="fas fa-arrow-up"></i> STRONG BUY
+                            {% elif signal.signal == 1 %}<i class="fas fa-arrow-up"></i> BUY
                             {% elif signal.signal == -1 %}<i class="fas fa-arrow-down"></i> SELL
+                            {% elif signal.signal == 'STRONG_SELL' %}<i class="fas fa-arrow-down"></i> STRONG SELL
                             {% else %}<i class="fas fa-pause"></i> HOLD{% endif %}
                         </td>
                         <td>${{ "%.2f"|format(signal.current_price) }}</td>
