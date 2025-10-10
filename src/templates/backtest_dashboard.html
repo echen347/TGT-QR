@@ -455,8 +455,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script>
         let backtestRunsData = []; // Cache the runs data
         let activeCharts = {}; // To hold chart instances
@@ -1365,7 +1363,7 @@
             let cumulativePnl = 1.0;
             const portfolioGrowth = tradeData.map(t => {
                 cumulativePnl *= (1 + t.pnl_pct);
-                return { x: new Date(t.exit_date), y: cumulativePnl };
+                return { x: t.exit_date, y: cumulativePnl };
             });
 
             const growthCtx = document.getElementById('drawdownChart').getContext('2d');
@@ -1383,7 +1381,7 @@
                 },
                 options: {
                     scales: {
-                        x: { type: 'time', time: { unit: 'day' }, ticks: { color: 'var(--text-secondary-color)' } },
+                        x: { ticks: { color: 'var(--text-secondary-color)' } },
                         y: { ticks: { color: 'var(--text-secondary-color)' } }
                     },
                     plugins: { legend: { labels: { color: 'var(--text-color)' } } }
