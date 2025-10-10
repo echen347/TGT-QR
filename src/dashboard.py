@@ -281,12 +281,15 @@ def api_backtest_results():
         summary['win_rate'] = round((winning_trades / len(df)) * 100, 2) if len(df) > 0 else 0
         
         # Use a single, representative value for other metrics from the first record
-        # In a more advanced system, these would be averaged or handled differently
         first_result = results[0]
         summary['sharpe_ratio'] = round(first_result.get('sharpe_ratio', 0), 2)
         summary['max_drawdown'] = round(first_result.get('max_drawdown', 0) * 100, 2)
         summary['average_return'] = round(df['pnl'].mean(), 4)
 
+    # Convert all numpy types to native Python types for JSON serialization
+    for key, value in summary.items():
+        if hasattr(value, 'item'):
+            summary[key] = value.item()
 
     return jsonify({
         'results': results,
