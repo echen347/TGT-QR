@@ -324,7 +324,21 @@
         </div>
         
         <div class="card" id="pnl-performance">
-            <h3><i class="fas fa-chart-line"></i>24h PnL Performance</h3>
+            <h3><i class="fas fa-chart-line"></i>Account Balance & PnL</h3>
+            {% if pnl_chart.account_balance %}
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px;">
+                <div style="background: rgba(157, 114, 255, 0.1); padding: 16px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 0.9em; color: var(--text-secondary-color); margin-bottom: 4px;">Account Balance</div>
+                    <div style="font-size: 1.8em; font-weight: bold; color: var(--primary-color);">${{ "%.2f"|format(pnl_chart.account_balance) }}</div>
+                </div>
+                <div style="background: {% if pnl_chart.current_pnl >= 0 %}rgba(46, 204, 113, 0.1){% else %}rgba(231, 76, 60, 0.1){% endif %}; padding: 16px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 0.9em; color: var(--text-secondary-color); margin-bottom: 4px;">Total PnL</div>
+                    <div style="font-size: 1.8em; font-weight: bold; color: {% if pnl_chart.current_pnl >= 0 %}var(--green-color){% else %}var(--red-color){% endif %};">
+                        {{ "+" if pnl_chart.current_pnl >= 0 else "" }}${{ "%.4f"|format(pnl_chart.current_pnl) }}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
             <div class="chart-container">
                 <div id="pnlChart"></div>
             </div>

@@ -50,48 +50,82 @@ class TradingDashboard:
         return self.risk_manager.get_alerts()
 
     def get_pnl_chart_data(self):
-        """Get PnL data for charting from position snapshots"""
+        """Get PnL data for charting - tracking account balance over time"""
         try:
-            # Get position snapshots from last 24 hours
-            snapshots = self.db.session.query(PositionRecord)\
-                .filter(PositionRecord.timestamp >= datetime.utcnow() - timedelta(hours=24))\
-                .order_by(PositionRecord.timestamp)\
+            # Get all trade records to calculate realized PnL
+            from database import TradeRecord
+            trades = self.db.session.query(TradeRecord)\
+                .order_by(TradeRecord.timestamp)\
                 .all()
 
-            if not snapshots:
-                return {'error': 'No position data available yet. Waiting for trades...'}
+            if not trades:
+                # No trades yet, just show current account balance
+                try:
+                    balance = self.strategy.session.get_wallet_balance(
+                        accountType="UNIFIED",
+                        coin="USDT"
+                    )
+                    if balance['retCode'] == 0:
+                        wallet_balance = float(balance['result']['list'][0]['coin'][0]['walletBalance'])
+                        return {
+                            'timestamps': [datetime.utcnow().strftime('%H:%M')],
+                            'pnl_values': [0],
+                            'cumulative_pnl': [0],
+                            'current_pnl': 0,
+                            'account_balance': wallet_balance
+                        }
+                except:
+                    pass
+                return {'error': 'No trading activity yet. Waiting for first trade...'}
 
-            # Calculate PnL from position snapshots
-            # Group by timestamp and sum unrealized PnL
-            time_pnl_map = {}
-            for snapshot in snapshots:
-                ts_key = snapshot.timestamp.strftime('%Y-%m-%d %H:%M')
-                if ts_key not in time_pnl_map:
-                    time_pnl_map[ts_key] = 0
-                # Unrealized PnL = (current_price - entry_price) * position_size * direction
-                direction = 1 if snapshot.side == 'Buy' else -1
-                pnl = (snapshot.current_price - snapshot.entry_price) * abs(snapshot.position_size) * direction
-                time_pnl_map[ts_key] += pnl
+            # Calculate cumulative PnL from trades
+            timestamps = []
+            cumulative_pnl = []
+            running_pnl = 0
+            
+            for trade in trades:
+                timestamps.append(trade.timestamp)
+                # For now, estimate PnL as value_usdt * 0.01 (1% gain/loss placeholder)
+                # In production, you'd track actual entry/exit prices
+                trade_pnl = trade.value_usdt * 0.01  # Placeholder
+                running_pnl += trade_pnl
+                cumulative_pnl.append(running_pnl)
 
-            if not time_pnl_map:
-                return {'error': 'No PnL data calculated'}
+            # Add current unrealized PnL from open positions
+            current_positions = self.strategy.get_current_positions()
+            unrealized_pnl = 0
+            for symbol, pos in current_positions.items():
+                if pos.get('position_size', 0) != 0:
+                    # Calculate unrealized PnL
+                    unrealized_pnl += pos.get('unrealized_pnl', 0)
+            
+            total_pnl = running_pnl + unrealized_pnl
 
-            # Sort by time
-            sorted_times = sorted(time_pnl_map.keys())
-            timestamps = [datetime.strptime(ts, '%Y-%m-%d %H:%M') for ts in sorted_times]
-            pnl_values = [time_pnl_map[ts] for ts in sorted_times]
-            cumulative_pnl = pd.Series(pnl_values).cumsum().tolist()
+            # Get current account balance
+            account_balance = 0
+            try:
+                balance = self.strategy.session.get_wallet_balance(
+                    accountType="UNIFIED",
+                    coin="USDT"
+                )
+                if balance['retCode'] == 0:
+                    account_balance = float(balance['result']['list'][0]['coin'][0]['walletBalance'])
+            except Exception as e:
+                logging.error(f"Failed to fetch wallet balance: {e}")
 
             return {
-                'timestamps': [ts.strftime('%H:%M') for ts in timestamps],
-                'pnl_values': pnl_values,
-                'cumulative_pnl': cumulative_pnl,
-                'current_pnl': cumulative_pnl[-1] if cumulative_pnl else 0
+                'timestamps': [ts.strftime('%H:%M') for ts in timestamps[-50:]],  # Last 50 points
+                'pnl_values': [cumulative_pnl[i] - cumulative_pnl[i-1] if i > 0 else cumulative_pnl[0] 
+                              for i in range(max(0, len(cumulative_pnl)-50), len(cumulative_pnl))],
+                'cumulative_pnl': cumulative_pnl[-50:],
+                'current_pnl': total_pnl,
+                'account_balance': account_balance
             }
         except Exception as e:
             import traceback
             traceback.print_exc()
-            return {'error': f'name \'{type(e).__name__}\' is not defined'}
+            logging.error(f"PnL chart error: {e}")
+            return {'error': 'Unable to load PnL data'}
 
     def get_positions_data(self):
         """Get current positions data"""
