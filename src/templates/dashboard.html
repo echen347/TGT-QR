@@ -223,6 +223,7 @@
         <div class="card">
             <h3>📡 Recent Signals</h3>
             {% if signals %}
+            <div class="table-container">
             <table class="table">
                 <thead>
                     <tr>
@@ -253,6 +254,7 @@
                     {% endfor %}
                 </tbody>
             </table>
+            </div>
             {% else %}
             <p style="color: #95a5a6; font-style: italic;">No recent signals</p>
             {% endif %}
