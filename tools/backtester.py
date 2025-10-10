@@ -367,7 +367,9 @@ class Backtester:
 
                     trades.append({'entry_date': df.index[i], 'entry_price': entry_price, 'type': 'long'})
 
-            all_results[symbol] = pd.DataFrame(trades)
+            # Only include completed trades (those with exit information)
+            completed_trades = [trade for trade in trades if 'exit_date' in trade]
+            all_results[symbol] = pd.DataFrame(completed_trades) if completed_trades else pd.DataFrame()
         
         # Collect signal data for visualization
         self.signal_data = self._collect_signal_data()
