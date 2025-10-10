@@ -22,8 +22,8 @@ SYMBOLS = [
 ]
 
 # --- Position Sizing & Leverage ---
-MAX_POSITION_USDT = 1.00 # Margin per position (with 10x leverage = $10.00 exposure - exceeds Bybit $5 min)
-LEVERAGE = 10  # 10x leverage: risk $0.50, control $5.00 per position
+MAX_POSITION_USDT = 0.50 # Margin per position (with 11x leverage = $5.50 exposure - exceeds Bybit $5 min)
+LEVERAGE = 11  # 11x leverage: risk $0.50, control $5.50 per position
 MAX_POSITIONS = 5  # Allow up to 5 positions at once (broader diversification)
 MIN_VOLUME_USDT = 200000  # Only trade reasonably liquid pairs (500K+ USD volume)
 TIMEFRAME = '60'  # 1-hour candles for less noise
