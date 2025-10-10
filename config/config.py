@@ -22,9 +22,9 @@ SYMBOLS = [
 ]
 
 # --- Position Sizing & Leverage ---
-MAX_POSITION_USDT = 1.00 # Margin per position (with 5x leverage = $5.00 exposure - meets Bybit minimum)
-LEVERAGE = 5  # Conservative leverage: risk $1.00, control $5.00 per position
-MAX_POSITIONS = 2  # Very conservative - max 2 positions at once
+MAX_POSITION_USDT = 2.00 # Margin per position (with 2.5x leverage = $5.00 exposure - meets Bybit minimum)
+LEVERAGE = 2.5  # Minimal leverage: risk $2.00, control $5.00 per position
+MAX_POSITIONS = 1  # Ultra conservative - max 1 position at once
 MIN_VOLUME_USDT = 200000  # Only trade reasonably liquid pairs (500K+ USD volume)
 TIMEFRAME = '60'  # 1-hour candles for less noise
 MA_PERIOD = 20  # A shorter MA period will be more sensitive to price changes
