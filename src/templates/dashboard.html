@@ -326,16 +326,24 @@
         <div class="card" id="pnl-performance">
             <h3><i class="fas fa-chart-line"></i>Account Balance & PnL</h3>
             {% if pnl_chart.account_balance %}
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px;">
-                <div style="background: rgba(157, 114, 255, 0.1); padding: 16px; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 0.9em; color: var(--text-secondary-color); margin-bottom: 4px;">Account Balance</div>
-                    <div style="font-size: 1.8em; font-weight: bold; color: var(--primary-color);">${{ "%.2f"|format(pnl_chart.account_balance) }}</div>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;">
+                <div style="background: rgba(157, 114, 255, 0.1); padding: 12px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 0.85em; color: var(--text-secondary-color); margin-bottom: 4px;">💰 Balance</div>
+                    <div style="font-size: 1.5em; font-weight: bold; color: var(--primary-color);">${{ "%.2f"|format(pnl_chart.account_balance) }}</div>
                 </div>
-                <div style="background: {% if pnl_chart.current_pnl >= 0 %}rgba(46, 204, 113, 0.1){% else %}rgba(231, 76, 60, 0.1){% endif %}; padding: 16px; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 0.9em; color: var(--text-secondary-color); margin-bottom: 4px;">Total PnL</div>
-                    <div style="font-size: 1.8em; font-weight: bold; color: {% if pnl_chart.current_pnl >= 0 %}var(--green-color){% else %}var(--red-color){% endif %};">
+                <div style="background: {% if pnl_chart.current_pnl >= 0 %}rgba(46, 204, 113, 0.1){% else %}rgba(231, 76, 60, 0.1){% endif %}; padding: 12px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 0.85em; color: var(--text-secondary-color); margin-bottom: 4px;">📊 Total PnL</div>
+                    <div style="font-size: 1.5em; font-weight: bold; color: {% if pnl_chart.current_pnl >= 0 %}var(--green-color){% else %}var(--red-color){% endif %};">
                         {{ "+" if pnl_chart.current_pnl >= 0 else "" }}${{ "%.4f"|format(pnl_chart.current_pnl) }}
                     </div>
+                </div>
+                <div style="background: rgba(52, 152, 219, 0.1); padding: 12px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 0.85em; color: var(--text-secondary-color); margin-bottom: 4px;">🎯 Open Positions</div>
+                    <div style="font-size: 1.5em; font-weight: bold; color: #3498db;">{{ risk.positions_count }}</div>
+                </div>
+                <div style="background: rgba(241, 196, 15, 0.1); padding: 12px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 0.85em; color: var(--text-secondary-color); margin-bottom: 4px;">⚡ Leverage</div>
+                    <div style="font-size: 1.5em; font-weight: bold; color: #f1c40f;">10x</div>
                 </div>
             </div>
             {% endif %}
@@ -525,10 +533,10 @@
                         {% for position in positions %}
                         <tr>
                             <td>{{ position.symbol }}</td>
-                            <td>{{ position.position_size }}</td>
+                            <td>{{ "%.4f"|format(position.size) }} ({{ position.side }})</td>
                             <td>${{ "%.2f"|format(position.entry_price) }}</td>
                             <td>${{ "%.2f"|format(position.current_price) }}</td>
-                            <td class="{{ 'signal-buy' if position.unrealized_pnl >= 0 else 'signal-sell' }}">${{ "%.4f"|format(position.unrealized_pnl) }}</td>
+                            <td class="{{ 'signal-buy' if position.pnl >= 0 else 'signal-sell' }}">${{ "%.4f"|format(position.pnl) }} ({{ "%.2f"|format(position.pnl_pct) }}%)</td>
                         </tr>
                         {% else %}
                         <tr>
@@ -687,6 +695,31 @@
                     if (positionsCount && data.risk) {
                         positionsCount.textContent = data.risk.positions_count;
                     }
+                    
+                    // Update positions table live
+                    if (data.positions) {
+                        const tbody = document.getElementById('positionsTable');
+                        if (tbody) {
+                            if (data.positions.length === 0) {
+                                tbody.innerHTML = '<tr><td colspan="5" class="empty-placeholder">No active positions</td></tr>';
+                            } else {
+                                let html = '';
+                                data.positions.forEach(pos => {
+                                    const pnlClass = pos.pnl >= 0 ? 'signal-buy' : 'signal-sell';
+                                    html += `
+                                        <tr>
+                                            <td>${pos.symbol}</td>
+                                            <td>${pos.size.toFixed(4)} (${pos.side})</td>
+                                            <td>$${pos.entry_price.toFixed(2)}</td>
+                                            <td>$${pos.current_price.toFixed(2)}</td>
+                                            <td class="${pnlClass}">$${pos.pnl.toFixed(4)} (${pos.pnl_pct.toFixed(2)}%)</td>
+                                        </tr>
+                                    `;
+                                });
+                                tbody.innerHTML = html;
+                            }
+                        }
+                    }
                 })
                 .catch(error => console.error('Error updating status:', error));
         }
@@ -703,20 +736,39 @@
         console.log('PnL Data:', pnlData);
         if (pnlData && !pnlData.error && pnlData.cumulative_pnl && pnlData.cumulative_pnl.length > 0) {
             const layout = {
-                xaxis: { title: 'Time' },
-                yaxis: { title: 'PnL (USDT)' },
-                paper_bgcolor: 'transparent',
-                plot_bgcolor: 'transparent',
-                font: { color: 'var(--text-color)' },
-                margin: { l: 40, r: 20, t: 0, b: 30 }
+                xaxis: { 
+                    title: 'Time (EST)',
+                    gridcolor: 'rgba(255, 255, 255, 0.1)',
+                    color: '#c0c0c0'
+                },
+                yaxis: { 
+                    title: 'PnL (USDT)',
+                    gridcolor: 'rgba(255, 255, 255, 0.1)',
+                    color: '#c0c0c0',
+                    zeroline: true,
+                    zerolinecolor: 'rgba(255, 255, 255, 0.3)',
+                    zerolinewidth: 2
+                },
+                paper_bgcolor: 'rgba(60, 60, 70, 0.5)',
+                plot_bgcolor: 'rgba(60, 60, 70, 0.5)',
+                font: { color: '#f0f0f0', size: 12 },
+                margin: { l: 50, r: 20, t: 10, b: 40 },
+                showlegend: false
             };
             Plotly.newPlot('pnlChart', [{
                 x: pnlData.timestamps,
                 y: pnlData.cumulative_pnl,
                 type: 'scatter',
-                mode: 'lines',
+                mode: 'lines+markers',
                 name: 'Cumulative PnL',
-                line: { color: '#2ecc71', width: 2 }
+                line: { 
+                    color: pnlData.current_pnl >= 0 ? '#2ecc71' : '#e74c3c', 
+                    width: 3 
+                },
+                marker: {
+                    color: pnlData.current_pnl >= 0 ? '#2ecc71' : '#e74c3c',
+                    size: 6
+                }
             }], layout);
         } else {
             const errorMsg = pnlData?.error || 'No PnL data available yet';
