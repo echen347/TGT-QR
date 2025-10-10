@@ -494,23 +494,26 @@
             const runBtn = document.getElementById('run-backtest-btn');
             if (runBtn) {
                 runBtn.addEventListener('click', function() {
-                    console.log('Run Backtest button clicked');
                     const symbols = Array.from(document.getElementById('symbols-select').selectedOptions).map(option => option.value);
                     const days = parseInt(document.getElementById('days-select').value);
                     const statusDiv = document.getElementById('backtest-status');
 
-                    console.log('Selected symbols:', symbols, 'Days:', days);
-
                     if (symbols.length === 0) {
                         statusDiv.style.display = 'block';
-                        statusDiv.innerHTML = '<p class="error-message" style="margin-top: 10px; color: var(--red-color);">Please select at least one symbol.</p>';
+                        statusDiv.style.backgroundColor = 'rgba(231, 76, 60, 0.1)';
+                        statusDiv.style.border = '1px solid var(--red-color)';
+                        statusDiv.innerHTML = '<p style="margin: 0; color: var(--red-color);"><i class="fas fa-exclamation-triangle"></i> Please select at least one symbol.</p>';
                         return;
                     }
 
-                    // Show loading state
-                    runBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Running...';
+                    // IMMEDIATE VISUAL FEEDBACK
+                    runBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Running Backtest...';
                     runBtn.disabled = true;
-                    statusDiv.innerHTML = '<p class="secondary-text" style="margin-top: 10px;">Starting backtest... This may take a few minutes.</p>';
+                    runBtn.style.opacity = '0.7';
+                    statusDiv.style.display = 'block';
+                    statusDiv.style.backgroundColor = 'rgba(157, 114, 255, 0.1)';
+                    statusDiv.style.border = '1px solid var(--primary-color)';
+                    statusDiv.innerHTML = '<p style="margin: 0;"><i class="fas fa-spinner fa-spin"></i> Backtest started! Analyzing ' + symbols.length + ' symbol(s) over ' + days + ' days. This may take 1-2 minutes...</p>';
 
                     fetch('/api/run_backtest', {
                         method: 'POST',
@@ -579,83 +582,62 @@
             return fetch('/api/backtest_runs')
                 .then(response => response.json())
                 .then(data => {
-                    backtestRunsData = data.runs; // Cache the data
+                    backtestRunsData = data.runs;
                     displayBacktestRuns(backtestRunsData);
-                    console.log('Loaded', backtestRunsData.length, 'backtest runs');
                     return backtestRunsData;
                 })
                 .catch(error => {
-                    console.error('Error fetching backtest runs:', error);
-                    document.getElementById('runs-container').innerHTML = '<p class="secondary-text">Error loading backtest runs. Please refresh the page.</p>';
+                    console.error('Error loading runs:', error);
+                    document.getElementById('runs-container').innerHTML = '<p class="secondary-text">Error loading backtest runs. Please refresh.</p>';
                 });
         }
 
         function displayBacktestRuns(runs) {
             const container = document.getElementById('runs-container');
-            if (!container) {
-                console.error('runs-container element not found');
-                return;
-            }
-
-            console.log('Displaying', runs ? runs.length : 0, 'backtest runs');
+            if (!container) return;
 
             if (!runs || runs.length === 0) {
                 container.innerHTML = '<p class="secondary-text">No backtest runs found. Run a backtest to see results here.</p>';
                 return;
             }
 
-            try {
-                let html = '<div class="card-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-bottom: 20px;">';
-                runs.forEach(run => {
-                    const statusClass = run.status === 'completed' ? 'status-good' :
-                                      run.status === 'running' ? 'status-neutral' : 'status-bad';
-                    html += `
-                        <div class="metric-card run-card" style="cursor: pointer; position: relative;" data-run-id="${run.id}" data-run-name="${run.name}">
-                            <button class="delete-run-btn" data-run-id="${run.id}" style="position: absolute; top: 10px; right: 10px; background: var(--red-color); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 14px; z-index: 10;">×</button>
-                            <h4 style="margin: 0 0 8px 0;">${run.name}</h4>
-                            <p class="secondary-text" style="font-size: 0.85em; margin: 4px 0;">
-                                ${run.symbols.join(', ')}
-                            </p>
-                            <p class="secondary-text" style="font-size: 0.8em; margin: 4px 0;">${run.start_date} → ${run.end_date}</p>
-                            <span class="status-badge ${statusClass}">${run.status}</span>
-                            <p class="secondary-text" style="font-size: 0.75em; margin: 8px 0 0 0;">
-                                ${run.created_at}
-                            </p>
-                        </div>
-                    `;
+            let html = '<div class="card-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-bottom: 20px;">';
+            runs.forEach(run => {
+                const statusClass = run.status === 'completed' ? 'status-good' :
+                                  run.status === 'running' ? 'status-neutral' : 'status-bad';
+                html += `
+                    <div class="metric-card run-card" style="cursor: pointer; position: relative;" data-run-id="${run.id}" data-run-name="${run.name}">
+                        <button class="delete-run-btn" data-run-id="${run.id}" style="position: absolute; top: 10px; right: 10px; background: var(--red-color); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 14px; z-index: 10;">×</button>
+                        <h4 style="margin: 0 0 8px 0;">${run.name}</h4>
+                        <p class="secondary-text" style="font-size: 0.85em; margin: 4px 0;">
+                            ${run.symbols.join(', ')}
+                        </p>
+                        <p class="secondary-text" style="font-size: 0.8em; margin: 4px 0;">${run.start_date} → ${run.end_date}</p>
+                        <span class="status-badge ${statusClass}">${run.status}</span>
+                        <p class="secondary-text" style="font-size: 0.75em; margin: 8px 0 0 0;">
+                            ${run.created_at}
+                        </p>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+
+            // Attach click handlers for run cards
+            document.querySelectorAll('.run-card').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    if (e.target.classList.contains('delete-run-btn')) return;
+                    selectRun(this);
                 });
-                html += '</div>';
-                container.innerHTML = html;
+            });
 
-                console.log('HTML rendered, attaching event listeners');
-
-                // Attach click handlers for run cards
-                document.querySelectorAll('.run-card').forEach(card => {
-                    card.addEventListener('click', function(e) {
-                        // Don't trigger card click if delete button was clicked
-                        if (e.target.classList.contains('delete-run-btn')) {
-                            return;
-                        }
-                        console.log('Run card clicked:', this.dataset.runId);
-                        selectRun(this);
-                    });
+            // Attach click handlers for delete buttons
+            document.querySelectorAll('.delete-run-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    deleteBacktestRun(this.dataset.runId);
                 });
-
-                // Attach click handlers for delete buttons
-                document.querySelectorAll('.delete-run-btn').forEach(btn => {
-                    btn.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        const runId = this.dataset.runId;
-                        console.log('Delete button clicked for run:', runId);
-                        deleteBacktestRun(runId);
-                    });
-                });
-
-                console.log('Event listeners attached successfully');
-            } catch (error) {
-                console.error('Error displaying backtest runs:', error);
-                container.innerHTML = '<p class="secondary-text" style="color: var(--red-color);">Error displaying backtest runs. Check console for details.</p>';
-            }
+            });
         }
 
         function selectRun(element) {
