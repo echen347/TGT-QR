@@ -106,6 +106,12 @@
         .market-card h4 { margin: 0 0 10px 0; }
         .market-card p { margin: 6px 0; font-size: 0.95em; }
 
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
         .table-container { flex-grow: 1; overflow-x: auto; }
         table {
             width: 100%;
@@ -170,6 +176,7 @@
             align-items: center;
             gap: 10px;
             margin-top: 15px;
+            flex-wrap: wrap;
         }
 
         #reset-stop-btn {
