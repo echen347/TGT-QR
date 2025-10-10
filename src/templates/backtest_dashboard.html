@@ -538,7 +538,7 @@
                                   run.status === 'running' ? 'status-neutral' : 'status-bad';
 
                 html += `
-                    <div class="metric-card" style="cursor: pointer;" onclick="selectRun(this, ${run.id}, '${run.name}')">
+                    <div class="metric-card" style="cursor: pointer;" onclick="selectRun(${run.id}, '${run.name}')">
                         <h4>${run.name}</h4>
                         <p style="font-size: 0.9em; color: var(--text-secondary-color); margin-bottom: 8px;">
                             ${run.symbols.join(', ')} • ${run.start_date} → ${run.end_date}
@@ -555,15 +555,16 @@
             container.innerHTML = html;
         }
 
-        function selectRun(element, runId, runText) {
+        function selectRun(runId, runText) {
             currentRunId = runId;
             loadBacktestResults(runId, runText);
 
-            // Update visual selection
+            // This is a simplified visual selection that should work
             document.querySelectorAll('#runs-container .metric-card').forEach(card => {
-                card.classList.remove('active-run');
+                card.style.border = '1px solid var(--border-color)';
             });
-            element.classList.add('active-run');
+            // This is not ideal, but it will work for now
+            event.currentTarget.style.border = '2px solid var(--primary-color)';
         }
 
         function loadBacktestResults(runId, runText) {
