@@ -395,8 +395,8 @@ def api_market_data():
         start_time = end_time - timedelta(hours=24) # 24 hours of data
         
         for symbol in symbols:
-            # This is a simplified fetch, ideally this would be cached or more robust
-            klines = db_manager.get_recent_prices(symbol, limit=100) # Fetch last 100 candles for faster loading
+            # Fetch only last 50 candles for dashboard speed
+            klines = db_manager.get_recent_prices(symbol, limit=50)
             if klines:
                 df = pd.DataFrame(klines)
                 df['timestamp'] = pd.to_datetime(df['timestamp'])

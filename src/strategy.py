@@ -300,10 +300,14 @@ class MovingAverageStrategy:
                     if self.price_history[symbol]:
                         self.price_history[symbol][-1]['close'] = current_price
 
-                    # Save current price data to database for main dashboard charts
-                    if current_price > 0:
-                        from datetime import datetime
-                        db_manager.save_price_data(symbol, current_price, volume_24h)
+                    # Save current price data to database for main dashboard charts (only if changed significantly)
+                    if current_price > 0 and len(self.price_history[symbol]) > 0:
+                        last_saved_price = self.market_state[symbol].get('last_saved_price', 0)
+                        # Only save if price changed by more than 0.1% to reduce DB writes
+                        if abs(current_price - last_saved_price) / max(last_saved_price, 0.01) > 0.001:
+                            from datetime import datetime
+                            db_manager.save_price_data(symbol, current_price, volume_24h)
+                            self.market_state[symbol]['last_saved_price'] = current_price
                 else:
                     self.logger.warning(f"Could not fetch ticker data for {symbol}. Using last k-line price.")
                     if self.price_history[symbol]:
@@ -449,7 +453,9 @@ class MovingAverageStrategy:
                 positions = self.get_current_positions()
                 current_position = positions.get(symbol, {'position_size': 0, 'position_value': 0, 'side': 'N/A'})
 
-                self.logger.info(f"📊 {symbol}: Price=${current_price:.2f}, MA=${ma_value:.2f}, Signal='{self.market_state[symbol]['signal']}', Position={current_position['position_size']} ({current_position['side']})")
+                # Only log if signal is not NEUTRAL or we have a position
+                if self.market_state[symbol]['signal'] != 'NEUTRAL' or current_position['position_size'] > 0:
+                    self.logger.info(f"📊 {symbol}: Price=${current_price:.2f}, MA=${ma_value:.2f}, Signal='{self.market_state[symbol]['signal']}', Position={current_position['position_size']} ({current_position['side']})")
 
                 # Check if we should exit current position due to stop loss/take profit
                 should_exit, exit_side = self.check_exit_conditions(symbol, current_price)
@@ -524,25 +530,24 @@ class MovingAverageStrategy:
         return self.market_state
         
     def log_trading_state(self):
-        """Log the current state of all tracked symbols and risk"""
-        self.logger.info("📈 TRADING STATE SUMMARY")
-        self.logger.info("----------------------------------------")
-        for symbol in SYMBOLS:
-            state = self.market_state.get(symbol, {})
-            price = state.get('price', 0)
-            ma = state.get('ma_value', 0)
-            signal = state.get('signal', 'N/A')
-            pos_size = state.get('position_size', 0)
-            
-            self.logger.info(f"  {symbol}: Price=${price:.2f}, MA=${ma:.2f}, Signal='{signal}', Position={pos_size}")
-        self.logger.info("----------------------------------------")
-        self.logger.info("🛡️ RISK STATUS")
+        """Log the current state - only show active signals/positions"""
+        # Only log symbols with signals or positions
+        active_symbols = [s for s in SYMBOLS if self.market_state.get(s, {}).get('signal', 'NEUTRAL') != 'NEUTRAL' 
+                         or self.market_state.get(s, {}).get('position_size', 0) > 0]
+        
+        if active_symbols:
+            self.logger.info("📈 ACTIVE SIGNALS/POSITIONS")
+            for symbol in active_symbols:
+                state = self.market_state.get(symbol, {})
+                price = state.get('price', 0)
+                ma = state.get('ma_value', 0)
+                signal = state.get('signal', 'N/A')
+                pos_size = state.get('position_size', 0)
+                self.logger.info(f"  {symbol}: Price=${price:.2f}, MA=${ma:.2f}, Signal='{signal}', Position={pos_size}")
+        
+        # Always log risk status
         risk_status = self.risk_manager.get_risk_status()
-        self.logger.info(f"  Daily Loss: ${risk_status['daily_loss']:.4f}/${risk_status['max_daily_loss_usdt']:.2f}")
-        self.logger.info(f"  Total Loss: ${risk_status['total_loss']:.4f}/${risk_status['max_total_loss_usdt']:.2f}")
-        self.logger.info(f"  Active Positions: {risk_status['positions_count']}/{risk_status['max_positions']}")
-        self.logger.info(f"  Emergency Stopped: {risk_status['is_stopped']}")
-        self.logger.info("----------------------------------------")
+        self.logger.info(f"🛡️ Risk: Daily ${risk_status['daily_loss']:.2f}/${risk_status['max_daily_loss_usdt']:.2f} | Positions: {risk_status['positions_count']}/{risk_status['max_positions']}")
 
 # Create a global, shared instance of the strategy AFTER the class is defined
 # strategy = MovingAverageStrategy()
