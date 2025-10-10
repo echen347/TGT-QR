@@ -6,7 +6,11 @@ from pybit.unified_trading import HTTP
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from config.config import *
+from config.config import (
+    BYBIT_API_KEY, BYBIT_API_SECRET, BYBIT_TESTNET, SYMBOLS, LEVERAGE,
+    MAX_POSITION_USDT, TIMEFRAME, MA_PERIOD, LOG_FILE, LOG_LEVEL,
+    LOG_ROTATION, LOG_RETENTION_DAYS
+)
 import logging
 from logging.handlers import TimedRotatingFileHandler
 from database import db_manager
