@@ -332,9 +332,17 @@ def api_run_backtest():
             return jsonify({'success': False, 'error': 'Failed to create a backtest run in the database.'}), 500
 
         try:
-            # The backtester's run method will handle fetching, simulation, and saving results.
+            # The backtester's run method will handle creating the run record,
+            # fetching, simulation, and saving results.
             backtester.run()
-            return jsonify({'success': True, 'run_id': backtester.run_id, 'message': f'Backtest completed for run ID {backtester.run_id}.'})
+            
+            # After a successful run, return the run_id
+            if backtester.run_id:
+                return jsonify({'success': True, 'run_id': backtester.run_id, 'message': f'Backtest completed for run ID {backtester.run_id}.'})
+            else:
+                # This case should ideally not be hit if run() completes without error
+                return jsonify({'success': False, 'error': 'Backtest ran but failed to return a run ID.'}), 500
+
         except Exception as e:
             # If any part of the backtest run fails, update the status to 'failed'
             if backtester.run_id:
