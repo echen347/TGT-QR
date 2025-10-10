@@ -322,17 +322,19 @@ class MovingAverageStrategy:
                     self.market_state[symbol] = {'price': 0, 'ma_value': 0, 'signal': 'NEUTRAL', 'volume_24h': 0}
 
     def close_position(self, symbol, side, size):
-        """Places a closing order for a specific position using base currency size."""
+        """Places a closing order for a specific position using USDT amount."""
         try:
-            self.logger.info(f"Attempting to place closing order for {symbol}: {side} {size}")
+            # Calculate USDT value for the position
+            position_value = abs(size)  # Use absolute size for USDT calculation
+            self.logger.info(f"Attempting to place closing order for {symbol}: {side} {position_value} USDT")
             response = self.session.place_order(
                 category="linear",
                 symbol=symbol,
                 side=side,
                 orderType="Market",
-                qty=str(size),
+                qty=str(position_value),
                 reduceOnly=True,
-                marketUnit="baseCurrency"
+                marketUnit="quoteCurrency"
             )
             if response.get('retCode') == 0:
                 self.logger.info(f"Successfully placed closing order for {symbol} of size {size}.")
