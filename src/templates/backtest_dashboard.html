@@ -538,7 +538,7 @@
                                   run.status === 'running' ? 'status-neutral' : 'status-bad';
 
                 html += `
-                    <div class="metric-card" style="cursor: pointer;" onclick="selectRun(${run.id}, '${run.name}')">
+                    <div class="metric-card" style="cursor: pointer;" onclick="selectRun(event, ${run.id}, '${run.name}')">
                         <h4>${run.name}</h4>
                         <p style="font-size: 0.9em; color: var(--text-secondary-color); margin-bottom: 8px;">
                             ${run.symbols.join(', ')} • ${run.start_date} → ${run.end_date}
@@ -555,7 +555,7 @@
             container.innerHTML = html;
         }
 
-        function selectRun(runId, runText) {
+        function selectRun(event, runId, runText) {
             currentRunId = runId;
             loadBacktestResults(runId, runText);
 
