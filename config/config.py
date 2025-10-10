@@ -22,18 +22,18 @@ SYMBOLS = [
 ]
 
 # --- Position Sizing & Leverage ---
-MAX_POSITION_USDT = 0.50 # Margin per position (with 11x leverage = $5.50 exposure - exceeds Bybit $5 min)
-LEVERAGE = 11  # 11x leverage: risk $0.50, control $5.50 per position
-MAX_POSITIONS = 5  # Allow up to 5 positions at once (broader diversification)
+MAX_POSITION_USDT = 0.50 # Margin per position (with 10x leverage = $5.00 exposure - meets Bybit minimum)
+LEVERAGE = 10  # Conservative leverage: risk $0.50, control $5.00 per position
+MAX_POSITIONS = 2  # Very conservative - max 2 positions at once
 MIN_VOLUME_USDT = 200000  # Only trade reasonably liquid pairs (500K+ USD volume)
 TIMEFRAME = '60'  # 1-hour candles for less noise
 MA_PERIOD = 20  # A shorter MA period will be more sensitive to price changes
 ATR_PERIOD = 14
 
-# Strategy Configuration - MODERATE RISK
+# Strategy Configuration - CONSERVATIVE RISK
 STRATEGY_INTERVAL_MINUTES = 5  # Run strategy every 5 minutes
-MAX_DAILY_LOSS_USDT = 0.50 # Max aggregate loss per day in USDT before pausing trading
-MAX_TOTAL_LOSS_USDT = 1.00 # Max total loss from starting capital before stopping the bot
+MAX_DAILY_LOSS_USDT = 0.30 # Max aggregate loss per day in USDT before pausing trading
+MAX_TOTAL_LOSS_USDT = 0.50 # Max total loss from starting capital before stopping the bot
 
 # Signal Filtering - More lenient for live trading vs backtesting
 MIN_TREND_STRENGTH = 0.0005  # Reduced from 0.001 for more trading opportunities
@@ -51,9 +51,9 @@ LOG_BACKUP_COUNT = 5
 LOG_ROTATION = 'daily'  # Daily log rotation for live trading
 LOG_RETENTION_DAYS = 30  # Keep 30 days of logs
 
-# Risk Management - BALANCED APPROACH
-STOP_LOSS_PCT = 0.02  # 2% stop loss
-TAKE_PROFIT_PCT = 0.04  # 4% take profit (2:1 reward:risk ratio)
+# Risk Management - CONSERVATIVE APPROACH
+STOP_LOSS_PCT = 0.015  # 1.5% stop loss (tighter)
+TAKE_PROFIT_PCT = 0.03  # 3% take profit (2:1 reward:risk ratio)
 
 # Dashboard Configuration
 DASHBOARD_PORT = 5000
