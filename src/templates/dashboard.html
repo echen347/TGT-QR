@@ -680,13 +680,11 @@
         // Advanced Market Charts - optimized loading
         let chartsInitialized = false;
         document.addEventListener('DOMContentLoaded', function() {
-            // Load charts after a short delay to ensure DOM is ready
-            setTimeout(function() {
-                if (!chartsInitialized) {
-                    initializeAdvancedCharts();
-                    chartsInitialized = true;
-                }
-            }, 200);
+            // Load charts immediately on page load
+            if (!chartsInitialized) {
+                initializeAdvancedCharts();
+                chartsInitialized = true;
+            }
 
             // Add event listener for update charts button
             const updateBtn = document.getElementById('update-charts-btn');
@@ -714,10 +712,8 @@
                     return;
                 }
 
-                // Use a timeout to avoid blocking the main thread
-                setTimeout(() => {
-                    loadChartData();
-                }, 100);
+                // Load charts and indicators immediately
+                loadChartData();
             } catch (error) {
                 console.error('Chart initialization error:', error);
                 showChartError('Failed to initialize charts');
