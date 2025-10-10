@@ -597,18 +597,33 @@ class Backtester:
 
     def calculate_and_save_run_summary(self, all_results):
         """Calculates the overall summary for the entire run and saves it."""
-        all_trades = pd.concat(all_results.values()).dropna(subset=['pnl'])
+        logging.info(f"Calculating and saving summary for Run ID: {self.run_id}...")
         
-        if all_trades.empty:
-            print("No trades executed in the entire run, cannot generate summary.")
+        # Ensure there are results to process
+        if not all_results:
+            logging.warning("No results found to generate a summary.")
+            self.db_manager.update_backtest_run_summary(self.run_id, 0, 0, 0, 0, 0, 0)
             return
 
+        # Filter out empty DataFrames before concatenation
+        valid_results = [df for df in all_results.values() if not df.empty]
+
+        if not valid_results:
+            logging.info("Backtest resulted in no trades across all symbols.")
+            self.db_manager.update_backtest_run_summary(self.run_id, 0, 0, 0, 0, 0, 0)
+            return
+
+        all_trades = pd.concat(valid_results)
+
+        # Final check if the concatenated frame is empty or lacks the 'pnl' column
+        if all_trades.empty or 'pnl' not in all_trades.columns:
+            logging.info("Concatenated trades DataFrame is empty or missing 'pnl' column.")
+            self.db_manager.update_backtest_run_summary(self.run_id, 0, 0, 0, 0, 0, 0)
+            return
+
+        total_pnl = all_trades['pnl'].sum()
         total_trades = len(all_trades)
-        pnl_with_leverage = (all_trades['pnl'] * LEVERAGE) + 1
-        
-        # Win Rate
-        wins = all_trades[all_trades['pnl'] > 0]
-        win_rate = (len(wins) / total_trades) * 100 if total_trades > 0 else 0
+        win_rate = (all_trades['pnl'] > 0).sum() / total_trades if total_trades > 0 else 0
         
         # Overall Sharpe (simplified - should ideally use portfolio returns)
         daily_returns = all_trades.set_index('exit_date')['pnl'].resample('D').sum() * LEVERAGE
@@ -622,7 +637,7 @@ class Backtester:
         max_drawdown = drawdown.min() if not np.isnan(drawdown.min()) else 0
         
         summary = {
-            'total_pnl': all_trades['pnl'].sum() * LEVERAGE, # Note: This is a simple sum, not compounded return
+            'total_pnl': total_pnl, # Note: This is a simple sum, not compounded return
             'total_trades': total_trades,
             'win_rate': win_rate,
             'sharpe_ratio': sharpe_ratio,
