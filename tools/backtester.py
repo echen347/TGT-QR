@@ -67,6 +67,7 @@ class Backtester:
     """
 
     def __init__(self, symbols, start_date, end_date, run_name=None, run_description=None):
+        self.db_manager = db_manager # Initialize db_manager
         self.symbols = symbols
         self.start_date = start_date
         self.end_date = end_date
@@ -248,7 +249,7 @@ class Backtester:
     def run(self):
         """Runs the backtest and prints the results."""
         # Create backtest run record
-        self.run_id = db_manager.create_backtest_run(
+        self.run_id = self.db_manager.create_backtest_run(
             name=self.run_name,
             description=self.run_description,
             symbols=self.symbols,
@@ -488,7 +489,7 @@ class Backtester:
             if trades_df.empty or 'pnl' not in trades_df.columns or trades_df.dropna(subset=['pnl']).empty:
                 logging.warning(f"\nSymbol: {symbol}\nNo trades executed or no PnL data. Saving zeroed results.")
                 # Save zeroed-out metrics so the frontend has a record for every symbol
-                db_manager.save_backtest_result(self.run_id, symbol, self.start_date, self.end_date, {
+                self.db_manager.save_backtest_result(self.run_id, symbol, self.start_date, self.end_date, {
                     'total_return_pct': 0, 'total_trades': 0, 'win_rate_pct': 0,
                     'avg_win_pct': 0, 'avg_loss_pct': 0, 'max_drawdown_pct': 0,
                     'sharpe_ratio': 0, 'alpha': 0, 'beta': 1.0, 'volatility': 0,
@@ -585,14 +586,14 @@ class Backtester:
                 'sortino_ratio': sortino_ratio
             }
 
-            db_manager.save_backtest_result(self.run_id, symbol, self.start_date, self.end_date, metrics)
+            self.db_manager.save_backtest_result(self.run_id, symbol, self.start_date, self.end_date, metrics)
 
             # Save detailed trades for visualization
-            db_manager.save_backtest_trades(self.run_id, symbol, trades_df)
+            self.db_manager.save_backtest_trades(self.run_id, symbol, trades_df)
 
         # Mark run as completed
         if self.run_id:
-            db_manager.update_backtest_run_status(self.run_id, 'completed')
+            self.db_manager.update_backtest_run_status(self.run_id, 'completed')
             print(f"✅ Backtest run {self.run_id} completed!")
 
     def calculate_and_save_run_summary(self, all_results):
@@ -653,7 +654,7 @@ class Backtester:
         if self.run_id:
             logger.info(f"📈 Attempting to save overall run summary for run_id {self.run_id}...")
             logger.info(f"Summary data to be saved: {summary}")
-            db_manager.update_backtest_run_summary(self.run_id, summary)
+            self.db_manager.update_backtest_run_summary(self.run_id, summary)
             logger.info(f"✅ Successfully saved summary for run_id {self.run_id}.")
 
 
