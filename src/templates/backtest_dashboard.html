@@ -538,7 +538,7 @@
                                   run.status === 'running' ? 'status-neutral' : 'status-bad';
 
                 html += `
-                    <div class="metric-card" style="cursor: pointer;" onclick="selectRun(event, ${run.id}, '${run.name}')">
+                    <div class="metric-card" style="cursor: pointer;" onclick="selectRun(this, ${run.id}, '${run.name}')">
                         <h4>${run.name}</h4>
                         <p style="font-size: 0.9em; color: var(--text-secondary-color); margin-bottom: 8px;">
                             ${run.symbols.join(', ')} • ${run.start_date} → ${run.end_date}
@@ -555,7 +555,7 @@
             container.innerHTML = html;
         }
 
-        function selectRun(event, runId, runText) {
+        function selectRun(element, runId, runText) {
             currentRunId = runId;
             loadBacktestResults(runId, runText);
 
@@ -563,7 +563,7 @@
             document.querySelectorAll('#runs-container .metric-card').forEach(card => {
                 card.classList.remove('active-run');
             });
-            event.currentTarget.classList.add('active-run');
+            element.classList.add('active-run');
         }
 
         function loadBacktestResults(runId, runText) {
