@@ -21,6 +21,7 @@ class RiskManager:
         self.alerts = []
         self.positions_count = 0
         self.strategy = None  # To hold a reference to the strategy instance
+        self.logger = logging.getLogger(__name__)
 
     def set_strategy(self, strategy):
         """Set the strategy instance to allow for closing positions."""
@@ -134,13 +135,13 @@ class RiskManager:
         self.is_stopped = True
         message = f"EMERGENCY STOP! Total loss ${self.total_loss:.2f} exceeded limit of ${MAX_TOTAL_LOSS_USDT:.2f}"
         self.add_alert('danger', message)
-        logger.critical(message)
+        self.logger.critical(message)
         
         if self.strategy:
-            logger.warning("Attempting to close all positions immediately.")
+            self.logger.warning("Attempting to close all positions immediately.")
             self.strategy.close_all_positions()
         else:
-            logger.error("Strategy object not set in RiskManager. Cannot close positions immediately.")
+            self.logger.error("Strategy object not set in RiskManager. Cannot close positions immediately.")
 
     def get_risk_status(self):
         """Get current risk status"""
