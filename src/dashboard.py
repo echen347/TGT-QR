@@ -50,29 +50,48 @@ class TradingDashboard:
         return self.risk_manager.get_alerts()
 
     def get_pnl_chart_data(self):
-        """Get PnL data for charting"""
+        """Get PnL data for charting from position snapshots"""
         try:
-            # Get last 24 hours of PnL data
-            pnl_records = self.db.session.query(TradeRecord)\
-                .filter(TradeRecord.timestamp >= datetime.utcnow() - timedelta(hours=24))\
+            # Get position snapshots from last 24 hours
+            snapshots = self.db.session.query(PositionRecord)\
+                .filter(PositionRecord.timestamp >= datetime.utcnow() - timedelta(hours=24))\
+                .order_by(PositionRecord.timestamp)\
                 .all()
 
-            if not pnl_records:
-                return {'error': 'No trade data available'}
+            if not snapshots:
+                return {'error': 'No position data available yet. Waiting for trades...'}
 
-            # Create time series data
-            timestamps = [r.timestamp for r in pnl_records]
-            pnl_values = [r.pnl for r in pnl_records]
+            # Calculate PnL from position snapshots
+            # Group by timestamp and sum unrealized PnL
+            time_pnl_map = {}
+            for snapshot in snapshots:
+                ts_key = snapshot.timestamp.strftime('%Y-%m-%d %H:%M')
+                if ts_key not in time_pnl_map:
+                    time_pnl_map[ts_key] = 0
+                # Unrealized PnL = (current_price - entry_price) * position_size * direction
+                direction = 1 if snapshot.side == 'Buy' else -1
+                pnl = (snapshot.current_price - snapshot.entry_price) * abs(snapshot.position_size) * direction
+                time_pnl_map[ts_key] += pnl
+
+            if not time_pnl_map:
+                return {'error': 'No PnL data calculated'}
+
+            # Sort by time
+            sorted_times = sorted(time_pnl_map.keys())
+            timestamps = [datetime.strptime(ts, '%Y-%m-%d %H:%M') for ts in sorted_times]
+            pnl_values = [time_pnl_map[ts] for ts in sorted_times]
             cumulative_pnl = pd.Series(pnl_values).cumsum().tolist()
 
             return {
                 'timestamps': [ts.strftime('%H:%M') for ts in timestamps],
                 'pnl_values': pnl_values,
                 'cumulative_pnl': cumulative_pnl,
-                'current_pnl': sum(pnl_values)
+                'current_pnl': cumulative_pnl[-1] if cumulative_pnl else 0
             }
         except Exception as e:
-            return {'error': str(e)}
+            import traceback
+            traceback.print_exc()
+            return {'error': f'name \'{type(e).__name__}\' is not defined'}
 
     def get_positions_data(self):
         """Get current positions data"""
