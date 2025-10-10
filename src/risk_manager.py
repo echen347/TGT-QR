@@ -158,4 +158,4 @@ class RiskManager:
         }
 
 # Global risk manager instance
-risk_manager = RiskManager()
+# risk_manager = RiskManager()

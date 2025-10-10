@@ -350,7 +350,7 @@ class MovingAverageStrategy:
         self.logger.info("----------------------------------------")
 
 # Create a global, shared instance of the strategy AFTER the class is defined
-strategy = MovingAverageStrategy()
+# strategy = MovingAverageStrategy()
 
 if __name__ == "__main__":
     # Note: This direct instantiation is for testing. 

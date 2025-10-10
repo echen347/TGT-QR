@@ -6,14 +6,14 @@ import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-# Import the shared strategy instance
-from src.strategy import strategy
+# The strategy instance will be passed in, not imported globally
+# from src.strategy import strategy 
 from config.config import STRATEGY_INTERVAL_MINUTES
 
 # Basic logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-def start_scheduler():
+def start_scheduler(strategy):
     """
     Starts a simple loop to run the strategy at a set interval.
     This replaces BackgroundScheduler for robustness.
@@ -33,4 +33,8 @@ def start_scheduler():
         time.sleep(STRATEGY_INTERVAL_MINUTES * 60)
 
 if __name__ == "__main__":
-    start_scheduler()
+    # This part is for standalone testing, which needs to be updated if used
+    # from src.strategy import MovingAverageStrategy
+    # strategy_instance = MovingAverageStrategy()
+    # start_scheduler(strategy_instance)
+    pass

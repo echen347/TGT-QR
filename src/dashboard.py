@@ -8,23 +8,30 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from config.config import *
 from database import db_manager
-from risk_manager import risk_manager
-from strategy import strategy # Import the shared strategy instance
+# The global instances will be passed in, not imported
+# from risk_manager import risk_manager 
+# from strategy import strategy
 import json
 from flask_moment import Moment
 
 app = Flask(__name__)
 moment = Moment(app)
 
+# These will hold the shared instances
+strategy_instance = None
+risk_manager_instance = None
+
 class TradingDashboard:
     """Handles data fetching for the Flask dashboard"""
 
-    def __init__(self):
+    def __init__(self, strategy, risk_manager):
         self.db = db_manager
+        self.strategy = strategy
+        self.risk_manager = risk_manager
 
     def get_system_status(self):
         """Get current system status from the risk manager"""
-        bot_is_active = not risk_manager.is_stopped
+        bot_is_active = not self.risk_manager.is_stopped
         return {
             'dashboard_status': 'Active',
             'bot_status': 'Active' if bot_is_active else 'Inactive',
@@ -33,11 +40,11 @@ class TradingDashboard:
 
     def get_market_data(self):
         """Get live market data from the strategy instance"""
-        return strategy.market_state
+        return self.strategy.market_state
 
     def get_alerts(self):
         """Get current alerts from the risk manager"""
-        return risk_manager.get_alerts()
+        return self.risk_manager.get_alerts()
 
     def get_pnl_chart_data(self):
         """Get PnL data for charting"""
@@ -106,7 +113,7 @@ class TradingDashboard:
 
     def get_risk_status(self):
         """Get current risk status"""
-        return risk_manager.get_risk_status()
+        return self.risk_manager.get_risk_status()
 
     def create_pnl_chart(self):
         """Create PnL chart using Plotly"""
@@ -150,7 +157,8 @@ class TradingDashboard:
 @app.route('/')
 def dashboard():
     """Render the main dashboard"""
-    trading_dashboard = TradingDashboard()
+    # Use the shared instances
+    trading_dashboard = TradingDashboard(strategy_instance, risk_manager_instance)
     pnl_chart_data = trading_dashboard.get_pnl_chart_data()
     positions_data = trading_dashboard.get_positions_data()
     signals_data = trading_dashboard.get_signals_data()
@@ -172,7 +180,7 @@ def dashboard():
 @app.route('/api/status')
 def api_status():
     """API endpoint for real-time status"""
-    dashboard = TradingDashboard()
+    dashboard = TradingDashboard(strategy_instance, risk_manager_instance)
 
     return jsonify({
         'risk_status': dashboard.get_risk_status(),
@@ -185,7 +193,8 @@ def api_status():
 def shutdown_bot():
     """Endpoint to trigger emergency stop"""
     try:
-        risk_manager.emergency_stop()
+        # Use the shared instance
+        risk_manager_instance.emergency_stop()
         return jsonify({'status': 'success', 'message': 'Emergency stop triggered. Bot will stop trading.'})
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
@@ -212,5 +221,18 @@ def api_set_parameter():
             'error': str(e)
         })
 
-if __name__ == '__main__':
+# Function to run the dashboard with shared instances
+def run_dashboard(strategy, risk_manager):
+    global strategy_instance, risk_manager_instance
+    strategy_instance = strategy
+    risk_manager_instance = risk_manager
     app.run(host=DASHBOARD_HOST, port=DASHBOARD_PORT, debug=False)
+
+if __name__ == '__main__':
+    # This part is for standalone testing, which needs to be updated
+    # from src.strategy import MovingAverageStrategy
+    # from src.risk_manager import RiskManager
+    # strategy = MovingAverageStrategy()
+    # risk_manager = RiskManager()
+    # run_dashboard(strategy, risk_manager)
+    pass
