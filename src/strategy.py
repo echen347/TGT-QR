@@ -328,52 +328,52 @@ class MovingAverageStrategy:
                 current_price = self.price_history[symbol][-1]['close']
                 ma_value = pd.DataFrame(self.price_history[symbol])['close'].rolling(window=MA_PERIOD).mean().iloc[-1]
 
-                    # Save signal to database
-                    db_manager.save_signal_record(symbol, signal, ma_value, current_price)
+                # Save signal to database
+                db_manager.save_signal_record(symbol, signal, ma_value, current_price)
 
-                    # Get current positions
-                    positions = self.get_current_positions()
-                    current_position = positions.get(symbol, {'position_size': 0, 'position_value': 0})
+                # Get current positions
+                positions = self.get_current_positions()
+                current_position = positions.get(symbol, {'position_size': 0, 'position_value': 0})
 
-                    self.logger.info(f"📊 {symbol}: Signal={signal}, Price=${current_price:.2f}, MA=${ma_value:.2f}")
+                self.logger.info(f"📊 {symbol}: Signal={signal}, Price=${current_price:.2f}, MA=${ma_value:.2f}")
 
-                    # Trading logic with risk management
-                    if signal == 1 and current_position['position_size'] == 0:
-                        # Go long - only if we can open position
-                        if risk_manager.can_open_position(symbol, MAX_POSITION_USDT):
-                            success = self.place_order(symbol, "Buy", MAX_POSITION_USDT)
-                            if success:
-                                self.logger.info(f"🚀 LONG position opened for {symbol}")
-                        else:
-                            self.logger.warning(f"⚠️ LONG signal for {symbol} but risk management blocked")
-
-                    elif signal == -1 and current_position['position_size'] == 0:
-                        # Go short - only if we can open position
-                        if risk_manager.can_open_position(symbol, MAX_POSITION_USDT):
-                            success = self.place_order(symbol, "Sell", MAX_POSITION_USDT)
-                            if success:
-                                self.logger.info(f"🔻 SHORT position opened for {symbol}")
-                        else:
-                            self.logger.warning(f"⚠️ SHORT signal for {symbol} but risk management blocked")
-
-                    elif signal == 0 and current_position['position_size'] > 0:
-                        # Close position
-                        position_value = abs(current_position['position_value'])
-                        side = "Sell" if current_position['side'] == "Buy" else "Buy"
-                        success = self.place_order(symbol, side, position_value)
+                # Trading logic with risk management
+                if signal == 1 and current_position['position_size'] == 0:
+                    # Go long - only if we can open position
+                    if risk_manager.can_open_position(symbol, MAX_POSITION_USDT):
+                        success = self.place_order(symbol, "Buy", MAX_POSITION_USDT)
                         if success:
-                            self.logger.info(f"🔄 Position closed for {symbol}")
-                            risk_manager.positions_count -= 1
+                            self.logger.info(f"🚀 LONG position opened for {symbol}")
+                    else:
+                        self.logger.warning(f"⚠️ LONG signal for {symbol} but risk management blocked")
 
-                    self.signals[symbol] = signal
+                elif signal == -1 and current_position['position_size'] == 0:
+                    # Go short - only if we can open position
+                    if risk_manager.can_open_position(symbol, MAX_POSITION_USDT):
+                        success = self.place_order(symbol, "Sell", MAX_POSITION_USDT)
+                        if success:
+                            self.logger.info(f"🔻 SHORT position opened for {symbol}")
+                    else:
+                        self.logger.warning(f"⚠️ SHORT signal for {symbol} but risk management blocked")
+
+                elif signal == 0 and current_position['position_size'] > 0:
+                    # Close position
+                    position_value = abs(current_position['position_value'])
+                    side = "Sell" if current_position['side'] == "Buy" else "Buy"
+                    success = self.place_order(symbol, side, position_value)
+                    if success:
+                        self.logger.info(f"🔄 Position closed for {symbol}")
+                        risk_manager.positions_count -= 1
+
+                self.signals[symbol] = signal
                     
-                    # Update market state for the dashboard
-                    self.market_state[symbol] = {
-                        'price': current_price,
-                        'ma_value': ma_value,
-                        'signal': signal,
-                        'volume_24h': self.get_symbol_volume(symbol)
-                    }
+                # Update market state for the dashboard
+                self.market_state[symbol] = {
+                    'price': current_price,
+                    'ma_value': ma_value,
+                    'signal': signal,
+                    'volume_24h': self.get_symbol_volume(symbol)
+                }
 
             # Log current state
             self.log_trading_state()
