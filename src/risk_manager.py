@@ -55,8 +55,17 @@ class RiskManager:
 
     def check_position_limit(self):
         """Check if we can open more positions"""
-        if self.positions_count >= MAX_POSITIONS:
-            self.logger.warning(f"Position limit reached: {self.positions_count}/{MAX_POSITIONS}")
+        # Get actual position count from strategy
+        actual_positions_count = 0
+        if self.strategy:
+            try:
+                positions = self.strategy.get_current_positions()
+                actual_positions_count = len(positions)
+            except Exception as e:
+                self.logger.error(f"Error getting position count: {e}")
+        
+        if actual_positions_count >= MAX_POSITIONS:
+            self.logger.warning(f"Position limit reached: {actual_positions_count}/{MAX_POSITIONS}")
             return False
         return True
 
@@ -149,10 +158,19 @@ class RiskManager:
 
     def get_risk_status(self):
         """Get current risk status"""
+        # Get actual position count from strategy
+        actual_positions_count = 0
+        if self.strategy:
+            try:
+                positions = self.strategy.get_current_positions()
+                actual_positions_count = len(positions)
+            except Exception as e:
+                self.logger.error(f"Error getting position count: {e}")
+        
         return {
             'daily_loss': self.daily_loss,
             'total_loss': self.total_loss,
-            'positions_count': self.positions_count,
+            'positions_count': actual_positions_count,  # Use actual count, not cached
             'max_position_usdt': MAX_POSITION_USDT,
             'max_daily_loss_usdt': MAX_DAILY_LOSS_USDT,
             'max_total_loss_usdt': MAX_TOTAL_LOSS_USDT,

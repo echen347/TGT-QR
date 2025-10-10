@@ -253,14 +253,16 @@ class MovingAverageStrategy:
                 for pos in positions:
                     symbol = pos['symbol']
                     position_size = float(pos['size'])
-                    if symbol in SYMBOLS and position_size > 0:
+                    # Include positions with any non-zero size (both LONG and SHORT)
+                    if symbol in SYMBOLS and position_size != 0:
                         current_positions[symbol] = {
                             'symbol': symbol,
                             'position_size': position_size,
                             'position_value': float(pos['positionValue']),
                             'entry_price': float(pos['avgPrice']),
                             'unrealized_pnl': float(pos['unrealisedPnl']),
-                            'side': pos['side']
+                            'side': pos['side'],
+                            'current_price': float(pos.get('markPrice', pos['avgPrice']))  # Use mark price if available
                         }
                 return current_positions
             else:
