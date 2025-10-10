@@ -368,7 +368,12 @@ class Backtester:
                     trades.append({'entry_date': df.index[i], 'entry_price': entry_price, 'type': 'long'})
 
             # Only include completed trades (those with exit information)
-            completed_trades = [trade for trade in trades if 'exit_date' in trade]
+            completed_trades = [trade for trade in trades if 'exit_date' in trade and 'pnl' in trade]
+            # Ensure all trades have consistent structure
+            for trade in completed_trades:
+                # Add any missing fields with default values
+                if 'exit_price' not in trade:
+                    trade['exit_price'] = 0
             all_results[symbol] = pd.DataFrame(completed_trades) if completed_trades else pd.DataFrame()
         
         # Collect signal data for visualization
