@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TGT QR Trading Dashboard</title>
+    <title>ethanTGT Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         :root {
@@ -610,27 +610,35 @@
         function createCorrelationChart() {
             const ctx = document.getElementById('correlationChart').getContext('2d');
 
-            // Sample correlation matrix for major pairs
+            // Sample correlation matrix for major pairs (using scatter plot instead of matrix)
             const correlationData = [
-                [1.0, 0.85, 0.78, 0.65],
-                [0.85, 1.0, 0.72, 0.58],
-                [0.78, 0.72, 1.0, 0.61],
-                [0.65, 0.58, 0.61, 1.0]
+                {x: 0, y: 0, v: 1.0, label: 'BTC-BTC'},
+                {x: 1, y: 0, v: 0.85, label: 'BTC-ETH'},
+                {x: 2, y: 0, v: 0.78, label: 'BTC-BNB'},
+                {x: 3, y: 0, v: 0.65, label: 'BTC-ADA'},
+                {x: 0, y: 1, v: 0.85, label: 'ETH-BTC'},
+                {x: 1, y: 1, v: 1.0, label: 'ETH-ETH'},
+                {x: 2, y: 1, v: 0.72, label: 'ETH-BNB'},
+                {x: 3, y: 1, v: 0.58, label: 'ETH-ADA'},
+                {x: 0, y: 2, v: 0.78, label: 'BNB-BTC'},
+                {x: 1, y: 2, v: 0.72, label: 'BNB-ETH'},
+                {x: 2, y: 2, v: 1.0, label: 'BNB-BNB'},
+                {x: 3, y: 2, v: 0.61, label: 'BNB-ADA'},
+                {x: 0, y: 3, v: 0.65, label: 'ADA-BTC'},
+                {x: 1, y: 3, v: 0.58, label: 'ADA-ETH'},
+                {x: 2, y: 3, v: 0.61, label: 'ADA-BNB'},
+                {x: 3, y: 3, v: 1.0, label: 'ADA-ADA'}
             ];
 
             const symbols = ['BTC', 'ETH', 'BNB', 'ADA'];
 
             new Chart(ctx, {
-                type: 'matrix',
+                type: 'scatter',
                 data: {
                     datasets: [{
-                        data: correlationData.flat().map((value, index) => ({
-                            x: index % 4,
-                            y: Math.floor(index / 4),
-                            v: value
-                        })),
+                        data: correlationData,
                         backgroundColor: function(context) {
-                            const value = context.parsed.r;
+                            const value = context.parsed.y !== undefined ? correlationData[context.dataIndex].v : context.parsed.y;
                             if (value > 0.8) return '#2ecc71';
                             if (value > 0.6) return '#f1c40f';
                             if (value > 0.4) return '#e67e22';
@@ -638,8 +646,8 @@
                         },
                         borderColor: 'var(--border-color)',
                         borderWidth: 1,
-                        width: ({ chart }) => chart.chartArea.width / 4,
-                        height: ({ chart }) => chart.chartArea.height / 4
+                        pointRadius: 8,
+                        pointHoverRadius: 12
                     }]
                 },
                 options: {
@@ -649,24 +657,25 @@
                         legend: { display: false },
                         tooltip: {
                             callbacks: {
-                                title: function(context) {
-                                    const i = context[0].dataIndex;
-                                    const row = Math.floor(i / 4);
-                                    const col = i % 4;
-                                    return `${symbols[row]} vs ${symbols[col]}`;
-                                },
                                 label: function(context) {
-                                    return `Correlation: ${context.parsed.r.toFixed(3)}`;
+                                    const point = correlationData[context.dataIndex];
+                                    return `${point.label}: ${point.v.toFixed(3)}`;
                                 }
                             }
                         }
                     },
                     scales: {
                         x: {
-                            display: false
+                            type: 'category',
+                            labels: symbols,
+                            ticks: { color: 'var(--text-secondary-color)' },
+                            grid: { color: 'var(--border-color)' }
                         },
                         y: {
-                            display: false
+                            type: 'category',
+                            labels: symbols,
+                            ticks: { color: 'var(--text-secondary-color)' },
+                            grid: { color: 'var(--border-color)' }
                         }
                     }
                 }
