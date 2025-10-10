@@ -725,13 +725,13 @@
                 .catch(error => console.error('Error updating status:', error));
         }
         
-        // Auto-refresh charts and status every 10 seconds
+        // Auto-refresh charts and status every 5 seconds for live updates
         setInterval(() => {
             if (document.visibilityState === 'visible') {
                 updateSystemStatus();
                 loadChartData();
             }
-        }, 30000);
+        }, 5000);
         // Render PnL Chart
         const pnlData = {{ pnl_chart | tojson }};
         console.log('PnL Data:', pnlData);

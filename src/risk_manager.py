@@ -109,6 +109,14 @@ class RiskManager:
                 message = f"Risk Block: {check_name} failed for {symbol}."
                 self.logger.warning(message)
                 self.add_alert('warning', message)
+                # Add detailed logging for debugging
+                if check_name == "Position Limit":
+                    actual_count = len(self.strategy.get_current_positions()) if self.strategy else 0
+                    self.logger.warning(f"Position Limit: {actual_count}/{MAX_POSITIONS} positions")
+                elif check_name == "Volume Filter":
+                    self.logger.warning(f"Volume Filter: {current_volume} < {MIN_VOLUME_USDT}")
+                elif check_name == "Position Size":
+                    self.logger.warning(f"Position Size: {position_value} > {MAX_POSITION_USDT}")
                 return False
 
         return True
