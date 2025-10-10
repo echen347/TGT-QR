@@ -437,15 +437,18 @@
             document.getElementById('pnlChart').innerHTML = '<div class="empty-placeholder">No PnL data to display</div>';
         }
 
-        // Advanced Market Charts - wait for DOM to be ready and retry if needed
+        // Advanced Market Charts - optimized loading
+        let chartsInitialized = false;
         document.addEventListener('DOMContentLoaded', function() {
+            // Load charts after a short delay to ensure DOM is ready
             setTimeout(function() {
-                initializeAdvancedCharts();
-            }, 100);
+                if (!chartsInitialized) {
+                    initializeAdvancedCharts();
+                    chartsInitialized = true;
+                }
+            }, 200);
         });
 
-        // Retry chart initialization if it fails initially
-        let chartRetryCount = 0;
         function initializeAdvancedCharts() {
             try {
                 // Check if canvas elements exist
@@ -453,42 +456,63 @@
                 const missingElements = canvasElements.filter(id => !document.getElementById(id));
 
                 if (missingElements.length > 0) {
-                    if (chartRetryCount < 3) {
-                        chartRetryCount++;
-                        setTimeout(initializeAdvancedCharts, 200);
-                        return;
-                    } else {
-                        console.error('Chart canvas elements not found:', missingElements);
-                        return;
-                    }
+                    console.warn('Some chart canvas elements not found:', missingElements);
+                    return;
                 }
 
-                // Fetch market data for charts
-                fetch('/api/market_data')
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (!data.price_data || Object.keys(data.price_data).length === 0) {
-                            throw new Error('No price data available');
-                        }
-                        createPriceChart(data.price_data);
-                        createVolumeChart(data.price_data);
-                        createCorrelationChart();
-                        createDepthChart();
-                        updateIndicators(data.indicators);
-                    })
-                    .catch(error => {
-                        console.error('Error initializing charts:', error);
-                        showChartError(`Chart Error: ${error.message}`);
-                    });
+                // Use a timeout to avoid blocking the main thread
+                setTimeout(() => {
+                    loadChartData();
+                }, 100);
             } catch (error) {
                 console.error('Chart initialization error:', error);
                 showChartError('Failed to initialize charts');
             }
+        }
+
+        function loadChartData() {
+            fetch('/api/market_data')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data.price_data || Object.keys(data.price_data).length === 0) {
+                        throw new Error('No price data available');
+                    }
+
+                    // Render charts with smaller datasets for better performance
+                    const optimizedData = optimizeChartData(data.price_data);
+                    createPriceChart(optimizedData);
+                    createVolumeChart(optimizedData);
+                    createCorrelationChart();
+                    createDepthChart();
+                    updateIndicators(data.indicators);
+                })
+                .catch(error => {
+                    console.error('Error loading chart data:', error);
+                    showChartError(`Chart Error: ${error.message}`);
+                });
+        }
+
+        function optimizeChartData(priceData) {
+            // Reduce data points for better performance (take every 3rd point)
+            const optimized = {};
+            Object.keys(priceData).forEach(symbol => {
+                const data = priceData[symbol];
+                if (data.prices && data.prices.length > 20) {
+                    optimized[symbol] = {
+                        timestamps: data.timestamps.filter((_, i) => i % 3 === 0),
+                        prices: data.prices.filter((_, i) => i % 3 === 0),
+                        volumes: data.volumes.filter((_, i) => i % 3 === 0)
+                    };
+                } else {
+                    optimized[symbol] = data;
+                }
+            });
+            return optimized;
         }
 
 

@@ -496,12 +496,13 @@ class Backtester:
             
             # Average Win / Loss
             avg_win_pct = wins['pnl'].mean() * 100 * LEVERAGE if not wins.empty else 0
-            avg_loss_pct = trades_df[trades_df['pnl'] < 0]['pnl'].mean() * 100 * LEVERAGE if total_trades > len(wins) else 0
+            loss_trades = trades_df[trades_df['pnl'] < 0]
+            avg_loss_pct = loss_trades['pnl'].mean() * 100 * LEVERAGE if not loss_trades.empty else 0
 
             # Max Drawdown
             cumulative_max = cumulative_return.cummax()
             drawdown = (cumulative_return - cumulative_max) / cumulative_max
-            max_drawdown_pct = drawdown.min() * 100
+            max_drawdown_pct = drawdown.min() * 100 if not np.isnan(drawdown.min()) else 0
 
             # Advanced Metrics
             daily_returns = trades_df.set_index('exit_date')['pnl'].resample('D').sum() * LEVERAGE
@@ -513,17 +514,19 @@ class Backtester:
                 sharpe_ratio = 0
 
             # Volatility (annualized)
-            volatility = daily_returns.std() * np.sqrt(365)
+            daily_std = daily_returns.std()
+            volatility = daily_std * np.sqrt(365) if not np.isnan(daily_std) and daily_std > 0 else 0
 
             # Sortino Ratio (only downside volatility)
             downside_returns = daily_returns[daily_returns < 0]
-            if len(downside_returns) > 0 and downside_returns.std() > 0:
-                sortino_ratio = (daily_returns.mean() / downside_returns.std()) * np.sqrt(365)
+            downside_std = downside_returns.std()
+            if len(downside_returns) > 0 and not np.isnan(downside_std) and downside_std > 0:
+                sortino_ratio = (daily_returns.mean() / downside_std) * np.sqrt(365)
             else:
                 sortino_ratio = 0
 
             # Calmar Ratio (return / max drawdown)
-            if max_drawdown_pct != 0:
+            if not np.isnan(max_drawdown_pct) and max_drawdown_pct != 0:
                 calmar_ratio = total_return_pct / abs(max_drawdown_pct)
             else:
                 calmar_ratio = 0
