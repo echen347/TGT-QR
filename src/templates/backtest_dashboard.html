@@ -561,20 +561,24 @@
 
             // Update visual selection
             document.querySelectorAll('#runs-container .metric-card').forEach(card => {
-                card.style.border = '1px solid var(--border-color)';
                 card.classList.remove('active-run');
             });
             event.currentTarget.classList.add('active-run');
         }
 
         function loadBacktestResults(runId, runText) {
-            // Show loading states
+            // Show loading states for all sections
             document.getElementById('performance-loading').style.display = 'block';
             document.getElementById('performance-overview').style.display = 'none';
-            document.getElementById('results-body').innerHTML = '<tr><td colspan="9" class="loading-text">Loading results...</td></tr>';
+            document.getElementById('results-body').innerHTML = `<tr><td colspan="9" class="loading-text">${getLoadingHTML('Loading results...')}</td></tr>`;
+            document.getElementById('dynamic-strategy-insights').style.display = 'none';
+            document.getElementById('strategy-insights-content').style.display = 'grid'; // Show default
 
             fetch(`/api/backtest_results?run_id=${runId}`)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    return response.json();
+                })
                 .then(data => {
                     // Hide loading and show content
                     document.getElementById('performance-loading').style.display = 'none';
@@ -586,9 +590,11 @@
                 })
                 .catch(error => {
                     console.error('Error fetching backtest results:', error);
-                    document.getElementById('results-body').innerHTML = '<tr><td colspan="9" class="error-text">Failed to load results</td></tr>';
+                    document.getElementById('results-body').innerHTML = `<tr><td colspan="9" class="error-text">${getErrorHTML(error.message)}</td></tr>`;
                     // Hide performance overview on error
                     document.getElementById('performance-loading').style.display = 'none';
+                    updatePerformanceOverview([], 'Error');
+                    updateStrategyInsights([]);
                 });
         }
 

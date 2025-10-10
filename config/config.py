@@ -14,10 +14,14 @@ BYBIT_API_KEY = os.getenv('BYBIT_API_KEY')
 BYBIT_API_SECRET = os.getenv('BYBIT_API_SECRET')
 
 # Trading Configuration - EXPANDED FOR MORE OPPORTUNITIES
+# --- Trading Pairs ---
+# List of symbols to trade
 SYMBOLS = [
-    'BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'ADAUSDT', 'SOLUSDT', 'XRPUSDT',
-    'AVAXUSDT', 'MATICUSDT', 'LINKUSDT', 'UNIUSDT', 'DOTUSDT'
-]  # Mix of major and mid-tier coins
+    'BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'ADAUSDT', 'SOLUSDT', 
+    'XRPUSDT', 'AVAXUSDT', 'MATICUSDT', 'LINKUSDT', 'UNIUSDT', 'DOTUSDT'
+]
+
+# --- Position Sizing & Leverage ---
 MAX_POSITION_USDT = 0.25 # Max size of a single position in USDT
 LEVERAGE = 5  # Reduced leverage for better risk management
 MAX_POSITIONS = 5  # Allow up to 5 positions at once (broader diversification)
