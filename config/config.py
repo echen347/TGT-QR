@@ -22,7 +22,7 @@ SYMBOLS = [
 ]
 
 # --- Position Sizing & Leverage ---
-MAX_POSITION_USDT = 0.105 # Max size of a single position in USDT
+MAX_POSITION_USDT = 1.20 # Margin to use per position (with 5x leverage = $6 exposure)
 LEVERAGE = 5  # Reduced leverage for better risk management
 MAX_POSITIONS = 5  # Allow up to 5 positions at once (broader diversification)
 MIN_VOLUME_USDT = 200000  # Only trade reasonably liquid pairs (500K+ USD volume)
