@@ -14,7 +14,8 @@ from config.config import (
 import logging
 from logging.handlers import TimedRotatingFileHandler
 from database import db_manager
-from risk_manager import risk_manager
+# Import the class, not the instance we removed
+from risk_manager import RiskManager
 
 class MovingAverageStrategy:
     """
@@ -31,6 +32,9 @@ class MovingAverageStrategy:
             return
         self._initialized = True
         
+        # This will be set by the main script after initialization
+        self.risk_manager = None
+
         # Use the working API setup from day1_test.py
         self.session = HTTP(
             testnet=BYBIT_TESTNET,
@@ -87,6 +91,9 @@ class MovingAverageStrategy:
         logger.addHandler(file_handler)
         logger.addHandler(console_handler)
         return logger
+    def set_risk_manager(self, risk_manager):
+        """Allow the main script to set the shared risk manager instance."""
+        self.risk_manager = risk_manager
     def get_historical_prices(self, symbol, limit=200):
         """Get historical price data. Reverted to get_kline for reliability."""
         try:
@@ -214,7 +221,7 @@ class MovingAverageStrategy:
             qty_contracts = qty_usdt * leverage / current_price
             # Comprehensive risk check before placing order
             current_volume = self.get_symbol_volume(symbol)
-            if not risk_manager.can_open_position(symbol, qty_usdt, current_volume):
+            if not self.risk_manager.can_open_position(symbol, qty_usdt, current_volume):
                 self.logger.error(f"Risk management blocked order for {symbol}")
                 return False
             # Additional safety checks
@@ -236,7 +243,7 @@ class MovingAverageStrategy:
             )
             if response['retCode'] == 0:
                 self.logger.info(f"✅ Order placed: {side} {qty_usdt} USDT of {symbol} at ${current_price:.2f}")
-                risk_manager.positions_count += 1
+                self.risk_manager.positions_count += 1
                 # Save trade record to database
                 db_manager.save_trade_record(
                     symbol=symbol,
@@ -255,9 +262,13 @@ class MovingAverageStrategy:
     def run_strategy(self):
         """Main strategy execution loop"""
         try:
+            if not self.risk_manager:
+                self.logger.error("Risk manager has not been set. Cannot run strategy.")
+                return
+
             self.logger.info("Running trading strategy...")
             # Check risk management first
-            risk_status = risk_manager.get_risk_status()
+            risk_status = self.risk_manager.get_risk_status()
             if not risk_status['can_trade']:
                 self.logger.error("❌ Risk management prevents trading.")
                 self.logger.error(f"Daily Loss: ${risk_status['daily_loss']:.2f}/${risk_status['max_daily_loss_usdt']:.2f}")
@@ -292,7 +303,7 @@ class MovingAverageStrategy:
                 # Trading logic with risk management
                 if signal == 1 and current_position['position_size'] == 0:
                     # Go long - only if we can open position
-                    if risk_manager.can_open_position(symbol, MAX_POSITION_USDT):
+                    if self.risk_manager.can_open_position(symbol, MAX_POSITION_USDT):
                         success = self.place_order(symbol, "Buy", MAX_POSITION_USDT)
                         if success:
                             self.logger.info(f"🚀 LONG position opened for {symbol}")
@@ -300,7 +311,7 @@ class MovingAverageStrategy:
                         self.logger.warning(f"⚠️ LONG signal for {symbol} but risk management blocked")
                 elif signal == -1 and current_position['position_size'] == 0:
                     # Go short - only if we can open position
-                    if risk_manager.can_open_position(symbol, MAX_POSITION_USDT):
+                    if self.risk_manager.can_open_position(symbol, MAX_POSITION_USDT):
                         success = self.place_order(symbol, "Sell", MAX_POSITION_USDT)
                         if success:
                             self.logger.info(f"🔻 SHORT position opened for {symbol}")
@@ -313,7 +324,7 @@ class MovingAverageStrategy:
                     success = self.place_order(symbol, side, position_value)
                     if success:
                         self.logger.info(f"🔄 Position closed for {symbol}")
-                        risk_manager.positions_count -= 1
+                        self.risk_manager.positions_count -= 1
                 self.signals[symbol] = signal
                     
                 # Update market state for the dashboard
@@ -342,7 +353,7 @@ class MovingAverageStrategy:
             self.logger.info(f"    PnL: ${position_info['pnl']:.4f}")
         self.logger.info("----------------------------------------")
         self.logger.info("🛡️ RISK STATUS")
-        risk_status = risk_manager.get_risk_status()
+        risk_status = self.risk_manager.get_risk_status()
         self.logger.info(f"  Daily Loss: ${risk_status['daily_loss']:.4f}/${risk_status['max_daily_loss_usdt']:.2f}")
         self.logger.info(f"  Total Loss: ${risk_status['total_loss']:.4f}/${risk_status['max_total_loss_usdt']:.2f}")
         self.logger.info(f"  Active Positions: {risk_status['positions_count']}/{risk_status['max_positions']}")

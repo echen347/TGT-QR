@@ -33,6 +33,8 @@ def main():
     strategy = MovingAverageStrategy()
     # Give risk_manager a reference to the strategy for emergency stops
     risk_manager.set_strategy(strategy)
+    # Give strategy a reference to the risk_manager
+    strategy.set_risk_manager(risk_manager)
     
     print(f"📊 Dashboard will be available at: http://localhost:{DASHBOARD_PORT}")
     print("🛑 Press Ctrl+C to stop the system")
