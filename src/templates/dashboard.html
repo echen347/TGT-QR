@@ -281,7 +281,7 @@
         <div class="card" id="market-analysis">
             <h3><i class="fas fa-chart-bar"></i>Market Analysis</h3>
             <div class="market-grid">
-                {% for symbol, data in market_data.items() %}
+                {% for symbol, data in market_context.items() %}
                 <div class="market-card">
                     <h4>{{ symbol }}</h4>
                     <p>Price: <strong>${{ "%.2f"|format(data.price) }}</strong></p>
