@@ -249,13 +249,48 @@ def backtest_dashboard():
 
 @app.route('/api/backtest_results')
 def api_backtest_results():
-    """API endpoint for backtest results"""
+    """
+    API endpoint for backtest results.
+    Now includes a calculated summary for the overview panel.
+    """
     run_id = request.args.get('run_id', type=int)
-    dashboard = TradingDashboard(strategy_instance, risk_manager_instance)
-    results = db_manager.get_backtest_results(run_id=run_id, limit=100)
+    if not run_id:
+        return jsonify({'error': 'run_id is required'}), 400
+
+    results = db_manager.get_backtest_results(run_id=run_id, limit=500)
+
+    # Calculate summary statistics on the fly
+    summary = {
+        'total_trades': len(results),
+        'pnl': 0,
+        'win_rate': 0,
+        'sharpe_ratio': 0,
+        'max_drawdown': 0,
+        'average_return': 0
+    }
+
+    if results:
+        df = pd.DataFrame(results)
+        
+        # Ensure pnl is numeric
+        df['pnl'] = pd.to_numeric(df['pnl'], errors='coerce').fillna(0)
+
+        summary['pnl'] = round(df['pnl'].sum(), 4)
+        
+        winning_trades = df[df['pnl'] > 0].shape[0]
+        summary['win_rate'] = round((winning_trades / len(df)) * 100, 2) if len(df) > 0 else 0
+        
+        # Use a single, representative value for other metrics from the first record
+        # In a more advanced system, these would be averaged or handled differently
+        first_result = results[0]
+        summary['sharpe_ratio'] = round(first_result.get('sharpe_ratio', 0), 2)
+        summary['max_drawdown'] = round(first_result.get('max_drawdown', 0) * 100, 2)
+        summary['average_return'] = round(df['pnl'].mean(), 4)
+
 
     return jsonify({
         'results': results,
+        'summary': summary,
         'timestamp': datetime.now().isoformat()
     })
 

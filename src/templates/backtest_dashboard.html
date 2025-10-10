@@ -582,33 +582,83 @@
 
         function loadBacktestResults(runId, runText) {
             // Show loading states for all sections
-            document.getElementById('performance-loading').style.display = 'block';
-            document.getElementById('performance-overview').style.display = 'none';
-            document.getElementById('results-body').innerHTML = `<tr><td colspan="9" class="loading-text">${getLoadingHTML('Loading results...')}</td></tr>`;
-            document.getElementById('dynamic-strategy-insights').style.display = 'none';
+            const overviewContainer = document.getElementById('performance-overview-container');
+            const insightsContainer = document.getElementById('strategy-insights-content');
+            overviewContainer.innerHTML = '<p>Loading Performance Overview...</p>';
+            insightsContainer.innerHTML = '<p>Loading Strategy Insights...</p>';
+
+            // Update title
+            document.getElementById('performance-viz-title').innerText = `Performance Overview for: ${runText}`;
+            document.getElementById('performance-overview-title').innerText = `Performance Overview for: ${runText}`;
             document.getElementById('strategy-insights-content').style.display = 'grid'; // Show default
+            document.getElementById('dynamic-strategy-insights').style.display = 'none';
 
             fetch(`/api/backtest_results?run_id=${runId}`)
-                .then(response => {
-                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
-                    // Hide loading and show content
-                    document.getElementById('performance-loading').style.display = 'none';
-                    document.getElementById('performance-overview').style.display = 'grid';
+                    const summary = data.summary;
                     
-                    updateResultsTable(data.results);
-                    updatePerformanceOverview(data.results, runText);
-                    updateStrategyInsights(data.results);
+                    // Populate Performance Overview
+                    if (summary) {
+                        const pnlClass = summary.pnl >= 0 ? 'pnl-positive' : 'pnl-negative';
+                        overviewContainer.innerHTML = `
+                            <div class="card-grid">
+                                <div class="metric-card">
+                                    <h4>Total PnL</h4>
+                                    <p class="${pnlClass}">${summary.pnl} USDT</p>
+                                </div>
+                                <div class="metric-card">
+                                    <h4>Total Trades</h4>
+                                    <p>${summary.total_trades}</p>
+                                </div>
+                                <div class="metric-card">
+                                    <h4>Win Rate</h4>
+                                    <p>${summary.win_rate}%</p>
+                                </div>
+                                <div class="metric-card">
+                                    <h4>Avg. Return</h4>
+                                    <p>${summary.average_return} USDT</p>
+                                </div>
+                                <div class="metric-card">
+                                    <h4>Sharpe Ratio</h4>
+                                    <p>${summary.sharpe_ratio}</p>
+                                </div>
+                                <div class="metric-card">
+                                    <h4>Max Drawdown</h4>
+                                    <p>${summary.max_drawdown}%</p>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        overviewContainer.innerHTML = '<p>No summary data available for this run.</p>';
+                    }
+
+                    // Populate Strategy Insights (simplified for now)
+                    if (summary && summary.total_trades > 0) {
+                        let insightHtml = '<ul>';
+                        if (summary.win_rate > 55) {
+                            insightHtml += '<li><i class="fas fa-check-circle" style="color: var(--green-color);"></i> Strong Win Rate: The strategy shows a consistent ability to generate winning trades.</li>';
+                        } else if (summary.win_rate < 45) {
+                            insightHtml += '<li><i class="fas fa-exclamation-triangle" style="color: var(--yellow-color);"></i> Low Win Rate: Consider adjusting entry/exit criteria to improve trade success.</li>';
+                        }
+                        if (summary.sharpe_ratio > 1) {
+                            insightHtml += '<li><i class="fas fa-chart-line" style="color: var(--green-color);"></i> Excellent Risk-Adjusted Returns: The Sharpe Ratio is high, indicating good performance for the risk taken.</li>';
+                        } else {
+                            insightHtml += '<li><i class="fas fa-chart-area" style="color: var(--text-secondary-color);"></i> Moderate Risk-Adjusted Returns: The Sharpe Ratio is acceptable, but could be improved.</li>';
+                        }
+                        if (summary.max_drawdown > 20) {
+                            insightHtml += '<li><i class="fas fa-arrow-down" style="color: var(--red-color);"></i> High Drawdown: The strategy experienced significant drawdowns, indicating high risk. Review stop-loss or position sizing.</li>';
+                        }
+                        insightHtml += '</ul>';
+                        insightsContainer.innerHTML = insightHtml;
+                    } else {
+                        insightsContainer.innerHTML = '<p>Not enough trade data to generate insights.</p>';
+                    }
                 })
                 .catch(error => {
                     console.error('Error fetching backtest results:', error);
-                    document.getElementById('results-body').innerHTML = `<tr><td colspan="9" class="error-text">${getErrorHTML(error.message)}</td></tr>`;
-                    // Hide performance overview on error
-                    document.getElementById('performance-loading').style.display = 'none';
-                    updatePerformanceOverview([], 'Error');
-                    updateStrategyInsights([]);
+                    overviewContainer.innerHTML = '<p class="error-message">Error loading performance data.</p>';
+                    insightsContainer.innerHTML = '<p class="error-message">Error loading insights data.</p>';
                 });
         }
 
