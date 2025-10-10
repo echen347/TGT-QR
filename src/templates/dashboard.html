@@ -161,8 +161,8 @@
                     <p><strong>Total Loss Limit:</strong> ${{ risk.max_total_loss_usdt }}</p>
                 </div>
                 <div class="risk-item">
-                    <p>Current PnL: <span class="{{ 'signal-buy' if risk.current_pnl >= 0 else 'signal-sell' }}">{{ "%.2f"|format(risk.current_pnl) }}</span></p>
-                    <p>Total PnL: <span class="{{ 'signal-buy' if risk.total_pnl >= 0 else 'signal-sell' }}">{{ "%.2f"|format(risk.total_pnl) }}</span></p>
+                    <p>Active Positions: {{ risk.positions_count }} / {{ risk.max_positions }}</p>
+                    <p>Emergency Stopped: <span class="{{ 'status-inactive' if risk.is_stopped else 'status-active' }}">{{ risk.is_stopped }}</span></p>
                 </div>
             </div>
         </div>
