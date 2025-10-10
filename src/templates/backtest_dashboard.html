@@ -488,14 +488,17 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            statusDiv.innerHTML = `<p class="success-message" style="margin-top: 10px;"><i class="fas fa-check-circle"></i> ${data.message}</p>`;
-                            // Refresh the list of runs after a short delay to allow completion
-                            setTimeout(() => {
-                                statusDiv.innerHTML = '';
-                                loadBacktestRuns(); // This will refresh the list of runs
-                            }, 2500);
+                            statusDiv.innerHTML = `<p class="success-message">Backtest completed! New Run ID: ${data.run_id}</p>`;
+                            // Refresh the runs list, then automatically select and load the new run
+                            loadBacktestRuns().then(() => {
+                                // Find the new run card and simulate a click to load its data
+                                const newRunCard = document.querySelector(`.run-card[data-run-id='${data.run_id}']`);
+                                if (newRunCard) {
+                                    selectRun(newRunCard, data.run_id, newRunCard.dataset.runName);
+                                }
+                            });
                         } else {
-                            throw new Error(data.error);
+                            throw new Error(data.error || 'Unknown error occurred.');
                         }
                     })
                     .catch(error => {
@@ -521,7 +524,13 @@
                             .then(data => {
                                 if (data.success) {
                                     statusDiv.innerHTML = `<p class="success-message">${data.message}</p>`;
-                                    loadBacktestRuns(); // Refresh the now-empty list
+                                    // After clearing, reload runs and reset views
+                                    loadBacktestRuns().then(() => {
+                                        document.getElementById('results-container').innerHTML = '<p class="secondary-text">Select a backtest run to view results.</p>';
+                                        document.getElementById('performance-overview-container').innerHTML = '<p class="secondary-text">Select a backtest run to view performance.</p>';
+                                        document.getElementById('strategy-insights-content').innerHTML = '<p class="secondary-text">Select a backtest run to view insights.</p>';
+                                        document.getElementById('visualizations-container').innerHTML = '';
+                                    });
                                 } else {
                                     throw new Error(data.error);
                                 }
