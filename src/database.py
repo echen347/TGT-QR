@@ -70,6 +70,28 @@ class SignalRecord(Base):
     current_price = Column(Float, nullable=False)
     timestamp = Column(DateTime, nullable=False)
 
+class BacktestResult(Base):
+    """Store backtest results"""
+    __tablename__ = 'backtest_results'
+
+    id = Column(Integer, primary_key=True)
+    symbol = Column(String(20), nullable=False)
+    start_date = Column(DateTime, nullable=False)
+    end_date = Column(DateTime, nullable=False)
+    total_return_pct = Column(Float, nullable=False)
+    total_trades = Column(Integer, nullable=False)
+    win_rate_pct = Column(Float, nullable=False)
+    avg_win_pct = Column(Float, nullable=False)
+    avg_loss_pct = Column(Float, nullable=False)
+    max_drawdown_pct = Column(Float, nullable=False)
+    sharpe_ratio = Column(Float, nullable=False)
+    alpha = Column(Float, nullable=False)
+    beta = Column(Float, nullable=False)
+    volatility = Column(Float, nullable=False)
+    calmar_ratio = Column(Float, nullable=False)
+    sortino_ratio = Column(Float, nullable=False)
+    timestamp = Column(DateTime, nullable=False)
+
 class DatabaseManager:
     """Database operations manager"""
 
@@ -163,6 +185,57 @@ class DatabaseManager:
         except Exception as e:
             self.session.rollback()
             print(f"Error saving signal record: {e}")
+
+    def save_backtest_result(self, symbol, start_date, end_date, metrics):
+        """Save backtest results to database"""
+        try:
+            record = BacktestResult(
+                symbol=symbol,
+                start_date=start_date,
+                end_date=end_date,
+                total_return_pct=metrics.get('total_return_pct', 0),
+                total_trades=metrics.get('total_trades', 0),
+                win_rate_pct=metrics.get('win_rate_pct', 0),
+                avg_win_pct=metrics.get('avg_win_pct', 0),
+                avg_loss_pct=metrics.get('avg_loss_pct', 0),
+                max_drawdown_pct=metrics.get('max_drawdown_pct', 0),
+                sharpe_ratio=metrics.get('sharpe_ratio', 0),
+                alpha=metrics.get('alpha', 0),
+                beta=metrics.get('beta', 0),
+                volatility=metrics.get('volatility', 0),
+                calmar_ratio=metrics.get('calmar_ratio', 0),
+                sortino_ratio=metrics.get('sortino_ratio', 0),
+                timestamp=datetime.utcnow()
+            )
+            self.session.add(record)
+            self.session.commit()
+        except Exception as e:
+            self.session.rollback()
+            print(f"Error saving backtest result: {e}")
+
+    def get_backtest_results(self, limit=50):
+        """Get recent backtest results"""
+        try:
+            records = self.session.query(BacktestResult)\
+                .order_by(BacktestResult.timestamp.desc())\
+                .limit(limit)\
+                .all()
+
+            return [{
+                'id': r.id,
+                'symbol': r.symbol,
+                'start_date': r.start_date.strftime('%Y-%m-%d'),
+                'end_date': r.end_date.strftime('%Y-%m-%d'),
+                'total_return_pct': r.total_return_pct,
+                'total_trades': r.total_trades,
+                'win_rate_pct': r.win_rate_pct,
+                'sharpe_ratio': r.sharpe_ratio,
+                'max_drawdown_pct': r.max_drawdown_pct,
+                'timestamp': r.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+            } for r in records]
+        except Exception as e:
+            print(f"Error getting backtest results: {e}")
+            return []
 
     def get_recent_prices(self, symbol, limit=100):
         """Get recent price data for a symbol"""

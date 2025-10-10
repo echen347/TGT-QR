@@ -13,17 +13,17 @@ BYBIT_TESTNET = os.getenv('BYBIT_TESTNET', 'true').lower() == 'true'
 BYBIT_API_KEY = os.getenv('BYBIT_API_KEY')
 BYBIT_API_SECRET = os.getenv('BYBIT_API_SECRET')
 
-# Trading Configuration - ADJUSTED FOR 50¢ RISK PER TRADE
-SYMBOLS = ['BTCUSDT', 'ETHUSDT', 'XRPUSDT']  # Start with 3 symbols including XRP
-LEVERAGE = 10  # 10x leverage for smaller position sizes
-MAX_POSITION_USDT = 0.50  # 50¢ risk per position
-TIMEFRAME = '1'  # 1-minute candles (API requires '1', not '1m')
-MA_PERIOD = 60  # 1-hour moving average (60 minutes)
+# Trading Configuration - IMPROVED FOR BETTER PERFORMANCE
+SYMBOLS = ['BTCUSDT', 'ETHUSDT']  # Reduced to 2 most liquid symbols
+LEVERAGE = 5  # Reduced leverage for better risk management
+MAX_POSITION_USDT = 5.00  # Increased position size for meaningful trades
+TIMEFRAME = '60'  # 1-hour candles for less noise
+MA_PERIOD = 20  # 20-period MA on 1-hour data
 
 # Strategy Configuration - MODERATE RISK
 STRATEGY_INTERVAL_MINUTES = 15  # Run strategy every 15 minutes
-MAX_DAILY_LOSS_USDT = 5.00  # Maximum $5 daily loss (aligns with 5 USDT minimum)
-MAX_TOTAL_LOSS_USDT = 1.00  # Absolute maximum loss before stopping ($1 emergency stop)
+MAX_DAILY_LOSS_USDT = 1.00  # Maximum daily loss
+MAX_TOTAL_LOSS_USDT = 2.00  # Absolute maximum loss before stopping 
 
 # Database Configuration
 DATABASE_URL = 'sqlite:///data/trading_data.db'

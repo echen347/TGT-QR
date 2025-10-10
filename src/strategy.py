@@ -53,7 +53,11 @@ class MovingAverageStrategy:
                 'price': 0,
                 'ma_value': 0,
                 'signal': 0,
-                'volume_24h': 0
+                'volume_24h': 0,
+                'position_size': 0,
+                'entry_price': 0,
+                'stop_loss': 0,
+                'take_profit': 0
             }
         # Setup logging
         self.logger = self._setup_logging()
@@ -123,19 +127,109 @@ class MovingAverageStrategy:
             self.logger.error(f"Exception getting prices for {symbol}: {str(e)}")
             return []
     def calculate_ma_signal(self, symbol):
-        """Calculate moving average signal"""
-        if len(self.price_history[symbol]) < MA_PERIOD:
-            return 0  # Not enough data
+        """Calculate moving average signal with improved filtering"""
+        if len(self.price_history[symbol]) < MA_PERIOD + 10:
+            return 0  # Need more data for reliable signals
+
         prices = pd.DataFrame(self.price_history[symbol])
         ma = prices['close'].rolling(window=MA_PERIOD).mean().iloc[-1]
         current_price = prices['close'].iloc[-1]
-        # Simple signal: 1 for buy (price > MA), -1 for sell (price < MA)
-        if current_price > ma * 1.001:  # 0.1% threshold to avoid noise
-            return 1
-        elif current_price < ma * 0.999:  # 0.1% threshold to avoid noise
-            return -1
-        else:
+
+        # Calculate trend strength using MA slope
+        ma_slope = (ma - prices['close'].rolling(window=MA_PERIOD).mean().iloc[-5]) / MA_PERIOD
+        trend_strength = abs(ma_slope) / current_price
+
+        # Only trade if trend is reasonably strong (>0.1% per period)
+        if trend_strength < 0.001:  # 0.1% minimum trend strength
             return 0
+
+        # Calculate volatility for better signal filtering
+        recent_volatility = prices['close'].pct_change().rolling(window=10).std().iloc[-1]
+
+        # Adjust thresholds based on volatility
+        if recent_volatility > 0.02:  # High volatility
+            threshold = 0.003  # 0.3% threshold
+        else:  # Normal volatility
+            threshold = 0.001  # 0.1% threshold
+
+        # Improved signal logic with trend confirmation
+        if current_price > ma * (1 + threshold):
+            # Additional confirmation: price above MA and MA is rising
+            if ma_slope > 0:
+                return 1
+        elif current_price < ma * (1 - threshold):
+            # Additional confirmation: price below MA and MA is falling
+            if ma_slope < 0:
+                return -1
+
+        return 0
+
+    def set_stop_loss_take_profit(self, symbol, entry_price, position_size, side):
+        """Set stop loss and take profit levels"""
+        # Use ATR-based stops for better risk management
+        prices = pd.DataFrame(self.price_history[symbol][-20:])  # Last 20 candles for ATR
+        atr = self.calculate_atr(prices, 14)
+
+        # Dynamic stop loss based on volatility
+        if atr > 0:
+            stop_distance = max(atr * 1.5, entry_price * 0.01)  # At least 1%
+        else:
+            stop_distance = entry_price * 0.02  # 2% fallback
+
+        # Take profit at 2:1 reward:risk ratio
+        take_profit_distance = stop_distance * 2
+
+        if side == "Buy":  # Long position
+            stop_loss = entry_price - stop_distance
+            take_profit = entry_price + take_profit_distance
+        else:  # Short position
+            stop_loss = entry_price + stop_distance
+            take_profit = entry_price - take_profit_distance
+
+        self.market_state[symbol].update({
+            'entry_price': entry_price,
+            'stop_loss': stop_loss,
+            'take_profit': take_profit,
+            'position_size': position_size
+        })
+
+        return stop_loss, take_profit
+
+    def calculate_atr(self, prices, period=14):
+        """Calculate Average True Range"""
+        high = prices['high']
+        low = prices['low']
+        close = prices['close']
+
+        tr1 = high - low
+        tr2 = abs(high - close.shift(1))
+        tr3 = abs(low - close.shift(1))
+
+        tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
+        atr = tr.rolling(window=period).mean().iloc[-1]
+
+        return atr
+
+    def check_exit_conditions(self, symbol, current_price):
+        """Check if position should be closed due to stop loss or take profit"""
+        if self.market_state[symbol]['position_size'] == 0:
+            return False, None
+
+        entry_price = self.market_state[symbol]['entry_price']
+        stop_loss = self.market_state[symbol]['stop_loss']
+        take_profit = self.market_state[symbol]['take_profit']
+        position_size = self.market_state[symbol]['position_size']
+
+        # Check stop loss and take profit
+        if position_size > 0:  # Long position
+            if current_price <= stop_loss or current_price >= take_profit:
+                return True, "Sell" if current_price <= stop_loss else "Sell"
+        else:  # Short position
+            if current_price >= stop_loss or current_price <= take_profit:
+                return True, "Buy" if current_price >= stop_loss else "Buy"
+
+        return False, None
+
     def get_current_positions(self):
         """Get current open positions for all symbols"""
         try:
@@ -300,13 +394,26 @@ class MovingAverageStrategy:
                 positions = self.get_current_positions()
                 current_position = positions.get(symbol, {'position_size': 0, 'position_value': 0})
                 self.logger.info(f"📊 {symbol}: Signal={signal}, Price=${current_price:.2f}, MA=${ma_value:.2f}")
-                # Trading logic with risk management
+                # Check if we should exit current position due to stop loss/take profit
+                should_exit, exit_side = self.check_exit_conditions(symbol, current_price)
+                if should_exit and current_position['position_size'] > 0:
+                    position_value = abs(current_position['position_value'])
+                    success = self.place_order(symbol, exit_side, position_value)
+                    if success:
+                        self.logger.info(f"🎯 {exit_side} position closed for {symbol} (Stop Loss/Take Profit)")
+                        self.market_state[symbol]['position_size'] = 0  # Reset position tracking
+                        self.risk_manager.positions_count -= 1
+                    continue  # Skip to next symbol after exit
+
+                # Trading logic with improved risk management
                 if signal == 1 and current_position['position_size'] == 0:
                     # Go long - only if we can open position
                     if self.risk_manager.can_open_position(symbol, MAX_POSITION_USDT):
                         success = self.place_order(symbol, "Buy", MAX_POSITION_USDT)
                         if success:
                             self.logger.info(f"🚀 LONG position opened for {symbol}")
+                            # Set stop loss and take profit
+                            self.set_stop_loss_take_profit(symbol, current_price, MAX_POSITION_USDT, "Buy")
                     else:
                         self.logger.warning(f"⚠️ LONG signal for {symbol} but risk management blocked")
                 elif signal == -1 and current_position['position_size'] == 0:
@@ -315,24 +422,32 @@ class MovingAverageStrategy:
                         success = self.place_order(symbol, "Sell", MAX_POSITION_USDT)
                         if success:
                             self.logger.info(f"🔻 SHORT position opened for {symbol}")
+                            # Set stop loss and take profit
+                            self.set_stop_loss_take_profit(symbol, current_price, -MAX_POSITION_USDT, "Sell")
                     else:
                         self.logger.warning(f"⚠️ SHORT signal for {symbol} but risk management blocked")
                 elif signal == 0 and current_position['position_size'] > 0:
-                    # Close position
+                    # Close position when signal goes neutral (MA crossover)
                     position_value = abs(current_position['position_value'])
                     side = "Sell" if current_position['side'] == "Buy" else "Buy"
                     success = self.place_order(symbol, side, position_value)
                     if success:
-                        self.logger.info(f"🔄 Position closed for {symbol}")
+                        self.logger.info(f"🔄 Position closed for {symbol} (MA crossover)")
+                        self.market_state[symbol]['position_size'] = 0  # Reset position tracking
                         self.risk_manager.positions_count -= 1
                 self.signals[symbol] = signal
                     
                 # Update market state for the dashboard
+                current_state = self.market_state[symbol]
                 self.market_state[symbol] = {
                     'price': current_price,
                     'ma_value': ma_value,
                     'signal': signal,
-                    'volume_24h': self.get_symbol_volume(symbol)
+                    'volume_24h': self.get_symbol_volume(symbol),
+                    'position_size': current_state.get('position_size', 0),
+                    'entry_price': current_state.get('entry_price', 0),
+                    'stop_loss': current_state.get('stop_loss', 0),
+                    'take_profit': current_state.get('take_profit', 0)
                 }
             # Log current state
             self.log_trading_state()

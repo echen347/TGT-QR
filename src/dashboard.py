@@ -221,6 +221,33 @@ def api_set_parameter():
             'error': str(e)
         })
 
+@app.route('/backtest')
+def backtest_dashboard():
+    """Backtest results and visualization dashboard"""
+    trading_dashboard = TradingDashboard(strategy_instance, risk_manager_instance)
+
+    # Get recent backtest results
+    backtest_results = db_manager.get_backtest_results(20)
+
+    # Get market data for charts
+    market_data = trading_dashboard.get_market_data()
+
+    return render_template('backtest_dashboard.html',
+                         backtest_results=backtest_results,
+                         market_data=market_data,
+                         last_updated=datetime.now())
+
+@app.route('/api/backtest_results')
+def api_backtest_results():
+    """API endpoint for backtest results"""
+    dashboard = TradingDashboard(strategy_instance, risk_manager_instance)
+    results = db_manager.get_backtest_results(50)
+
+    return jsonify({
+        'results': results,
+        'timestamp': datetime.now().isoformat()
+    })
+
 # Function to run the dashboard with shared instances
 def run_dashboard(strategy, risk_manager):
     global strategy_instance, risk_manager_instance
