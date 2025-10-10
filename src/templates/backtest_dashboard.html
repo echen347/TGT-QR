@@ -488,8 +488,8 @@
                             // Refresh the list of runs after a short delay to allow completion
                             setTimeout(() => {
                                 statusDiv.innerHTML = '';
-                                loadBacktestRuns();
-                            }, 2000);
+                                loadBacktestRuns(); // This will refresh the list of runs
+                            }, 2500);
                         } else {
                             throw new Error(data.error);
                         }

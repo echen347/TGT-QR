@@ -27,7 +27,7 @@ LEVERAGE = 5  # Reduced leverage for better risk management
 MAX_POSITIONS = 5  # Allow up to 5 positions at once (broader diversification)
 MIN_VOLUME_USDT = 500000  # Only trade reasonably liquid pairs (500K+ USD volume)
 TIMEFRAME = '60'  # 1-hour candles for less noise
-MA_PERIOD = 50  # 20-period MA on 1-hour data
+MA_PERIOD = 20  # A shorter MA period will be more sensitive to price changes
 ATR_PERIOD = 14
 
 # Strategy Configuration - MODERATE RISK
