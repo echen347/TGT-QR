@@ -192,7 +192,7 @@ class Backtester:
         print("✅ Data fetch complete!")
 
     def _get_signal(self, historical_prices):
-        """Calculates the MA signal with improved filtering. Replicates the logic from strategy.py."""
+        """Calculates the MA signal with improved filtering. MUST MATCH strategy.py exactly."""
         if len(historical_prices) < MA_PERIOD + 10:
             return 0
 
@@ -203,18 +203,23 @@ class Backtester:
         ma_slope = (ma - historical_prices['close'].rolling(window=MA_PERIOD).mean().iloc[-5]) / MA_PERIOD
         trend_strength = abs(ma_slope) / current_price
 
-        # Only trade if trend is reasonably strong (>0.1% per period)
-        if trend_strength < 0.001:  # 0.1% minimum trend strength
+        # Use config values - MUST match strategy.py
+        from config.config import MIN_TREND_STRENGTH, VOLATILITY_THRESHOLD_HIGH, VOLATILITY_THRESHOLD_LOW
+        
+        # Only trade if trend is reasonably strong
+        if trend_strength < MIN_TREND_STRENGTH:
             return 0
 
         # Calculate volatility for better signal filtering
         recent_volatility = historical_prices['close'].pct_change().rolling(window=10).std().iloc[-1]
 
-        # Adjust thresholds based on volatility
-        if recent_volatility > 0.02:  # High volatility
+        # Adjust thresholds based on volatility - MUST match strategy.py
+        if recent_volatility > VOLATILITY_THRESHOLD_HIGH:  # High volatility
             threshold = 0.003  # 0.3% threshold
-        else:  # Normal volatility
+        elif recent_volatility > VOLATILITY_THRESHOLD_LOW:  # Normal volatility
             threshold = 0.001  # 0.1% threshold
+        else:  # Low volatility
+            threshold = 0.0005  # 0.05% threshold for very calm markets
 
         # Improved signal logic with trend confirmation
         if current_price > ma * (1 + threshold):
