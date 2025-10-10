@@ -20,7 +20,19 @@ from src.scheduler import start_scheduler
 from config.config import DASHBOARD_HOST, DASHBOARD_PORT
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+log_dir = os.path.join(os.path.dirname(__file__), '..', 'logs')
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir)
+log_file_path = os.path.join(log_dir, 'trading_system.log')
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler(log_file_path),
+        logging.StreamHandler(sys.stdout)
+    ]
+)
 
 def main():
     """Main function to create shared instances and start both dashboard and scheduler."""

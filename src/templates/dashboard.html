@@ -433,28 +433,44 @@
     {{ moment.include_moment() }}
     <script>
         document.getElementById('shutdown-btn').addEventListener('click', function() {
-            if (confirm('Are you sure you want to trigger the EMERGENCY STOP? This will prevent all new trades.')) {
-                fetch('/shutdown', { method: 'POST' })
-                    .then(response => response.json())
-                    .then(data => {
-                        const statusEl = document.getElementById('shutdown-status');
-                        if (data.status === 'success') {
-                            statusEl.style.color = 'var(--green-color)';
-                            statusEl.innerText = data.message;
-                            alert('Emergency Stop Activated!');
-                        } else {
-                            statusEl.style.color = 'var(--red-color)';
-                            statusEl.innerText = 'Error: ' + data.message;
-                            alert('Failed to activate Emergency Stop.');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        const statusEl = document.getElementById('shutdown-status');
+            const password = prompt('To trigger the EMERGENCY STOP, please enter the password:');
+            if (password === null) {
+                return; // User cancelled the prompt
+            }
+
+            if (password !== 'chaewon') {
+                alert('Incorrect password. Emergency Stop was not activated.');
+                return;
+            }
+
+            if (confirm('Password accepted. Are you sure you want to trigger the EMERGENCY STOP? This will prevent all new trades.')) {
+                fetch('/shutdown', { 
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ password: password })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const statusEl = document.getElementById('shutdown-status');
+                    if (data.status === 'success') {
+                        statusEl.style.color = 'var(--green-color)';
+                        statusEl.innerText = data.message;
+                        alert('Emergency Stop Activated!');
+                    } else {
                         statusEl.style.color = 'var(--red-color)';
-                        statusEl.innerText = 'A network error occurred.';
-                        alert('An error occurred while trying to stop the bot.');
-                    });
+                        statusEl.innerText = 'Error: ' + data.message;
+                        alert('Failed to activate Emergency Stop: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    const statusEl = document.getElementById('shutdown-status');
+                    statusEl.style.color = 'var(--red-color)';
+                    statusEl.innerText = 'A network error occurred.';
+                    alert('An error occurred while trying to stop the bot.');
+                });
             }
         });
         // Auto-refresh the page every 60 seconds to get new data
@@ -519,17 +535,20 @@
                     return response.json();
                 })
                 .then(data => {
-                    if (!data.price_data || Object.keys(data.price_data).length === 0) {
-                        throw new Error('No price data available');
+                    if (!data.labels || data.labels.length === 0) {
+                        throw new Error('No chart data available from API');
                     }
 
-                    // Render charts with smaller datasets for better performance
-                    const optimizedData = optimizeChartData(data.price_data);
-                    createPriceChart(optimizedData);
-                    createVolumeChart(optimizedData);
-                    createCorrelationChart();
-                    createDepthChart();
-                    updateIndicators(data.indicators);
+                    // Render charts with the fetched data
+                    createPriceChart(data);
+                    createVolumeChart(data);
+                    createCorrelationChart(); // Still uses sample data
+                    createDepthChart(); // Still uses sample data
+                    createVolatilityChart(data);
+                    createMacdChart(data);
+
+                    // This part seems to be for a different section, assuming it's for the summary boxes
+                    // updateIndicators(data.indicators);
                 })
                 .catch(error => {
                     console.error('Error loading chart data:', error);
@@ -556,94 +575,64 @@
         }
 
 
-        function createPriceChart(priceData) {
+        function createPriceChart(data) {
             const ctx = document.getElementById('priceChart').getContext('2d');
-
-            // Combine data from multiple symbols
-            const datasets = [];
-            const colors = ['#9d72ff', '#2ecc71', '#e74c3c'];
-
-            Object.keys(priceData).forEach((symbol, index) => {
-                const data = priceData[symbol];
-                datasets.push({
-                    label: symbol,
-                    data: data.prices,
-                    borderColor: colors[index % colors.length],
-                    backgroundColor: colors[index % colors.length] + '20',
-                    fill: false,
-                    tension: 0.4
-                });
-            });
+            const datasets = [{
+                label: 'BTCUSDT Price',
+                data: data.prices.btc,
+                borderColor: '#9d72ff',
+                backgroundColor: 'rgba(157, 114, 255, 0.1)',
+                fill: true,
+                tension: 0.4
+            }, {
+                label: 'ETHUSDT Price',
+                data: data.prices.eth,
+                borderColor: '#2ecc71',
+                backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                fill: true,
+                tension: 0.4
+            }, {
+                label: 'BNBUSDT Price',
+                data: data.prices.bnb,
+                borderColor: '#f1c40f',
+                backgroundColor: 'rgba(241, 196, 15, 0.1)',
+                fill: true,
+                tension: 0.4
+            }];
 
             new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: priceData[Object.keys(priceData)[0]]?.timestamps || [],
+                    labels: data.labels,
                     datasets: datasets
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            labels: { color: 'var(--text-color)' }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            ticks: { color: 'var(--text-secondary-color)' },
-                            grid: { color: 'var(--border-color)' }
-                        },
-                        y: {
-                            ticks: { color: 'var(--text-secondary-color)' },
-                            grid: { color: 'var(--border-color)' }
-                        }
-                    }
-                }
+                options: defaultChartOptions
             });
         }
 
-        function createVolumeChart(priceData) {
+        function createVolumeChart(data) {
             const ctx = document.getElementById('volumeChart').getContext('2d');
-
-            const datasets = [];
-            const colors = ['rgba(157, 114, 255, 0.8)', 'rgba(46, 204, 113, 0.8)', 'rgba(231, 76, 60, 0.8)'];
-
-            Object.keys(priceData).forEach((symbol, index) => {
-                const data = priceData[symbol];
-                datasets.push({
-                    label: `${symbol} Volume`,
-                    data: data.volumes,
-                    backgroundColor: colors[index % colors.length],
-                    borderWidth: 1
-                });
-            });
+            const datasets = [{
+                label: 'BTCUSDT Volume',
+                data: data.volumes.btc,
+                backgroundColor: 'rgba(157, 114, 255, 0.8)'
+            }, {
+                label: 'ETHUSDT Volume',
+                data: data.volumes.eth,
+                backgroundColor: 'rgba(46, 204, 113, 0.8)'
+            }, {
+                label: 'BNBUSDT Volume',
+                data: data.volumes.bnb,
+                backgroundColor: 'rgba(241, 196, 15, 0.8)'
+            }];
 
             new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: priceData[Object.keys(priceData)[0]]?.timestamps || [],
+                    labels: data.labels,
                     datasets: datasets
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            labels: { color: 'var(--text-color)' }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            ticks: { color: 'var(--text-secondary-color)' },
-                            grid: { color: 'var(--border-color)' }
-                        },
-                        y: {
-                            ticks: { color: 'var(--text-secondary-color)' },
-                            grid: { color: 'var(--border-color)' }
-                        }
-                    }
-                }
+                options: defaultChartOptions
             });
         }
 
@@ -789,6 +778,24 @@
                 </div>`;
             });
         }
+
+        const defaultChartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { labels: { color: 'var(--text-color)' } }
+            },
+            scales: {
+                x: {
+                    ticks: { color: 'var(--text-secondary-color)' },
+                    grid: { color: 'var(--border-color)' }
+                },
+                y: {
+                    ticks: { color: 'var(--text-secondary-color)' },
+                    grid: { color: 'var(--border-color)' }
+                }
+            }
+        };
     </script>
 </body>
 </html>

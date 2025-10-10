@@ -133,6 +133,19 @@
             margin-bottom: 16px;
             color: var(--primary-color);
         }
+        .chart-loader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--text-color);
+            font-size: 1.2em;
+            z-index: 10;
+        }
+        .loading-text, .error-text {
+            color: var(--text-secondary-color);
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -346,6 +359,9 @@
                         <h4>Return Distribution</h4>
                         <div class="chart-placeholder">
                             <canvas id="returnDistributionChart" width="400" height="250"></canvas>
+                            <div class="chart-loader" style="display: none;">
+                                <i class="fas fa-spinner fa-spin"></i> Loading Chart...
+                            </div>
                         </div>
                         <p style="font-size: 0.8em; color: var(--text-secondary-color); margin-top: 8px;">
                             Distribution of trade returns for selected symbols
@@ -355,6 +371,9 @@
                         <h4>Drawdown Analysis</h4>
                         <div class="chart-placeholder">
                             <canvas id="drawdownChart" width="400" height="250"></canvas>
+                            <div class="chart-loader" style="display: none;">
+                                <i class="fas fa-spinner fa-spin"></i> Loading Chart...
+                            </div>
                         </div>
                         <p style="font-size: 0.8em; color: var(--text-secondary-color); margin-top: 8px;">
                             Portfolio drawdown over time

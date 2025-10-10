@@ -14,6 +14,7 @@ from database import db_manager
 import json
 from flask_moment import Moment
 import random
+import logging
 
 app = Flask(__name__)
 moment = Moment(app)
@@ -191,11 +192,15 @@ def api_status():
     })
 
 @app.route('/shutdown', methods=['POST'])
-def shutdown_bot():
-    """Endpoint to trigger emergency stop"""
+def shutdown():
+    """Endpoint to trigger the emergency stop."""
+    data = request.get_json()
+    if not data or data.get('password') != 'chaewon':
+        return jsonify({'status': 'error', 'message': 'Incorrect password.'}), 401
+
     try:
-        # Use the shared instance
         risk_manager_instance.emergency_stop()
+        logging.warning("EMERGENCY STOP ACTIVATED VIA DASHBOARD")
         return jsonify({'status': 'success', 'message': 'Emergency stop triggered. Bot will stop trading.'})
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
@@ -330,6 +335,25 @@ def api_market_data():
         },
         'timestamp': datetime.now().isoformat()
     })
+
+@app.route('/logs')
+def logs_page():
+    return render_template('logs.html')
+
+@app.route('/api/logs')
+def api_logs():
+    try:
+        log_file_path = os.path.join(os.path.dirname(__file__), '..', 'logs', 'trading_system.log')
+        if not os.path.exists(log_file_path):
+            return jsonify({'error': 'Log file not found.'}), 404
+        
+        with open(log_file_path, 'r') as f:
+            # Read the last 200 lines for performance
+            lines = f.readlines()[-200:]
+            return jsonify({'logs': ''.join(lines)})
+    except Exception as e:
+        logging.error(f"Error reading log file: {e}")
+        return jsonify({'error': 'An error occurred while reading logs.'}), 500
 
 # Function to run the dashboard with shared instances
 def run_dashboard(strategy, risk_manager):
