@@ -754,7 +754,7 @@
                     createCorrelationChart();
                     createDepthChart();
 
-                    // Update indicators
+                    // Always update indicators regardless of chart type
                     updateIndicators(data.indicators);
                 })
                 .catch(error => {
@@ -918,9 +918,6 @@
         function updateIndicators(indicators) {
             if (!indicators) return;
 
-            console.log('Updating indicators with data:', indicators);
-            console.log('BTC RSI value:', indicators.btc?.rsi);
-
             // Get average or representative values for each indicator
             const symbols = Object.keys(indicators);
             const avgRsi = symbols.length > 0 ?
@@ -933,9 +930,7 @@
 
             // Update values with color coding
             const rsiElement = document.getElementById('rsi-value');
-            console.log('RSI element found:', !!rsiElement);
             if (rsiElement) {
-                console.log('Updating RSI from', rsiElement.textContent, 'to', avgRsi);
                 rsiElement.textContent = avgRsi;
                 rsiElement.className = getRsiClass(parseFloat(avgRsi));
             }
