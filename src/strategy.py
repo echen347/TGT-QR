@@ -8,6 +8,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from config.config import *
 import logging
+from logging.handlers import TimedRotatingFileHandler
 from database import db_manager
 from risk_manager import risk_manager
 
@@ -37,12 +38,27 @@ class MovingAverageStrategy:
         self.logger = self._setup_logging()
 
     def _setup_logging(self):
-        """Setup logging configuration"""
+        """Setup logging configuration with daily rotation"""
         logger = logging.getLogger('TradingStrategy')
         logger.setLevel(getattr(logging, LOG_LEVEL))
 
-        # File handler
-        file_handler = logging.FileHandler(LOG_FILE)
+        # Daily rotating file handler for live trading
+        if LOG_ROTATION == 'daily':
+            # Format: logs/trading-YYYY-MM-DD.log
+            log_filename = 'logs/trading.log'
+            file_handler = TimedRotatingFileHandler(
+                log_filename,
+                when='midnight',
+                interval=1,
+                backupCount=LOG_RETENTION_DAYS,
+                encoding='utf-8'
+            )
+            # Suffix format for archived logs
+            file_handler.suffix = '%Y-%m-%d'
+        else:
+            # Fallback to regular FileHandler
+            file_handler = logging.FileHandler(LOG_FILE)
+        
         file_handler.setLevel(getattr(logging, LOG_LEVEL))
 
         # Console handler
@@ -262,76 +278,78 @@ class MovingAverageStrategy:
             return False
 
     def run_strategy(self):
-        """Main strategy execution with comprehensive risk management"""
-        self.logger.info("=" * 60)
-        self.logger.info("🔄 Running trading strategy...")
+        """Main strategy execution loop"""
+        self.logger.critical("--- EXECUTING LATEST VERSION OF THE STRATEGY CODE ---")
+        try:
+            self.logger.info("Running trading strategy...")
+            # Check risk management first
+            risk_status = risk_manager.get_risk_status()
+            if not risk_status['can_trade']:
+                self.logger.error("❌ Risk management prevents trading.")
+                self.logger.error(f"Daily Loss: ${risk_status['daily_loss']:.2f}/${risk_status['max_daily_loss_usdt']:.2f}")
+                self.logger.error(f"Total Loss: ${risk_status['total_loss']:.2f}/${risk_status['max_total_loss_usdt']:.2f}")
+                return
 
-        # Check risk status first
-        risk_status = risk_manager.get_risk_status()
-        if not risk_status['can_trade']:
-            self.logger.error("❌ Risk management prevents trading.")
-            self.logger.error(f"Daily Loss: ${risk_status['daily_loss']:.2f}/${risk_status['max_daily_loss_usdt']:.2f}")
-            self.logger.error(f"Total Loss: ${risk_status['total_loss']:.2f}/${risk_status['max_total_loss_usdt']:.2f}")
-            return
+            # Update price history for all symbols
+            for symbol in SYMBOLS:
+                prices = self.get_historical_prices(symbol, MA_PERIOD + 10)
+                if prices:
+                    self.price_history[symbol] = prices[-MA_PERIOD:]
+                    # Save price data to database
+                    for price_data in prices[-10:]:  # Save last 10 candles
+                        db_manager.save_price_data(symbol, price_data)
 
-        # Update price history for all symbols
-        for symbol in SYMBOLS:
-            prices = self.get_historical_prices(symbol, MA_PERIOD + 10)
-            if prices:
-                self.price_history[symbol] = prices[-MA_PERIOD:]
-                # Save price data to database
-                for price_data in prices[-10:]:  # Save last 10 candles
-                    db_manager.save_price_data(symbol, price_data)
+            # Calculate signals and execute trades
+            for symbol in SYMBOLS:
+                if len(self.price_history[symbol]) >= MA_PERIOD:
+                    signal = self.calculate_ma_signal(symbol)
+                    current_price = self.price_history[symbol][-1]['close']
+                    ma_value = pd.DataFrame(self.price_history[symbol])['close'].rolling(window=MA_PERIOD).mean().iloc[-1]
 
-        # Calculate signals and execute trades
-        for symbol in SYMBOLS:
-            if len(self.price_history[symbol]) >= MA_PERIOD:
-                signal = self.calculate_ma_signal(symbol)
-                current_price = self.price_history[symbol][-1]['close']
-                ma_value = pd.DataFrame(self.price_history[symbol])['close'].rolling(window=MA_PERIOD).mean().iloc[-1]
+                    # Save signal to database
+                    db_manager.save_signal_record(symbol, signal, ma_value, current_price)
 
-                # Save signal to database
-                db_manager.save_signal_record(symbol, signal, ma_value, current_price)
+                    # Get current positions
+                    positions = self.get_current_positions()
+                    current_position = positions.get(symbol, {'position_size': 0, 'position_value': 0})
 
-                # Get current positions
-                positions = self.get_current_positions()
-                current_position = positions.get(symbol, {'position_size': 0, 'position_value': 0})
+                    self.logger.info(f"📊 {symbol}: Signal={signal}, Price=${current_price:.2f}, MA=${ma_value:.2f}")
 
-                self.logger.info(f"📊 {symbol}: Signal={signal}, Price=${current_price:.2f}, MA=${ma_value:.2f}")
+                    # Trading logic with risk management
+                    if signal == 1 and current_position['position_size'] == 0:
+                        # Go long - only if we can open position
+                        if risk_manager.can_open_position(symbol, MAX_POSITION_USDT):
+                            success = self.place_order(symbol, "Buy", MAX_POSITION_USDT)
+                            if success:
+                                self.logger.info(f"🚀 LONG position opened for {symbol}")
+                        else:
+                            self.logger.warning(f"⚠️ LONG signal for {symbol} but risk management blocked")
 
-                # Trading logic with risk management
-                if signal == 1 and current_position['position_size'] == 0:
-                    # Go long - only if we can open position
-                    if risk_manager.can_open_position(symbol, MAX_POSITION_USDT):
-                        success = self.place_order(symbol, "Buy", MAX_POSITION_USDT)
+                    elif signal == -1 and current_position['position_size'] == 0:
+                        # Go short - only if we can open position
+                        if risk_manager.can_open_position(symbol, MAX_POSITION_USDT):
+                            success = self.place_order(symbol, "Sell", MAX_POSITION_USDT)
+                            if success:
+                                self.logger.info(f"🔻 SHORT position opened for {symbol}")
+                        else:
+                            self.logger.warning(f"⚠️ SHORT signal for {symbol} but risk management blocked")
+
+                    elif signal == 0 and current_position['position_size'] > 0:
+                        # Close position
+                        position_value = abs(current_position['position_value'])
+                        side = "Sell" if current_position['side'] == "Buy" else "Buy"
+                        success = self.place_order(symbol, side, position_value)
                         if success:
-                            self.logger.info(f"🚀 LONG position opened for {symbol}")
-                    else:
-                        self.logger.warning(f"⚠️ LONG signal for {symbol} but risk management blocked")
+                            self.logger.info(f"🔄 Position closed for {symbol}")
+                            risk_manager.positions_count -= 1
 
-                elif signal == -1 and current_position['position_size'] == 0:
-                    # Go short - only if we can open position
-                    if risk_manager.can_open_position(symbol, MAX_POSITION_USDT):
-                        success = self.place_order(symbol, "Sell", MAX_POSITION_USDT)
-                        if success:
-                            self.logger.info(f"🔻 SHORT position opened for {symbol}")
-                    else:
-                        self.logger.warning(f"⚠️ SHORT signal for {symbol} but risk management blocked")
+                    self.signals[symbol] = signal
 
-                elif signal == 0 and current_position['position_size'] > 0:
-                    # Close position
-                    position_value = abs(current_position['position_value'])
-                    side = "Sell" if current_position['side'] == "Buy" else "Buy"
-                    success = self.place_order(symbol, side, position_value)
-                    if success:
-                        self.logger.info(f"🔄 Position closed for {symbol}")
-                        risk_manager.positions_count -= 1
-
-                self.signals[symbol] = signal
-
-        # Log current state
-        self.log_trading_state()
-        self.logger.info("=" * 60)
+            # Log current state
+            self.log_trading_state()
+            self.logger.info("=" * 60)
+        except Exception as e:
+            self.logger.exception(f"An unexpected error occurred during strategy execution: {e}")
 
     def log_trading_state(self):
         """Log comprehensive trading state including risk metrics"""
