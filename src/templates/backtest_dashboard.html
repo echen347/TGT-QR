@@ -388,6 +388,34 @@
                         <p class="chart-description">Cumulative PnL over time, illustrating overall performance and drawdowns.</p>
                     </div>
                 </div>
+
+                <!-- Additional Visualizations Section -->
+                <div id="additional-viz-container" style="margin-top: 30px; display: none;">
+                    <h4 style="margin-bottom: 20px; color: var(--primary-color);"><i class="fas fa-chart-bar"></i> Additional Analysis</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                        <div>
+                            <h5>Trade Duration Analysis</h5>
+                            <div class="chart-placeholder">
+                                <canvas id="tradeDurationChart" width="300" height="200"></canvas>
+                            </div>
+                            <p class="chart-description">Distribution of trade holding periods.</p>
+                        </div>
+                        <div>
+                            <h5>Monthly Performance</h5>
+                            <div class="chart-placeholder">
+                                <canvas id="monthlyPerformanceChart" width="300" height="200"></canvas>
+                            </div>
+                            <p class="chart-description">Performance breakdown by month.</p>
+                        </div>
+                        <div>
+                            <h5>Risk Metrics</h5>
+                            <div class="chart-placeholder">
+                                <canvas id="riskMetricsChart" width="300" height="200"></canvas>
+                            </div>
+                            <p class="chart-description">Volatility and risk-adjusted returns.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -395,7 +423,7 @@
         <div style="grid-column: span 12;">
             <div class="card">
                 <h3><i class="fas fa-lightbulb"></i> Strategy Insights</h3>
-                <div id="strategy-insights-content" class="insights-grid">
+                <div id="strategy-insights-content" class="insights-grid" style="display: none;">
                     <div class="insight-item">
                         <div class="icon-bg" style="--icon-color: #2ecc71;">
                             <i class="fas fa-signal"></i>
@@ -656,15 +684,37 @@
                 container.innerHTML = '<p class="secondary-text">No summary data available for this run. Re-run the backtest to generate it.</p>';
                 return;
             }
-            const pnlClass = summary.total_pnl >= 0 ? 'pnl-positive' : 'pnl-negative';
+            const pnlClass = summary.total_pnl >= 0 ? 'positive' : 'negative';
+            const winRateClass = summary.win_rate > 50 ? 'positive' : summary.win_rate < 40 ? 'negative' : 'neutral';
+            const sharpeClass = summary.sharpe_ratio > 1 ? 'positive' : summary.sharpe_ratio < 0 ? 'negative' : 'neutral';
+            const drawdownClass = summary.max_drawdown > -20 ? 'positive' : summary.max_drawdown < -50 ? 'negative' : 'neutral';
+
             container.innerHTML = `
-                <div class="card-grid">
-                    <div class="metric-card"><h4>Total PnL</h4><p class="${pnlClass}">${summary.total_pnl.toFixed(2)} USDT</p></div>
-                    <div class="metric-card"><h4>Total Trades</h4><p>${summary.total_trades}</p></div>
-                    <div class="metric-card"><h4>Win Rate</h4><p>${summary.win_rate.toFixed(2)}%</p></div>
-                    <div class="metric-card"><h4>Avg. Return</h4><p>${summary.avg_return.toFixed(4)} USDT</p></div>
-                    <div class="metric-card"><h4>Sharpe Ratio</h4><p>${summary.sharpe_ratio.toFixed(2)}</p></div>
-                    <div class="metric-card"><h4>Max Drawdown</h4><p>${(summary.max_drawdown * 100).toFixed(2)}%</p></div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                    <div class="metric-card">
+                        <div class="metric-value ${pnlClass}">${summary.total_pnl.toFixed(2)} USDT</div>
+                        <div class="metric-label">Total PnL</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">${summary.total_trades}</div>
+                        <div class="metric-label">Total Trades</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value ${winRateClass}">${summary.win_rate.toFixed(2)}%</div>
+                        <div class="metric-label">Win Rate</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">${summary.avg_return.toFixed(4)} USDT</div>
+                        <div class="metric-label">Avg. Return</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value ${sharpeClass}">${summary.sharpe_ratio.toFixed(2)}</div>
+                        <div class="metric-label">Sharpe Ratio</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value ${drawdownClass}">${(summary.max_drawdown * 100).toFixed(2)}%</div>
+                        <div class="metric-label">Max Drawdown</div>
+                    </div>
                 </div>
             `;
         }
@@ -1344,17 +1394,34 @@
                     datasets: [{
                         label: 'Return %',
                         data: returns,
-                        backgroundColor: returns.map(r => r >= 0 ? 'rgba(46, 204, 113, 0.6)' : 'rgba(231, 76, 60, 0.6)'),
-                        borderColor: returns.map(r => r >= 0 ? 'rgba(46, 204, 113, 1)' : 'rgba(231, 76, 60, 1)'),
-                        borderWidth: 1
+                        backgroundColor: returns.map(r => r >= 0 ? '#4CAF50' : '#F44336'),
+                        borderColor: returns.map(r => r >= 0 ? '#2E7D32' : '#C62828'),
+                        borderWidth: 2
                     }]
                 },
                 options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
                     scales: {
-                        y: { beginAtZero: true, ticks: { color: 'var(--text-secondary-color)' } },
-                        x: { ticks: { color: 'var(--text-secondary-color)' } }
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: 'var(--text-color)', font: { size: 12 } },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        x: {
+                            ticks: { color: 'var(--text-color)', font: { size: 12 } },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
                     },
-                    plugins: { legend: { display: false } }
+                    plugins: {
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: 'Trade Returns Distribution',
+                            color: 'var(--text-color)',
+                            font: { size: 14, weight: 'bold' }
+                        }
+                    }
                 }
             });
 
@@ -1373,18 +1440,156 @@
                     datasets: [{
                         label: 'Portfolio Growth',
                         data: portfolioGrowth,
-                        borderColor: '#2ecc71',
-                        backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                        borderColor: '#2196F3',
+                        backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                        fill: true,
+                        tension: 0.1,
+                        pointBackgroundColor: '#2196F3',
+                        pointBorderColor: '#1976D2',
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            ticks: { color: 'var(--text-color)', font: { size: 12 } },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        y: {
+                            ticks: { color: 'var(--text-color)', font: { size: 12 } },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: 'var(--text-color)', font: { size: 12 } }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Portfolio Growth Over Time',
+                            color: 'var(--text-color)',
+                            font: { size: 14, weight: 'bold' }
+                        }
+                    }
+                }
+
+                // Show additional visualizations section
+                document.getElementById('additional-viz-container').style.display = 'block';
+
+                // Generate additional charts
+                setTimeout(() => {
+                    generateAdditionalVisualizations(data.chart_data);
+                }, 500);
+            });
+        }
+
+        function generateAdditionalVisualizations(tradeData) {
+            if (!tradeData || tradeData.length === 0) {
+                return;
+            }
+
+            // Trade Duration Analysis
+            const durations = tradeData.map(t => {
+                const entry = new Date(t.entry_date);
+                const exit = new Date(t.exit_date);
+                return (exit - entry) / (1000 * 60 * 60); // hours
+            });
+
+            const durationCtx = document.getElementById('tradeDurationChart').getContext('2d');
+            new Chart(durationCtx, {
+                type: 'bar',
+                data: {
+                    labels: durations.map((_, i) => `Trade ${i+1}`),
+                    datasets: [{
+                        label: 'Duration (hours)',
+                        data: durations,
+                        backgroundColor: '#9C27B0',
+                        borderColor: '#7B1FA2',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { ticks: { color: 'var(--text-color)' } },
+                        x: { ticks: { color: 'var(--text-color)' } }
+                    },
+                    plugins: {
+                        legend: { labels: { color: 'var(--text-color)' } },
+                        title: { display: true, text: 'Trade Duration Analysis', color: 'var(--text-color)' }
+                    }
+                }
+            });
+
+            // Monthly Performance (simplified)
+            const monthlyData = {};
+            tradeData.forEach(t => {
+                const month = new Date(t.exit_date).toISOString().slice(0, 7); // YYYY-MM
+                if (!monthlyData[month]) monthlyData[month] = [];
+                monthlyData[month].push(t.pnl_pct);
+            });
+
+            const monthlyLabels = Object.keys(monthlyData).sort();
+            const monthlyPnL = monthlyLabels.map(month => {
+                const trades = monthlyData[month];
+                return trades.reduce((sum, pnl) => sum + pnl, 0) * 100; // percentage
+            });
+
+            const monthlyCtx = document.getElementById('monthlyPerformanceChart').getContext('2d');
+            new Chart(monthlyCtx, {
+                type: 'line',
+                data: {
+                    labels: monthlyLabels,
+                    datasets: [{
+                        label: 'Monthly PnL (%)',
+                        data: monthlyPnL,
+                        borderColor: '#FF5722',
+                        backgroundColor: 'rgba(255, 87, 34, 0.1)',
                         fill: true,
                         tension: 0.1
                     }]
                 },
                 options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
                     scales: {
-                        x: { ticks: { color: 'var(--text-secondary-color)' } },
-                        y: { ticks: { color: 'var(--text-secondary-color)' } }
+                        y: { ticks: { color: 'var(--text-color)' } },
+                        x: { ticks: { color: 'var(--text-color)' } }
                     },
-                    plugins: { legend: { labels: { color: 'var(--text-color)' } } }
+                    plugins: {
+                        legend: { labels: { color: 'var(--text-color)' } },
+                        title: { display: true, text: 'Monthly Performance', color: 'var(--text-color)' }
+                    }
+                }
+            });
+
+            // Risk Metrics
+            const returns = tradeData.map(t => t.pnl_pct);
+            const avgReturn = returns.reduce((a, b) => a + b, 0) / returns.length;
+            const variance = returns.reduce((acc, ret) => acc + Math.pow(ret - avgReturn, 2), 0) / returns.length;
+            const volatility = Math.sqrt(variance) * Math.sqrt(12); // Annualized
+
+            const riskCtx = document.getElementById('riskMetricsChart').getContext('2d');
+            new Chart(riskCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Avg Return', 'Volatility', 'Sharpe Ratio'],
+                    datasets: [{
+                        data: [avgReturn * 100, volatility * 100, (avgReturn / volatility) || 0],
+                        backgroundColor: ['#4CAF50', '#FFC107', '#2196F3'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: 'var(--text-color)' } },
+                        title: { display: true, text: 'Risk Metrics Breakdown', color: 'var(--text-color)' }
+                    }
                 }
             });
         }

@@ -22,7 +22,7 @@ SYMBOLS = [
 ]
 
 # --- Position Sizing & Leverage ---
-MAX_POSITION_USDT = 0.25 # Max size of a single position in USDT
+MAX_POSITION_USDT = 0.105 # Max size of a single position in USDT
 LEVERAGE = 5  # Reduced leverage for better risk management
 MAX_POSITIONS = 5  # Allow up to 5 positions at once (broader diversification)
 MIN_VOLUME_USDT = 500000  # Only trade reasonably liquid pairs (500K+ USD volume)
@@ -31,9 +31,9 @@ MA_PERIOD = 20  # A shorter MA period will be more sensitive to price changes
 ATR_PERIOD = 14
 
 # Strategy Configuration - MODERATE RISK
-STRATEGY_INTERVAL_MINUTES = 15  # Run strategy every 15 minutes
-MAX_DAILY_LOSS_USDT = 0.50 # Max aggregate loss per day in USDT before pausing trading
-MAX_TOTAL_LOSS_USDT = 1.0 # Max total loss from starting capital before stopping the bot
+STRATEGY_INTERVAL_MINUTES = 5  # Run strategy every 15 minutes
+MAX_DAILY_LOSS_USDT = 1.00 # Max aggregate loss per day in USDT before pausing trading
+MAX_TOTAL_LOSS_USDT = 3.00 # Max total loss from starting capital before stopping the bot
 
 # Database Configuration
 DATABASE_URL = 'sqlite:///data/trading_data.db'

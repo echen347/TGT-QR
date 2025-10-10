@@ -688,9 +688,9 @@
                 data: {
                     labels: data.labels,
                     datasets: [
-                        { label: 'BTC Price', data: data.prices.btc, borderColor: '#f2a900', fill: false, tension: 0.1, pointRadius: 0 },
-                        { label: 'ETH Price', data: data.prices.eth, borderColor: '#627eea', fill: false, tension: 0.1, pointRadius: 0 },
-                        { label: 'BNB Price', data: data.prices.bnb, borderColor: '#f3ba2f', fill: false, tension: 0.1, pointRadius: 0 }
+                        { label: 'BTC Price', data: data.prices.btc, borderColor: '#FFC107', backgroundColor: 'rgba(255, 193, 7, 0.1)', fill: false, tension: 0.1, pointRadius: 0 },
+                        { label: 'ETH Price', data: data.prices.eth, borderColor: '#2196F3', backgroundColor: 'rgba(33, 150, 243, 0.1)', fill: false, tension: 0.1, pointRadius: 0 },
+                        { label: 'BNB Price', data: data.prices.bnb, borderColor: '#FF9800', backgroundColor: 'rgba(255, 152, 0, 0.1)', fill: false, tension: 0.1, pointRadius: 0 }
                     ]
                 },
                 options: getChartOptions('Price (USD)')
@@ -703,9 +703,9 @@
                 data: {
                     labels: data.labels,
                     datasets: [
-                        { label: 'BTC Volume', data: data.volumes.btc, backgroundColor: '#f2a900' },
-                        { label: 'ETH Volume', data: data.volumes.eth, backgroundColor: '#627eea' },
-                        { label: 'BNB Volume', data: data.volumes.bnb, backgroundColor: '#f3ba2f' }
+                        { label: 'BTC Volume', data: data.volumes.btc, backgroundColor: '#FFC107' },
+                        { label: 'ETH Volume', data: data.volumes.eth, backgroundColor: '#2196F3' },
+                        { label: 'BNB Volume', data: data.volumes.bnb, backgroundColor: '#FF9800' }
                     ]
                 },
                 options: getChartOptions('Volume (USD)')
