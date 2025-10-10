@@ -465,7 +465,8 @@ class MovingAverageStrategy:
                 # Trading logic with improved risk management
                 if signal == 1 and current_position['position_size'] == 0:
                     # Go long - only if we can open position
-                    if self.risk_manager.can_open_position(symbol, MAX_POSITION_USDT):
+                    current_volume = self.get_symbol_volume(symbol)
+                    if self.risk_manager.can_open_position(symbol, MAX_POSITION_USDT, current_volume):
                         success = self.place_order(symbol, "Buy", MAX_POSITION_USDT)
                         if success:
                             self.logger.info(f"🚀 LONG position opened for {symbol}")
@@ -475,7 +476,8 @@ class MovingAverageStrategy:
                         self.logger.warning(f"⚠️ LONG signal for {symbol} but risk management blocked")
                 elif signal == -1 and current_position['position_size'] == 0:
                     # Go short - only if we can open position
-                    if self.risk_manager.can_open_position(symbol, MAX_POSITION_USDT):
+                    current_volume = self.get_symbol_volume(symbol)
+                    if self.risk_manager.can_open_position(symbol, MAX_POSITION_USDT, current_volume):
                         success = self.place_order(symbol, "Sell", MAX_POSITION_USDT)
                         if success:
                             self.logger.info(f"🔻 SHORT position opened for {symbol}")
