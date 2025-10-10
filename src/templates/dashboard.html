@@ -47,8 +47,8 @@
             margin: 5px 0;
         }
         
-        .status-active { color: #03dac6; }
-        .status-inactive { color: #cf6679; }
+        .status-active { color: #03dac6; font-weight: bold; }
+        .status-inactive { color: #cf6679; font-weight: bold; }
         .status-ok { color: #03dac6; }
         
         .table-container {
@@ -125,11 +125,9 @@
             color: #777;
             font-style: italic;
             text-align: center;
-            padding: 20px 0;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            padding: 40px 0; /* More vertical padding */
+            display: block; /* Simpler display property */
+            width: 100%;
         }
 
     </style>
@@ -235,7 +233,7 @@
                         {% else %}
                         <tr>
                             <td colspan="5">
-                                <p class="empty-placeholder" style="padding: 0;">No active positions</p>
+                                <p class="empty-placeholder" style="padding: 10px 0;">No active positions</p>
                             </td>
                         </tr>
                         {% endfor %}

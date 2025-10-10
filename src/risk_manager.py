@@ -95,15 +95,14 @@ class RiskManager:
             ("Position Size", self.check_position_size(position_value))
         ]
 
-        all_passed = all(result for _, result in checks)
+        for check_name, result in checks:
+            if not result:
+                message = f"Risk Block: {check_name} failed for {symbol}."
+                self.logger.warning(message)
+                self.add_alert('warning', message)
+                return False
 
-        if not all_passed:
-            self.logger.error(f"Risk management blocked position for {symbol}")
-            for check_name, result in checks:
-                if not result:
-                    self.logger.error(f"  - {check_name}: FAILED")
-
-        return all_passed
+        return True
 
     def record_loss(self, loss_amount):
         """Record a loss and update counters"""
