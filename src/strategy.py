@@ -279,7 +279,6 @@ class MovingAverageStrategy:
 
     def run_strategy(self):
         """Main strategy execution loop"""
-        self.logger.critical("--- EXECUTING LATEST VERSION OF THE STRATEGY CODE ---")
         try:
             self.logger.info("Running trading strategy...")
             # Check risk management first
