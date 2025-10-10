@@ -581,85 +581,97 @@
         }
 
         function loadBacktestResults(runId, runText) {
-            // Show loading states for all sections
             const overviewContainer = document.getElementById('performance-overview-container');
             const insightsContainer = document.getElementById('strategy-insights-content');
-            overviewContainer.innerHTML = '<p>Loading Performance Overview...</p>';
-            insightsContainer.innerHTML = '<p>Loading Strategy Insights...</p>';
+            const resultsBody = document.getElementById('results-body');
 
-            // Update title
-            document.getElementById('performance-viz-title').innerText = `Performance Overview for: ${runText}`;
+            // Set loading states
+            overviewContainer.innerHTML = '<p class="secondary-text">Loading Performance Overview...</p>';
+            insightsContainer.innerHTML = '<p class="secondary-text">Loading Strategy Insights...</p>';
+            resultsBody.innerHTML = '<tr><td colspan="8" style="text-align: center;" class="secondary-text">Loading results...</td></tr>';
+
+            // Update titles
             document.getElementById('performance-overview-title').innerText = `Performance Overview for: ${runText}`;
-            document.getElementById('strategy-insights-content').style.display = 'grid'; // Show default
-            document.getElementById('dynamic-strategy-insights').style.display = 'none';
-
+            document.getElementById('insights-title').innerText = `Strategy Insights for: ${runText}`;
+            document.getElementById('results-history-title').innerText = `Results History for: ${runText}`;
+            
             fetch(`/api/backtest_results?run_id=${runId}`)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Network response was not ok: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
-                    const summary = data.summary;
-                    
-                    // Populate Performance Overview
-                    if (summary) {
-                        const pnlClass = summary.pnl >= 0 ? 'pnl-positive' : 'pnl-negative';
-                        overviewContainer.innerHTML = `
-                            <div class="card-grid">
-                                <div class="metric-card">
-                                    <h4>Total PnL</h4>
-                                    <p class="${pnlClass}">${summary.pnl} USDT</p>
-                                </div>
-                                <div class="metric-card">
-                                    <h4>Total Trades</h4>
-                                    <p>${summary.total_trades}</p>
-                                </div>
-                                <div class="metric-card">
-                                    <h4>Win Rate</h4>
-                                    <p>${summary.win_rate}%</p>
-                                </div>
-                                <div class="metric-card">
-                                    <h4>Avg. Return</h4>
-                                    <p>${summary.average_return} USDT</p>
-                                </div>
-                                <div class="metric-card">
-                                    <h4>Sharpe Ratio</h4>
-                                    <p>${summary.sharpe_ratio}</p>
-                                </div>
-                                <div class="metric-card">
-                                    <h4>Max Drawdown</h4>
-                                    <p>${summary.max_drawdown}%</p>
-                                </div>
-                            </div>
-                        `;
-                    } else {
-                        overviewContainer.innerHTML = '<p>No summary data available for this run.</p>';
-                    }
-
-                    // Populate Strategy Insights (simplified for now)
-                    if (summary && summary.total_trades > 0) {
-                        let insightHtml = '<ul>';
-                        if (summary.win_rate > 55) {
-                            insightHtml += '<li><i class="fas fa-check-circle" style="color: var(--green-color);"></i> Strong Win Rate: The strategy shows a consistent ability to generate winning trades.</li>';
-                        } else if (summary.win_rate < 45) {
-                            insightHtml += '<li><i class="fas fa-exclamation-triangle" style="color: var(--yellow-color);"></i> Low Win Rate: Consider adjusting entry/exit criteria to improve trade success.</li>';
-                        }
-                        if (summary.sharpe_ratio > 1) {
-                            insightHtml += '<li><i class="fas fa-chart-line" style="color: var(--green-color);"></i> Excellent Risk-Adjusted Returns: The Sharpe Ratio is high, indicating good performance for the risk taken.</li>';
-                        } else {
-                            insightHtml += '<li><i class="fas fa-chart-area" style="color: var(--text-secondary-color);"></i> Moderate Risk-Adjusted Returns: The Sharpe Ratio is acceptable, but could be improved.</li>';
-                        }
-                        if (summary.max_drawdown > 20) {
-                            insightHtml += '<li><i class="fas fa-arrow-down" style="color: var(--red-color);"></i> High Drawdown: The strategy experienced significant drawdowns, indicating high risk. Review stop-loss or position sizing.</li>';
-                        }
-                        insightHtml += '</ul>';
-                        insightsContainer.innerHTML = insightHtml;
-                    } else {
-                        insightsContainer.innerHTML = '<p>Not enough trade data to generate insights.</p>';
-                    }
+                    populatePerformanceOverview(data.summary);
+                    populateStrategyInsights(data.summary);
+                    populateResultsTable(data.results);
                 })
                 .catch(error => {
                     console.error('Error fetching backtest results:', error);
                     overviewContainer.innerHTML = '<p class="error-message">Error loading performance data.</p>';
                     insightsContainer.innerHTML = '<p class="error-message">Error loading insights data.</p>';
+                    resultsBody.innerHTML = '<tr><td colspan="8" class="error-message">Error loading results.</td></tr>';
                 });
+        }
+
+        function populatePerformanceOverview(summary) {
+            const container = document.getElementById('performance-overview-container');
+            if (!summary) {
+                container.innerHTML = '<p class="secondary-text">No summary data available for this run.</p>';
+                return;
+            }
+            const pnlClass = summary.pnl >= 0 ? 'pnl-positive' : 'pnl-negative';
+            container.innerHTML = `
+                <div class="card-grid">
+                    <div class="metric-card"><h4>Total PnL</h4><p class="${pnlClass}">${summary.pnl} USDT</p></div>
+                    <div class="metric-card"><h4>Total Trades</h4><p>${summary.total_trades}</p></div>
+                    <div class="metric-card"><h4>Win Rate</h4><p>${summary.win_rate}%</p></div>
+                    <div class="metric-card"><h4>Avg. Return</h4><p>${summary.average_return} USDT</p></div>
+                    <div class="metric-card"><h4>Sharpe Ratio</h4><p>${summary.sharpe_ratio}</p></div>
+                    <div class="metric-card"><h4>Max Drawdown</h4><p>${summary.max_drawdown}%</p></div>
+                </div>
+            `;
+        }
+
+        function populateStrategyInsights(summary) {
+            const container = document.getElementById('strategy-insights-content');
+            if (!summary || summary.total_trades === 0) {
+                container.innerHTML = '<p class="secondary-text">Not enough trade data to generate insights.</p>';
+                return;
+            }
+            let insightHtml = '<ul>';
+            if (summary.win_rate > 55) insightHtml += '<li><i class="fas fa-check-circle" style="color: var(--green-color);"></i> Strong Win Rate: The strategy shows a consistent ability to generate winning trades.</li>';
+            else if (summary.win_rate < 45) insightHtml += '<li><i class="fas fa-exclamation-triangle" style="color: var(--yellow-color);"></i> Low Win Rate: Consider adjusting entry/exit criteria to improve trade success.</li>';
+            if (summary.sharpe_ratio > 1) insightHtml += '<li><i class="fas fa-chart-line" style="color: var(--green-color);"></i> Excellent Risk-Adjusted Returns: Good performance for the risk taken.</li>';
+            else insightHtml += '<li><i class="fas fa-chart-area" style="color: var(--text-secondary-color);"></i> Moderate Risk-Adjusted Returns: Sharpe Ratio could be improved.</li>';
+            if (summary.max_drawdown > 20) insightHtml += '<li><i class="fas fa-arrow-down" style="color: var(--red-color);"></i> High Drawdown: The strategy experienced significant drawdowns, indicating high risk.</li>';
+            insightHtml += '</ul>';
+            container.innerHTML = insightHtml;
+        }
+
+        function populateResultsTable(results) {
+            const resultsBody = document.getElementById('results-body');
+            if (!results || results.length === 0) {
+                resultsBody.innerHTML = '<tr><td colspan="8" style="text-align: center;" class="secondary-text">No individual results found for this run.</td></tr>';
+                return;
+            }
+            let tableHtml = '';
+            results.forEach(r => {
+                tableHtml += `
+                    <tr>
+                        <td>${r.symbol}</td>
+                        <td>${(r.total_return_pct * 100).toFixed(2)}</td>
+                        <td>${r.total_trades}</td>
+                        <td>${r.win_rate.toFixed(2)}</td>
+                        <td>${r.sharpe_ratio.toFixed(2)}</td>
+                        <td>${(r.max_drawdown * 100).toFixed(2)}</td>
+                        <td>${new Date(r.start_date).toLocaleDateString()}</td>
+                        <td>${new Date(r.end_date).toLocaleDateString()}</td>
+                    </tr>
+                `;
+            });
+            resultsBody.innerHTML = tableHtml;
         }
 
         // Load runs on page load
