@@ -572,13 +572,18 @@
         });
 
         function loadBacktestRuns() {
-            fetch('/api/backtest_runs')
+            return fetch('/api/backtest_runs')
                 .then(response => response.json())
                 .then(data => {
                     backtestRunsData = data.runs; // Cache the data
                     displayBacktestRuns(backtestRunsData);
+                    console.log('Loaded', backtestRunsData.length, 'backtest runs');
+                    return backtestRunsData;
                 })
-                .catch(error => console.error('Error fetching backtest runs:', error));
+                .catch(error => {
+                    console.error('Error fetching backtest runs:', error);
+                    document.getElementById('runs-container').innerHTML = '<p class="secondary-text">Error loading backtest runs. Please refresh the page.</p>';
+                });
         }
 
         function displayBacktestRuns(runs) {

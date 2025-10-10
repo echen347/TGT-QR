@@ -246,7 +246,7 @@
         .chart-wrapper {
             position: relative;
             height: 280px;
-            background-color: var(--background-color);
+            background-color: rgba(60, 60, 70, 0.5);
             border-radius: 8px;
             border: 1px solid var(--border-color);
         }
@@ -971,47 +971,46 @@
 
             let explanations = [];
 
-            // RSI Explanation
+            // RSI Explanation - Always show
             const avgRsi = Object.values(indicators).reduce((sum, ind) => sum + (ind.rsi || 50), 0) / Object.values(indicators).length;
             if (avgRsi > 70) {
-                explanations.push(`<div class="indicator-explanation"><strong>RSI Overbought:</strong> Market may be overbought (RSI > 70). Consider taking profits or waiting for a pullback.</div>`);
+                explanations.push(`<div class="indicator-explanation"><strong>RSI (${avgRsi.toFixed(1)}):</strong> <span class="signal-strong-sell">OVERBOUGHT</span> - Market may be overextended. Consider taking profits.</div>`);
             } else if (avgRsi < 30) {
-                explanations.push(`<div class="indicator-explanation"><strong>RSI Oversold:</strong> Market may be oversold (RSI < 30). Potential buying opportunity.</div>`);
+                explanations.push(`<div class="indicator-explanation"><strong>RSI (${avgRsi.toFixed(1)}):</strong> <span class="signal-strong-buy">OVERSOLD</span> - Market may be undervalued. Potential buying opportunity.</div>`);
+            } else {
+                explanations.push(`<div class="indicator-explanation"><strong>RSI (${avgRsi.toFixed(1)}):</strong> NEUTRAL - Market momentum is balanced.</div>`);
             }
 
-            // MACD Explanation (BTC focused)
-            const btcMacd = indicators.btc?.macd;
-            if (btcMacd) {
-                const macdParts = btcMacd.split('/');
-                if (macdParts.length >= 3) {
-                    const macd = parseFloat(macdParts[0]);
-                    const signal = parseFloat(macdParts[1]);
-                    const histogram = parseFloat(macdParts[2]);
-
-                    if (macd > signal && histogram > 0) {
-                        explanations.push(`<div class="indicator-explanation"><strong>MACD Bullish:</strong> MACD is above signal line with positive histogram. Bullish momentum.</div>`);
-                    } else if (macd < signal && histogram < 0) {
-                        explanations.push(`<div class="indicator-explanation"><strong>MACD Bearish:</strong> MACD is below signal line with negative histogram. Bearish momentum.</div>`);
-                    }
+            // MACD Explanation - Always show
+            const btcMacd = indicators.btc?.macd || '0.00/0.00/0.00';
+            const macdParts = btcMacd.split('/');
+            if (macdParts.length >= 3) {
+                const histogram = parseFloat(macdParts[2]);
+                if (histogram > 0) {
+                    explanations.push(`<div class="indicator-explanation"><strong>MACD:</strong> <span class="signal-buy">BULLISH</span> (${histogram.toFixed(2)}) - Positive momentum, trend may continue upward.</div>`);
+                } else if (histogram < 0) {
+                    explanations.push(`<div class="indicator-explanation"><strong>MACD:</strong> <span class="signal-sell">BEARISH</span> (${histogram.toFixed(2)}) - Negative momentum, trend may continue downward.</div>`);
+                } else {
+                    explanations.push(`<div class="indicator-explanation"><strong>MACD:</strong> NEUTRAL (0.00) - No clear momentum direction.</div>`);
                 }
             }
 
-            // Bollinger Bands Explanation
-            const bbValues = Object.values(indicators).map(ind => ind.bb).filter(bb => bb !== '-');
-            if (bbValues.length > 0) {
-                const currentPrices = Object.values(indicators).map(ind => {
-                    const bb = ind.bb;
-                    if (bb !== '-') {
-                        const parts = bb.split('-');
-                        if (parts.length >= 2) {
-                            return (parseFloat(parts[0]) + parseFloat(parts[1])) / 2; // Middle of bands
-                        }
-                    }
-                    return null;
-                }).filter(price => price !== null);
+            // Bollinger Bands Explanation - Always show
+            const avgBB = Object.values(indicators).map(ind => ind.bb).filter(bb => bb !== '-')[0] || '-';
+            explanations.push(`<div class="indicator-explanation"><strong>Bollinger Bands:</strong> Range: ${avgBB} - Price volatility measure. Price near upper band = overbought, near lower band = oversold.</div>`);
 
-                // This is simplified - in reality we'd need current prices to compare
-                explanations.push(`<div class="indicator-explanation"><strong>Bollinger Bands:</strong> Price volatility bands help identify overbought/oversold conditions.</div>`);
+            // Stochastic Explanation - Always show
+            const avgStoch = Object.values(indicators).reduce((sum, ind) => {
+                const stochValue = (ind.stoch || '50/50').split('/')[0];
+                return sum + parseFloat(stochValue);
+            }, 0) / Object.values(indicators).length;
+            
+            if (avgStoch > 80) {
+                explanations.push(`<div class="indicator-explanation"><strong>Stochastic (${avgStoch.toFixed(0)}):</strong> <span class="signal-strong-sell">OVERBOUGHT</span> - Price is in upper range, potential reversal.</div>`);
+            } else if (avgStoch < 20) {
+                explanations.push(`<div class="indicator-explanation"><strong>Stochastic (${avgStoch.toFixed(0)}):</strong> <span class="signal-strong-buy">OVERSOLD</span> - Price is in lower range, potential bounce.</div>`);
+            } else {
+                explanations.push(`<div class="indicator-explanation"><strong>Stochastic (${avgStoch.toFixed(0)}):</strong> NEUTRAL - Price is in middle range.</div>`);
             }
 
             explanationsDiv.innerHTML = explanations.join('');
@@ -1031,22 +1030,22 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { labels: { color: 'var(--text-color)' } },
+                    legend: { labels: { color: '#f0f0f0' } },
                     title: {
                         display: true,
                         text: title,
-                        color: 'var(--text-color)',
+                        color: '#f0f0f0',
                         font: { size: 14 }
                     }
                 },
                 scales: {
                     x: {
-                        ticks: { color: 'var(--text-secondary-color)' },
-                        grid: { color: 'var(--border-color)' }
+                        ticks: { color: '#c0c0c0' },
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
                     },
                     y: {
-                        ticks: { color: 'var(--text-secondary-color)' },
-                        grid: { color: 'var(--border-color)' }
+                        ticks: { color: '#c0c0c0' },
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
                     }
                 }
             };
