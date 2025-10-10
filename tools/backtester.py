@@ -29,350 +29,194 @@ logging.basicConfig(
 
 logger = logging.getLogger('BACKTESTER')
 
-class MovingAverageBacktester:
-    """Backtest the moving average strategy on historical data"""
+import pandas as pd
+import numpy as np
+from pybit.unified_trading import HTTP
+import sys
+import os
+from datetime import datetime, timedelta
+import logging
 
-    def __init__(self, symbol='XRPUSDT', ma_period=60, initial_balance=1000):
-        self.symbol = symbol
-        self.ma_period = ma_period
-        self.initial_balance = initial_balance
-        self.balance = initial_balance
-        self.position = 0  # 0 = no position, >0 = long position size, <0 = short position size
-        self.position_value = 0
-        self.trades = []
-        self.price_data = []
+# Setup logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-        # Strategy parameters (matching config)
-        self.max_position_usdt = 0.50  # Conservative for backtesting
-        self.leverage = 10
+# Ensure the project root is in the Python path
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from config.config import BYBIT_TESTNET, SYMBOLS, MA_PERIOD, TIMEFRAME
 
-        # Load API credentials for historical data
-        load_dotenv()
+class Backtester:
+    """
+    A standalone backtester for the Moving Average Strategy.
+    Simulates trading on historical data to evaluate performance.
+    """
 
-    def get_historical_data(self, days=30):
-        """Get historical price data for backtesting"""
-        logger.info(f"📊 Starting data download: {days} days of {self.symbol} data")
+    def __init__(self, symbols, start_date, end_date):
+        self.symbols = symbols
+        self.start_date = start_date
+        self.end_date = end_date
+        # Force mainnet for historical data fetching
+        self.session = HTTP(testnet=False)
+        self.historical_data = {}
 
-        try:
-            session = HTTP(
-                testnet=False,
-                api_key=os.getenv('BYBIT_API_KEY'),
-                api_secret=os.getenv('BYBIT_API_SECRET')
-            )
-
-            # Get data in 1-hour chunks for better granularity
-            end_time = int(datetime.now().timestamp() * 1000)
-            start_time = int((datetime.now() - timedelta(days=days)).timestamp() * 1000)
-
+    def fetch_historical_data(self):
+        """Fetches historical kline data from Bybit for the given date range."""
+        logging.info("Fetching historical data...")
+        for symbol in self.symbols:
             all_klines = []
+            start_ms = int(self.start_date.timestamp() * 1000)
+            end_ms = int(self.end_date.timestamp() * 1000)
+            
+            while start_ms < end_ms:
+                try:
+                    response = self.session.get_kline(
+                        category="linear",
+                        symbol=symbol,
+                        interval=TIMEFRAME,
+                        start=start_ms,
+                        limit=1000  # Max limit per request
+                    )
 
-            # Get data in chunks to avoid rate limits
-            chunk_size = 200  # Bybit limit per request
-
-            for start in range(start_time, end_time, chunk_size * 60 * 60 * 1000):  # Hourly chunks
-                end = min(start + chunk_size * 60 * 60 * 1000, end_time)
-
-                response = session.get_kline(
-                    category="linear",
-                    symbol=self.symbol,
-                    interval="1",  # 1-minute data
-                    start=start,
-                    end=end,
-                    limit=200
-                )
-
-                if response['retCode'] == 0:
-                    klines = response['result']['list']
-                    if klines:
+                    if response['retCode'] == 0 and response['result']['list']:
+                        klines = response['result']['list']
                         all_klines.extend(klines)
-
-                # Small delay to respect rate limits
-                import time
-                time.sleep(0.1)
-
-            logger.info(f"✅ Downloaded {len(all_klines)} data points")
-
-            # Convert to DataFrame
+                        # Move to the next time window
+                        start_ms = int(klines[-1][0]) + (60000) # Add one minute
+                    else:
+                        break # Stop if no more data or error
+                except Exception as e:
+                    logging.error(f"Error fetching data for {symbol}: {e}")
+                    break
+                
             df = pd.DataFrame(all_klines, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume', 'turnover'])
-            df['timestamp'] = pd.to_datetime(df['timestamp'].astype(int), unit='ms')
-            df = df.sort_values('timestamp')
-            df['close'] = df['close'].astype(float)
+            df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
+            df.set_index('timestamp', inplace=True)
+            df = df.astype(float)
+            self.historical_data[symbol] = df.sort_index()
+            logging.info(f"Fetched {len(df)} candles for {symbol} from {df.index.min()} to {df.index.max()}")
 
-            logger.info(f"📈 Data processed: {len(df)} rows from {df.iloc[0]['timestamp']} to {df.iloc[-1]['timestamp']}")
-            logger.info(f"📊 Price range: ${df['close'].min():.2f} - ${df['close'].max():.2f}")
-
-            return df
-
-        except Exception as e:
-            logger.error(f"❌ Error getting historical data: {str(e)}")
-            return None
-
-    def calculate_ma_signal(self, prices, index):
-        """Calculate moving average signal"""
-        if index < self.ma_period:
-            return 0  # Not enough data
-
-        ma = prices.iloc[index-self.ma_period:index]['close'].mean()
-        current_price = prices.iloc[index]['close']
-
-        # Simple signal: 1 for buy (price > MA), -1 for sell (price < MA)
-        if current_price > ma * 1.001:  # 0.1% threshold
-            logger.debug(f"📈 BUY SIGNAL: Price ${current_price:.2f} > MA ${ma:.2f} (threshold: 0.1%)")
-            return 1
-        elif current_price < ma * 0.999:  # 0.1% threshold
-            logger.debug(f"📉 SELL SIGNAL: Price ${current_price:.2f} < MA ${ma:.2f} (threshold: 0.1%)")
-            return -1
-        else:
-            logger.debug(f"⏸️ HOLD SIGNAL: Price ${current_price:.2f} ≈ MA ${ma:.2f}")
+    def _get_signal(self, historical_prices):
+        """Calculates the MA signal. Replicates the logic from strategy.py."""
+        if len(historical_prices) < MA_PERIOD:
             return 0
-
-    def execute_trade(self, signal, price, timestamp, index):
-        """Execute a trade based on signal"""
-        if signal == 1 and self.position <= 0:  # Go long
-            # Close short position first if exists
-            if self.position < 0:
-                pnl = self.close_position(price, 'short_close')
-                self.trades.append({
-                    'timestamp': timestamp,
-                    'action': 'close_short',
-                    'price': price,
-                    'pnl': pnl,
-                    'balance': self.balance
-                })
-
-            # Open long position
-            position_size = min(self.max_position_usdt * self.leverage / price, self.balance / price)
-            self.position = position_size
-            self.position_value = position_size * price
-            cost = self.position_value / self.leverage  # Actual cash used
-
-            self.balance -= cost
-
-            logger.info(f"📈 LONG POSITION OPENED: {position_size:.6f} @ ${price:.2f} | Cost: ${cost:.2f} | Balance: ${self.balance:.2f}")
-
-            self.trades.append({
-                'timestamp': timestamp,
-                'action': 'buy',
-                'price': price,
-                'quantity': position_size,
-                'cost': cost,
-                'balance': self.balance
-            })
-
-        elif signal == -1 and self.position >= 0:  # Go short
-            # Close long position first if exists
-            if self.position > 0:
-                pnl = self.close_position(price, 'long_close')
-                self.trades.append({
-                    'timestamp': timestamp,
-                    'action': 'close_long',
-                    'price': price,
-                    'pnl': pnl,
-                    'balance': self.balance
-                })
-
-            # Open short position
-            position_size = min(self.max_position_usdt * self.leverage / price, self.balance / price)
-            self.position = -position_size  # Negative for short
-            self.position_value = position_size * price
-            cost = self.position_value / self.leverage
-
-            self.balance -= cost
-
-            logger.info(f"📉 SHORT POSITION OPENED: {position_size:.6f} @ ${price:.2f} | Cost: ${cost:.2f} | Balance: ${self.balance:.2f}")
-
-            self.trades.append({
-                'timestamp': timestamp,
-                'action': 'sell',
-                'price': price,
-                'quantity': position_size,
-                'cost': cost,
-                'balance': self.balance
-            })
-
-        elif signal == 0 and self.position != 0:  # Close position
-            pnl = self.close_position(price, 'signal_close')
-            logger.info(f"🔄 POSITION CLOSED: Signal neutral @ ${price:.2f} | P&L: ${pnl:.4f} | Balance: ${self.balance:.2f}")
-            self.trades.append({
-                'timestamp': timestamp,
-                'action': 'close_position',
-                'price': price,
-                'pnl': pnl,
-                'balance': self.balance
-            })
-
-    def close_position(self, price, close_type='manual'):
-        """Close current position and return P&L"""
-        if self.position == 0:
-            return 0
-
-        if self.position > 0:  # Long position
-            pnl = (price - self.position_value / abs(self.position)) * abs(self.position)
-        else:  # Short position
-            pnl = (self.position_value / abs(self.position) - price) * abs(self.position)
-
-        # Add back the margin used
-        margin_used = abs(self.position_value) / self.leverage
-        self.balance += margin_used
-
-        # Reset position
-        old_position = self.position
-        self.position = 0
-        self.position_value = 0
-
-        return pnl
-
-    def run_backtest(self, days=30):
-        """Run the backtest"""
-        logger.info(f"🧪 Starting {days}-day backtest for {self.symbol}")
-        logger.info(f"📊 Initial Balance: ${self.initial_balance}")
-        logger.info(f"📊 Position Size: ${self.max_position_usdt} per trade")
-        logger.info(f"📊 Leverage: {self.leverage}x")
-
-        # Get historical data
-        df = self.get_historical_data(days)
-        if df is None or len(df) < self.ma_period:
-            logger.error("❌ Not enough data for backtesting")
-            return
-
-        logger.info(f"📈 Backtesting on {len(df)} data points from {df.iloc[0]['timestamp']} to {df.iloc[-1]['timestamp']}")
-
-        # Run simulation
-        for i in range(self.ma_period, len(df)):
-            timestamp = df.iloc[i]['timestamp']
-            price = df.iloc[i]['close']
-
-            # Get signal
-            signal = self.calculate_ma_signal(df, i)
-
-            # Execute trade if signal changes or position exists
-            if signal != 0 or self.position != 0:
-                self.execute_trade(signal, price, timestamp, i)
-
-        # Close any remaining position at the end
-        if self.position != 0:
-            final_price = df.iloc[-1]['close']
-            final_pnl = self.close_position(final_price, 'end_of_backtest')
-            logger.info(f"🏁 FINAL POSITION CLOSED: @ ${final_price:.2f} | P&L: ${final_pnl:.4f}")
-            self.trades.append({
-                'timestamp': df.iloc[-1]['timestamp'],
-                'action': 'final_close',
-                'price': final_price,
-                'pnl': final_pnl,
-                'balance': self.balance
-            })
-
-        self.calculate_results(df)
-
-    def calculate_results(self, df):
-        """Calculate and display backtest results"""
-        logger.info("=" * 60)
-        logger.info("📊 BACKTEST RESULTS")
-        logger.info("=" * 60)
-
-        # Calculate metrics
-        total_return = (self.balance - self.initial_balance) / self.initial_balance * 100
-        total_trades = len([t for t in self.trades if t['action'] in ['buy', 'sell']])
-
-        winning_trades = [t for t in self.trades if t.get('pnl', 0) > 0]
-        losing_trades = [t for t in self.trades if t.get('pnl', 0) < 0]
-
-        win_rate = len(winning_trades) / max(total_trades, 1) * 100
-
-        # Calculate Sharpe ratio (simplified)
-        pnl_values = [t.get('pnl', 0) for t in self.trades]
-        if pnl_values:
-            avg_return = np.mean(pnl_values)
-            std_return = np.std(pnl_values)
-            sharpe_ratio = avg_return / max(std_return, 0.01) * np.sqrt(252)  # Annualized
+        
+        ma = historical_prices['close'].rolling(window=MA_PERIOD).mean().iloc[-1]
+        current_price = historical_prices['close'].iloc[-1]
+        
+        if current_price > ma * 1.001:
+            return 1  # Buy
+        elif current_price < ma * 0.999:
+            return -1  # Sell
         else:
-            sharpe_ratio = 0
+            return 0  # Neutral
 
-        # Maximum drawdown
-        balance_history = [self.initial_balance]
-        for trade in self.trades:
-            balance_history.append(trade['balance'])
+    def run(self):
+        """Runs the backtest and prints the results."""
+        self.fetch_historical_data()
+        
+        all_results = {}
+        for symbol in self.symbols:
+            if symbol not in self.historical_data or self.historical_data[symbol].empty:
+                logging.warning(f"No data for {symbol}, skipping.")
+                continue
 
-        peak = balance_history[0]
-        max_dd = 0
-        for balance in balance_history:
-            if balance > peak:
-                peak = balance
-            dd = (peak - balance) / peak * 100
-            max_dd = max(max_dd, dd)
+            logging.info(f"--- Running simulation for {symbol} ---")
+            df = self.historical_data[symbol]
+            trades = []
+            position = 0  # 0: none, 1: long, -1: short
+            entry_price = 0
+            
+            # Iterate through the historical data, simulating the strategy
+            for i in range(MA_PERIOD, len(df)):
+                # This ensures no lookahead bias. The strategy only sees data up to the current point in time.
+                current_market_slice = df.iloc[i-MA_PERIOD:i]
+                signal = self._get_signal(current_market_slice)
+                current_price = current_market_slice['close'].iloc[-1]
 
-        logger.info(f"📈 Final Balance: ${self.balance:.2f}")
-        logger.info(f"📈 Total Return: {total_return:.2f}%")
-        logger.info(f"📈 Total Trades: {total_trades}")
-        logger.info(f"📈 Win Rate: {win_rate:.1f}%")
-        logger.info(f"📈 Sharpe Ratio: {sharpe_ratio:.2f}")
-        logger.info(f"📈 Max Drawdown: {max_dd:.2f}%")
+                # --- Execute Trades ---
+                if position == 0 and signal != 0: # Open a new position
+                    position = signal
+                    entry_price = current_price
+                    trades.append({'entry_date': df.index[i], 'entry_price': entry_price, 'type': 'long' if signal == 1 else 'short'})
+                
+                elif position == 1 and signal == -1: # Close long, open short
+                    pnl = (current_price - entry_price) / entry_price
+                    trades[-1].update({'exit_date': df.index[i], 'exit_price': current_price, 'pnl': pnl})
+                    position = -1
+                    entry_price = current_price
+                    trades.append({'entry_date': df.index[i], 'entry_price': entry_price, 'type': 'short'})
 
-        # Show trade summary
-        logger.info("\n🏆 TRADE SUMMARY:")
-        logger.info(f"   Winning Trades: {len(winning_trades)}")
-        logger.info(f"   Losing Trades: {len(losing_trades)}")
+                elif position == -1 and signal == 1: # Close short, open long
+                    pnl = (entry_price - current_price) / entry_price
+                    trades[-1].update({'exit_date': df.index[i], 'exit_price': current_price, 'pnl': pnl})
+                    position = 1
+                    entry_price = current_price
+                    trades.append({'entry_date': df.index[i], 'entry_price': entry_price, 'type': 'long'})
 
-        if winning_trades:
-            avg_win = np.mean([t['pnl'] for t in winning_trades])
-            logger.info(f"   Average Win: ${avg_win:.4f}")
+            all_results[symbol] = pd.DataFrame(trades)
+        
+        self.calculate_metrics(all_results)
+        
+    def calculate_metrics(self, all_results):
+        """Calculates and prints key performance metrics for the backtest."""
+        logging.info("\n--- Backtest Performance Results ---")
+        
+        for symbol, trades_df in all_results.items():
+            if trades_df.empty or 'pnl' not in trades_df.columns:
+                logging.warning(f"\nSymbol: {symbol}\nNo trades executed or no PnL data.")
+                continue
 
-        if losing_trades:
-            avg_loss = np.mean([t['pnl'] for t in losing_trades])
-            logger.info(f"   Average Loss: ${avg_loss:.4f}")
+            # Drop trades that were not closed
+            trades_df.dropna(subset=['pnl'], inplace=True)
+            
+            # --- Key Metrics ---
+            total_trades = len(trades_df)
+            pnl_with_leverage = (trades_df['pnl'] * LEVERAGE) + 1
+            cumulative_return = pnl_with_leverage.cumprod()
+            total_return_pct = (cumulative_return.iloc[-1] - 1) * 100
+            
+            # Win Rate
+            wins = trades_df[trades_df['pnl'] > 0]
+            win_rate = (len(wins) / total_trades) * 100 if total_trades > 0 else 0
+            
+            # Average Win / Loss
+            avg_win_pct = wins['pnl'].mean() * 100 * LEVERAGE if not wins.empty else 0
+            avg_loss_pct = trades_df[trades_df['pnl'] < 0]['pnl'].mean() * 100 * LEVERAGE if total_trades > len(wins) else 0
 
-        # Plot results
-        self.plot_results(balance_history)
+            # Max Drawdown
+            cumulative_max = cumulative_return.cummax()
+            drawdown = (cumulative_return - cumulative_max) / cumulative_max
+            max_drawdown_pct = drawdown.min() * 100
 
-        logger.info("\n🎯 Backtest Complete!")
+            # Sharpe Ratio (annualized)
+            daily_returns = trades_df.set_index('exit_date')['pnl'].resample('D').sum() * LEVERAGE
+            if daily_returns.std() > 0:
+                sharpe_ratio = (daily_returns.mean() / daily_returns.std()) * np.sqrt(365)
+            else:
+                sharpe_ratio = 0
+            
+            # --- Print Results ---
+            print("\n" + "="*50)
+            print(f"SYMBOL: {symbol}")
+            print("="*50)
+            print(f"Total Return:       {total_return_pct:.2f}%")
+            print(f"Total Trades:       {total_trades}")
+            print(f"Win Rate:           {win_rate:.2f}%")
+            print(f"Average Win:        {avg_win_pct:.2f}%")
+            print(f"Average Loss:       {avg_loss_pct:.2f}%")
+            print(f"Max Drawdown:       {max_drawdown_pct:.2f}%")
+            print(f"Sharpe Ratio:       {sharpe_ratio:.2f}")
+            print("="*50)
 
-    def plot_results(self, balance_history):
-        """Plot balance over time"""
-        try:
-            plt.figure(figsize=(12, 6))
-
-            # Plot balance
-            plt.subplot(1, 2, 1)
-            plt.plot(balance_history)
-            plt.title('Account Balance Over Time')
-            plt.xlabel('Trade Number')
-            plt.ylabel('Balance ($)')
-            plt.grid(True, alpha=0.3)
-
-            # Plot returns
-            if len(balance_history) > 1:
-                returns = [(balance_history[i] - balance_history[i-1]) / balance_history[i-1] * 100
-                          for i in range(1, len(balance_history))]
-                plt.subplot(1, 2, 2)
-                plt.plot(returns)
-                plt.title('Trade Returns')
-                plt.xlabel('Trade Number')
-                plt.ylabel('Return (%)')
-                plt.grid(True, alpha=0.3)
-
-            plt.tight_layout()
-            plt.savefig('backtest_results.png', dpi=150, bbox_inches='tight')
-            logger.info("📊 Results chart saved as 'backtest_results.png'")
-
-        except Exception as e:
-            logger.warning(f"⚠️ Could not create chart: {str(e)}")
-
-def main():
-    """Run the backtester"""
-    logger.info("🚀 TGT QR Moving Average Strategy Backtester")
-    logger.info("=" * 60)
-
-    # Create backtester
-    backtester = MovingAverageBacktester(
-        symbol='XRPUSDT',
-        ma_period=60,  # 60-minute MA
-        initial_balance=1000  # $1000 starting balance
-    )
-
-    logger.info(f"🔧 Backtester initialized: {backtester.symbol} MA{backtester.ma_period} ${backtester.initial_balance} balance")
-
-    # Run backtest
-    backtester.run_backtest(days=7)  # Test on last 7 days
 
 if __name__ == "__main__":
-    main()
+    # Configuration for the backtest run
+    BACKTEST_START_DATE = datetime.now() - timedelta(days=90) # 3 months of data
+    BACKTEST_END_DATE = datetime.now()
+
+    backtester = Backtester(
+        symbols=SYMBOLS,
+        start_date=BACKTEST_START_DATE,
+        end_date=BACKTEST_END_DATE
+    )
+    
+    backtester.run()

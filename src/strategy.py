@@ -317,18 +317,24 @@ class MovingAverageStrategy:
             # Update price history for all symbols
             for symbol in SYMBOLS:
                 prices = self.get_historical_prices(symbol, MA_PERIOD + 10)
-                if prices:
-                    self.price_history[symbol] = prices[-MA_PERIOD:]
-                    # Save price data to database
-                    for price_data in prices[-10:]:  # Save last 10 candles
-                        db_manager.save_price_data(symbol, price_data)
+                if not prices:
+                    self.logger.warning(f"Could not fetch price data for {symbol}. Skipping this cycle.")
+                    return # Exit the entire strategy run if any symbol fails
+                    
+                self.price_history[symbol] = prices[-MA_PERIOD:]
+                # Save price data to database
+                for price_data in prices[-10:]:  # Save last 10 candles
+                    db_manager.save_price_data(symbol, price_data)
 
             # Calculate signals and execute trades
             for symbol in SYMBOLS:
-                if len(self.price_history[symbol]) >= MA_PERIOD:
-                    signal = self.calculate_ma_signal(symbol)
-                    current_price = self.price_history[symbol][-1]['close']
-                    ma_value = pd.DataFrame(self.price_history[symbol])['close'].rolling(window=MA_PERIOD).mean().iloc[-1]
+                if len(self.price_history[symbol]) < MA_PERIOD:
+                    self.logger.warning(f"Not enough historical data for {symbol} to calculate signal. Need {MA_PERIOD}, have {len(self.price_history[symbol])}.")
+                    continue # Skip to the next symbol
+                    
+                signal = self.calculate_ma_signal(symbol)
+                current_price = self.price_history[symbol][-1]['close']
+                ma_value = pd.DataFrame(self.price_history[symbol])['close'].rolling(window=MA_PERIOD).mean().iloc[-1]
 
                     # Save signal to database
                     db_manager.save_signal_record(symbol, signal, ma_value, current_price)
