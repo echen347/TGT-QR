@@ -17,8 +17,8 @@ BYBIT_API_SECRET = os.getenv('BYBIT_API_SECRET')
 SYMBOLS = ['BTCUSDT', 'ETHUSDT', 'XRPUSDT']  # Start with 3 symbols including XRP
 LEVERAGE = 10  # 10x leverage for smaller position sizes
 MAX_POSITION_USDT = 0.50  # 50¢ risk per position
-TIMEFRAME = '1m'  # 1 minute candles for strategy
-MA_PERIOD = 60  # 1 hour moving average (60 minutes)
+TIMEFRAME = '1'  # 1-minute candles (API requires '1', not '1m')
+MA_PERIOD = 60  # 1-hour moving average (60 minutes)
 
 # Strategy Configuration - MODERATE RISK
 STRATEGY_INTERVAL_MINUTES = 15  # Run strategy every 15 minutes
