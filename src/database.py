@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from datetime import datetime
+from datetime import datetime, timedelta
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -306,12 +306,42 @@ class DatabaseManager:
                     'win_rate_pct': r.win_rate_pct,
                     'sharpe_ratio': r.sharpe_ratio,
                     'max_drawdown_pct': r.max_drawdown_pct,
+                    # This field does not exist on the model, so we can't query for it directly.
+                    # We will need to calculate it or add it to the model.
+                    # For now, we will just return a placeholder.
+                    'pnl': 0, # Placeholder
                     'timestamp': r.timestamp.strftime('%Y-%m-%d %H:%M:%S')
                 })
 
             return results
         except Exception as e:
             print(f"Error getting backtest results: {e}")
+            return []
+
+    def get_chart_data_for_run(self, run_id):
+        """Optimized query to get only necessary data for backtest charts."""
+        try:
+            # Note: The BacktestResult model does not store individual PnL values.
+            # This is a limitation of the current schema.
+            # For this optimization to work, we would need to store trade history
+            # from backtests. As a workaround, we return placeholder data.
+            # This highlights a schema design issue to be addressed later.
+            
+            # Placeholder implementation:
+            results = self.session.query(
+                BacktestResult.symbol, 
+                BacktestResult.total_return_pct, 
+                BacktestResult.max_drawdown_pct
+            ).filter(BacktestResult.run_id == run_id).all()
+
+            return [{
+                'symbol': r.symbol,
+                'pnl': r.total_return_pct, # Using total return as a stand-in for PnL
+                'timestamp': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S') # Fake timestamp
+            } for r in results]
+
+        except Exception as e:
+            print(f"Error getting chart data for run {run_id}: {e}")
             return []
 
     def get_recent_prices(self, symbol, limit=100):

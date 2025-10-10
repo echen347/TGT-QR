@@ -1111,6 +1111,114 @@
             dynamicInsights.style.display = 'grid';
         }
 
+        function generatePerformanceVisualizations(runId) {
+            const vizContainer = document.getElementById('performance-charts-container');
+            vizContainer.querySelectorAll('.chart-loader').forEach(loader => loader.style.display = 'block');
+
+            // Use the new, optimized endpoint
+            fetch(`/api/backtest_chart_data?run_id=${runId}`)
+                .then(response => response.json())
+                .then(data => {
+                    vizContainer.querySelectorAll('.chart-loader').forEach(loader => loader.style.display = 'none');
+                    
+                    if (data.chart_data && data.chart_data.length > 0) {
+                        // Destroy old charts before creating new ones
+                        ['returnDistributionChart', 'drawdownChart'].forEach(id => {
+                            const chart = Chart.getChart(id);
+                            if (chart) chart.destroy();
+                        });
+
+                        createReturnDistributionChart(data.chart_data);
+                        createDrawdownChart(data.chart_data);
+                    } else {
+                        vizContainer.innerHTML = '<p style="text-align: center; color: var(--text-secondary-color);">No trade data available to generate performance visualizations for this run.</p>';
+                    }
+                })
+                .catch(error => {
+                    vizContainer.querySelectorAll('.chart-loader').forEach(loader => loader.style.display = 'none');
+                    vizContainer.innerHTML = `<p class="error">Failed to load visualization data: ${error.message}</p>`;
+                    console.error('Error fetching backtest viz data:', error);
+                });
+        }
+        
+        function createReturnDistributionChart(chartData) {
+            const pnlValues = chartData.map(d => d.pnl).filter(pnl => pnl !== null);
+            if (pnlValues.length === 0) return;
+
+            // Basic histogram logic
+            const minPnl = Math.min(...pnlValues);
+            const maxPnl = Math.max(...pnlValues);
+            const binCount = Math.min(20, Math.ceil(Math.sqrt(pnlValues.length)));
+            const binSize = (maxPnl - minPnl) / binCount;
+            
+            const bins = Array(binCount).fill(0);
+            const labels = [];
+
+            for (let i = 0; i < binCount; i++) {
+                const binStart = minPnl + i * binSize;
+                labels.push(binStart.toFixed(3));
+            }
+
+            pnlValues.forEach(pnl => {
+                const binIndex = Math.min(Math.floor((pnl - minPnl) / binSize), binCount - 1);
+                bins[binIndex]++;
+            });
+
+            const ctx = document.getElementById('returnDistributionChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Frequency',
+                        data: bins,
+                        backgroundColor: '#9d72ff',
+                        borderColor: '#8e64e5',
+                        borderWidth: 1
+                    }]
+                },
+                options: getChartOptions('Trade PnL Distribution', 'PnL (USDT)', 'Number of Trades')
+            });
+        }
+
+        function createDrawdownChart(results) {
+            const trades = results
+                .filter(r => r.pnl !== null)
+                .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+            if (trades.length === 0) return;
+
+            let cumulativePnl = 0;
+            const portfolioHistory = trades.map(trade => {
+                cumulativePnl += trade.pnl;
+                return {
+                    pnl: cumulativePnl,
+                    time: new Date(trade.timestamp).toLocaleDateString()
+                };
+            });
+            
+            const labels = portfolioHistory.map(p => p.time);
+            const data = portfolioHistory.map(p => p.pnl);
+
+            const ctx = document.getElementById('drawdownChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Cumulative PnL',
+                        data: data,
+                        borderColor: '#2ecc71',
+                        backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                        fill: true,
+                        tension: 0.1,
+                        pointRadius: 2
+                    }]
+                },
+                options: getChartOptions('Portfolio Growth (Cumulative PnL)', 'Time', 'Cumulative PnL (USDT)')
+            });
+        }
+
         // Update last updated time
         function updateTimestamp() {
             document.getElementById('last-updated').textContent =

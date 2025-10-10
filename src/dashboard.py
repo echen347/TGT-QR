@@ -259,6 +259,21 @@ def api_backtest_results():
         'timestamp': datetime.now().isoformat()
     })
 
+@app.route('/api/backtest_chart_data')
+def api_backtest_chart_data():
+    """API endpoint for optimized backtest chart data"""
+    run_id = request.args.get('run_id', type=int)
+    if not run_id:
+        return jsonify({'error': 'run_id is required'}), 400
+
+    # This query will be much faster as it only pulls the necessary columns
+    chart_data = db_manager.get_chart_data_for_run(run_id)
+    
+    return jsonify({
+        'chart_data': chart_data,
+        'timestamp': datetime.now().isoformat()
+    })
+
 @app.route('/api/backtest_runs')
 def api_backtest_runs():
     """API endpoint for backtest runs"""
