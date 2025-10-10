@@ -67,8 +67,11 @@ class TradingDashboard:
                     )
                     if balance['retCode'] == 0:
                         wallet_balance = float(balance['result']['list'][0]['coin'][0]['walletBalance'])
+                        from pytz import timezone
+                        est = timezone('US/Eastern')
+                        now_est = datetime.utcnow().replace(tzinfo=timezone('UTC')).astimezone(est)
                         return {
-                            'timestamps': [datetime.utcnow().strftime('%H:%M')],
+                            'timestamps': [now_est.strftime('%m/%d %I:%M%p EST')],
                             'pnl_values': [0],
                             'cumulative_pnl': [0],
                             'current_pnl': 0,
@@ -113,8 +116,13 @@ class TradingDashboard:
             except Exception as e:
                 logging.error(f"Failed to fetch wallet balance: {e}")
 
+            # Convert timestamps to EST
+            from pytz import timezone
+            est = timezone('US/Eastern')
+            timestamps_est = [ts.replace(tzinfo=timezone('UTC')).astimezone(est) for ts in timestamps[-50:]]
+            
             return {
-                'timestamps': [ts.strftime('%H:%M') for ts in timestamps[-50:]],  # Last 50 points
+                'timestamps': [ts.strftime('%m/%d %I:%M%p EST') for ts in timestamps_est],  # Last 50 points in EST
                 'pnl_values': [cumulative_pnl[i] - cumulative_pnl[i-1] if i > 0 else cumulative_pnl[0] 
                               for i in range(max(0, len(cumulative_pnl)-50), len(cumulative_pnl))],
                 'cumulative_pnl': cumulative_pnl[-50:],
@@ -250,16 +258,59 @@ def api_status():
 
 @app.route('/shutdown', methods=['POST'])
 def shutdown():
-    """Endpoint to trigger the emergency stop."""
+    """Endpoint to trigger the emergency stop and close all positions."""
     data = request.get_json()
     if not data or data.get('password') != 'chaewon':
         return jsonify({'status': 'error', 'message': 'Incorrect password.'}), 401
 
     try:
+        logging.warning("EMERGENCY STOP ACTIVATED VIA DASHBOARD - CLOSING ALL POSITIONS")
+        
+        # First, get all current positions
+        positions = strategy_instance.get_current_positions()
+        closed_positions = []
+        errors = []
+        
+        # Close each open position at market price
+        for symbol, position in positions.items():
+            if position.get('position_size', 0) != 0:
+                try:
+                    # Determine the closing side (opposite of current position)
+                    close_side = "Sell" if position['side'] == "Buy" else "Buy"
+                    position_value = abs(position.get('position_value', 0))
+                    
+                    logging.warning(f"EMERGENCY: Closing {symbol} position - {close_side} {position_value} USDT")
+                    
+                    # Place market order to close position
+                    success = strategy_instance.place_order(symbol, close_side, position_value)
+                    
+                    if success:
+                        closed_positions.append(f"{symbol}: {close_side} {position_value} USDT")
+                    else:
+                        errors.append(f"{symbol}: Failed to close")
+                        
+                except Exception as e:
+                    error_msg = f"{symbol}: {str(e)}"
+                    errors.append(error_msg)
+                    logging.error(f"Error closing {symbol}: {e}")
+        
+        # Now activate emergency stop to prevent new trades
         risk_manager_instance.emergency_stop()
-        logging.warning("EMERGENCY STOP ACTIVATED VIA DASHBOARD")
-        return jsonify({'status': 'success', 'message': 'Emergency stop triggered. Bot will stop trading.'})
+        
+        message = f"Emergency stop activated. Closed {len(closed_positions)} position(s)."
+        if closed_positions:
+            message += f" Closed: {', '.join(closed_positions)}."
+        if errors:
+            message += f" Errors: {', '.join(errors)}."
+            
+        return jsonify({
+            'status': 'success' if not errors else 'partial',
+            'message': message,
+            'closed': closed_positions,
+            'errors': errors
+        })
     except Exception as e:
+        logging.error(f"Emergency stop error: {e}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 @app.route('/api/set_parameter', methods=['POST'])
