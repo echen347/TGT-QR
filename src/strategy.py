@@ -355,59 +355,26 @@ class MovingAverageStrategy:
             self.logger.exception(f"An unexpected error occurred during strategy execution: {e}")
 
     def log_trading_state(self):
-        """Log comprehensive trading state including risk metrics"""
-        positions = self.get_current_positions()
-        risk_status = risk_manager.get_risk_status()
-
+        """Log the current state of all tracked symbols and risk"""
         self.logger.info("📈 TRADING STATE SUMMARY")
-        self.logger.info("-" * 40)
-
-        total_pnl = 0
-        total_value = 0
-        open_positions = 0
-
+        self.logger.info("----------------------------------------")
         for symbol in SYMBOLS:
-            pos = positions.get(symbol, {'position_size': 0, 'unrealized_pnl': 0, 'position_value': 0})
-            pnl = pos.get('unrealized_pnl', 0)
-            total_pnl += pnl
-
-            position_size = pos.get('position_size', 0)
-            if position_size > 0:
-                open_positions += 1
-
-            current_price = self.price_history[symbol][-1]['close'] if self.price_history[symbol] else 0
-
+            price = self.price_history[symbol][-1]['close'] if self.price_history[symbol] else 0
+            position_info = self.positions.get(symbol, {'size': 0, 'pnl': 0})
             self.logger.info(f"  {symbol}:")
-            self.logger.info(f"    Signal: {self.signals[symbol]}")
-            self.logger.info(f"    Price: ${current_price:.2f}")
-            self.logger.info(f"    Position: {position_size}")
-            self.logger.info(f"    PnL: ${pnl:.4f}")
+            self.logger.info(f"    Signal: {self.signals.get(symbol, 0)}")
+            self.logger.info(f"    Price: ${price:.2f}")
+            self.logger.info(f"    Position: {position_info['size']}")
+            self.logger.info(f"    PnL: ${position_info['pnl']:.4f}")
 
-            # Save position record if position exists
-            if position_size > 0:
-                db_manager.save_position_record(
-                    symbol=symbol,
-                    position_size=position_size,
-                    entry_price=pos.get('entry_price', current_price),
-                    current_price=current_price,
-                    unrealized_pnl=pnl
-                )
-
-        # Risk status
-        self.logger.info("-" * 40)
+        self.logger.info("----------------------------------------")
         self.logger.info("🛡️ RISK STATUS")
-        self.logger.info(f"  Daily Loss: ${risk_status['daily_loss']:.4f}/${risk_status['daily_loss_limit']:.2f}")
-        self.logger.info(f"  Total Loss: ${risk_status['total_loss']:.4f}/${risk_status['total_loss_limit']:.2f}")
-        self.logger.info(f"  Open Positions: {open_positions}/{risk_status['max_positions']}")
-        self.logger.info(f"  Can Trade: {'✅ YES' if risk_status['can_trade'] else '❌ NO'}")
-
-        if total_pnl != 0:
-            self.logger.info(f"💰 Total Unrealized PnL: ${total_pnl:.4f} USDT")
-
-        # PnL summary from database
-        pnl_summary = db_manager.get_pnl_summary()
-        if pnl_summary['net_pnl'] != 0:
-            self.logger.info(f"📊 24h Net PnL: ${pnl_summary['net_pnl']:.4f} USDT")
+        risk_status = risk_manager.get_risk_status()
+        self.logger.info(f"  Daily Loss: ${risk_status['daily_loss']:.4f}/${risk_status['max_daily_loss_usdt']:.2f}")
+        self.logger.info(f"  Total Loss: ${risk_status['total_loss']:.4f}/${risk_status['max_total_loss_usdt']:.2f}")
+        self.logger.info(f"  Active Positions: {risk_status['positions_count']}/{risk_status['max_positions']}")
+        self.logger.info(f"  Emergency Stopped: {risk_status['is_stopped']}")
+        self.logger.info("----------------------------------------")
 
 if __name__ == "__main__":
     strategy = MovingAverageStrategy()
