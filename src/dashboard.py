@@ -17,7 +17,8 @@ import random
 import logging
 
 app = Flask(__name__)
-moment = Moment(app)
+# Rename to avoid conflicts
+flask_moment = Moment(app)
 
 # These will hold the shared instances
 strategy_instance = None
@@ -168,6 +169,7 @@ def dashboard():
     system_status = trading_dashboard.get_system_status()
     alerts = trading_dashboard.get_alerts()
     market_context = trading_dashboard.get_market_data() # Renamed for clarity
+    last_updated_str = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
 
     return render_template('dashboard.html',
                            pnl_chart=pnl_chart_data,
@@ -177,7 +179,9 @@ def dashboard():
                            system_status=system_status,
                            alerts=alerts,
                            market_context=market_context, # Pass with the new name
-                           utc_now=datetime.utcnow())
+                           last_updated=last_updated_str,
+                           utc_now=datetime.utcnow(),
+                           moment=flask_moment) # Pass the object itself
 
 @app.route('/api/status')
 def api_status():
