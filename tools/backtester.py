@@ -13,6 +13,7 @@ import os
 import logging
 from dotenv import load_dotenv
 from pybit.unified_trading import HTTP
+import time
 
 # Add src to path for imports
 sys.path.append('src')
@@ -70,32 +71,39 @@ class Backtester:
         self.historical_data = {}
 
     def fetch_historical_data(self):
-        """Fetches historical kline data from Bybit using a robust pagination loop."""
+        """Fetches historical kline data from Bybit using a robust, chunked approach."""
         logging.info("Fetching historical data...")
         for symbol in self.symbols:
             all_klines = []
-            # Start from the end date and go backwards
-            current_end_ms = int(self.end_date.timestamp() * 1000)
-            start_limit_ms = int(self.start_date.timestamp() * 1000)
+            # Define the time window for each chunk (1000 minutes = 1000 candles)
+            chunk_duration_ms = 1000 * 60 * 1000 
+            
+            current_start_ms = int(self.start_date.timestamp() * 1000)
+            end_limit_ms = int(self.end_date.timestamp() * 1000)
 
-            while current_end_ms > start_limit_ms:
+            while current_start_ms < end_limit_ms:
+                current_end_ms = current_start_ms + chunk_duration_ms
                 try:
                     response = self.session.get_kline(
-                        category="linear",
+                    category="linear",
                         symbol=symbol,
                         interval=TIMEFRAME,
+                        start=current_start_ms,
                         end=current_end_ms,
                         limit=1000
                     )
 
                     if response['retCode'] == 0 and response['result']['list']:
-                        klines = response['result']['list']
+                    klines = response['result']['list']
                         all_klines.extend(klines)
-                        # The next request ends before the first candle of this batch
-                        current_end_ms = int(klines[0][0]) - 60000 # Subtract one minute
+                        # The next chunk starts after the current one
+                        current_start_ms = current_end_ms
                     else:
                         logging.warning(f"Stopping data fetch for {symbol}. Reason: {response.get('retMsg', 'No more data')}")
                         break
+                    
+                    time.sleep(0.2) # Respect API rate limits
+
                 except Exception as e:
                     logging.error(f"Error fetching data for {symbol}: {e}")
                     break
@@ -108,6 +116,8 @@ class Backtester:
             df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
             df.set_index('timestamp', inplace=True)
             df = df.astype(float).drop_duplicates()
+            # Filter for the exact date range to remove any overlap
+            df = df[(df.index >= self.start_date) & (df.index <= self.end_date)]
             self.historical_data[symbol] = df.sort_index()
             logging.info(f"Fetched {len(df)} candles for {symbol} from {df.index.min()} to {df.index.max()}")
 
@@ -208,8 +218,8 @@ class Backtester:
             daily_returns = trades_df.set_index('exit_date')['pnl'].resample('D').sum() * LEVERAGE
             if daily_returns.std() > 0:
                 sharpe_ratio = (daily_returns.mean() / daily_returns.std()) * np.sqrt(365)
-            else:
-                sharpe_ratio = 0
+        else:
+            sharpe_ratio = 0
 
             # --- Print Results ---
             print("\n" + "="*50)
