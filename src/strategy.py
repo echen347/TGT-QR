@@ -16,13 +16,27 @@ from logging.handlers import TimedRotatingFileHandler
 from database import db_manager
 from risk_manager import risk_manager
 
+# Create a global, shared instance of the strategy
+strategy = MovingAverageStrategy()
+
 class MovingAverageStrategy:
     """
     Simple Moving Average Strategy for Perpetual Futures
     Uses 1-hour MA on 1-minute price data as alpha signal
     """
 
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super(MovingAverageStrategy, cls).__new__(cls)
+        return cls._instance
+
     def __init__(self):
+        if hasattr(self, '_initialized'):
+            return
+        self._initialized = True
+        
         # Use the working API setup from day1_test.py
         self.session = HTTP(
             testnet=BYBIT_TESTNET,
@@ -32,11 +46,18 @@ class MovingAverageStrategy:
         self.positions = {}
         self.price_history = {}
         self.signals = {}
+        self.market_state = {} # New attribute for live data
 
         # Initialize price history for each symbol
         for symbol in SYMBOLS:
             self.price_history[symbol] = []
             self.signals[symbol] = 0
+            self.market_state[symbol] = {
+                'price': 0,
+                'ma_value': 0,
+                'signal': 0,
+                'volume_24h': 0
+            }
 
         # Setup logging
         self.logger = self._setup_logging()
@@ -347,6 +368,14 @@ class MovingAverageStrategy:
                             risk_manager.positions_count -= 1
 
                     self.signals[symbol] = signal
+                    
+                    # Update market state for the dashboard
+                    self.market_state[symbol] = {
+                        'price': current_price,
+                        'ma_value': ma_value,
+                        'signal': signal,
+                        'volume_24h': self.get_symbol_volume(symbol)
+                    }
 
             # Log current state
             self.log_trading_state()
@@ -377,7 +406,9 @@ class MovingAverageStrategy:
         self.logger.info("----------------------------------------")
 
 if __name__ == "__main__":
-    strategy = MovingAverageStrategy()
+    # Note: This direct instantiation is for testing. 
+    # The application uses the global 'strategy' instance.
+    test_strategy = MovingAverageStrategy()
 
     # Run once for testing
-    strategy.run_strategy()
+    test_strategy.run_strategy()

@@ -6,344 +6,306 @@
     <title>TGT QR Trading Dashboard</title>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
             margin: 0;
             padding: 20px;
-            background-color: #f5f5f5;
         }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        .status-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            padding: 20px;
-        }
-        .card {
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        .card h3 {
-            margin: 0 0 15px 0;
-            color: #333;
-            font-size: 16px;
-        }
-        .risk-card {
-            border-left: 4px solid #ff6b6b;
-        }
-        .positions-card {
-            border-left: 4px solid #4ecdc4;
-        }
-        .signals-card {
-            border-left: 4px solid #45b7d1;
-        }
-        .controls-card {
-            border-left: 4px solid #f9ca24;
-        }
-        .metric {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-        .metric-value {
-            font-weight: bold;
-        }
-        .positive { color: #2ecc71; }
-        .negative { color: #e74c3c; }
-        .neutral { color: #95a5a6; }
-        .chart-container {
-            width: 100%;
-            height: 300px;
-            padding: 15px;
-        }
-        .btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            margin: 5px;
-        }
-        .btn:hover {
-            background: #5a6fd8;
-        }
-        .btn-danger {
-            background: #e74c3c;
-        }
-        .btn-danger:hover {
-            background: #c0392b;
-        }
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12px;
-        }
-        .table th, .table td {
-            padding: 8px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-        .table th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-        }
-        .signal-buy { color: #2ecc71; font-weight: bold; }
-        .signal-sell { color: #e74c3c; font-weight: bold; }
-        .signal-hold { color: #95a5a6; }
-        .status-active { color: #2ecc71; font-weight: bold; }
-        .status-inactive { color: #e74c3c; font-weight: bold; }
-        .status-warning { color: #f39c12; font-weight: bold; }
 
-        .status-grid {
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            max-width: 1600px;
+            margin: auto;
+        }
+
+        .card {
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border: 1px solid #2c2c2c;
+        }
+
+        .card h3 {
+            margin-top: 0;
+            color: #bb86fc;
+            border-bottom: 1px solid #3c3c3c;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .status-grid, .risk-grid, .market-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 15px;
         }
 
-        .alerts-list {
-            max-height: 150px;
+        .status-item p, .risk-item p {
+            margin: 5px 0;
+        }
+        
+        .status-active { color: #03dac6; }
+        .status-inactive { color: #cf6679; }
+        .status-ok { color: #03dac6; }
+        
+        .table-container {
+            max-height: 250px;
             overflow-y: auto;
-            padding-right: 10px;
         }
-        .alert-item {
-            padding: 8px;
-            border-radius: 4px;
-            margin-bottom: 5px;
-            font-size: 0.9em;
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
         }
-        .alert-danger { background-color: rgba(231, 76, 60, 0.2); border-left: 3px solid #e74c3c; }
-        .alert-warning { background-color: rgba(243, 156, 18, 0.2); border-left: 3px solid #f39c12; }
-        .alert-success { background-color: rgba(46, 204, 113, 0.2); border-left: 3px solid #2ecc71; }
-        @media (max-width: 768px) {
-            .status-grid {
-                grid-template-columns: 1fr;
-                gap: 15px;
-                padding: 15px;
-            }
-            body {
-                padding: 10px;
-            }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #3c3c3c;
         }
+
+        th {
+            background-color: #333;
+        }
+
+        .signal-buy { color: #4caf50; }
+        .signal-sell { color: #f44336; }
+
+        .market-card {
+            padding: 15px;
+            background-color: #2a2a2a;
+            border-radius: 6px;
+        }
+
+        .market-card h4 {
+            margin: 0 0 10px 0;
+            color: #fff;
+            font-size: 1.2em;
+        }
+
+        .market-card p {
+            margin: 4px 0;
+            font-size: 0.95em;
+        }
+
+        .market-card .signal-value {
+            font-weight: bold;
+        }
+
+        #shutdown-btn {
+            background-color: #cf6679;
+            color: #121212;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        #shutdown-btn:hover {
+            background-color: #ff8a80;
+        }
+
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🚀 TGT QR Trading Dashboard</h1>
-            <p>Mobile-friendly Trading System Monitor</p>
+        <div class="card">
+            <h3>System Control</h3>
+            <div class="status-grid">
+                <div class="status-item">
+                    <p>Dashboard: <span class="status-active">{{ system_status.dashboard_status }}</span></p>
+                    <p>Trading Bot: <span class="{{ 'status-active' if system_status.bot_status == 'Active' else 'status-inactive' }}">{{ system_status.bot_status }}</span></p>
+                    <p>API Status: <span class="status-ok">{{ system_status.api_status }}</span></p>
+                </div>
+                <div class="status-item">
+                    <button id="shutdown-btn">EMERGENCY STOP</button>
+                    <p id="shutdown-status" style="font-size: 0.9em; margin-top: 10px;"></p>
+                </div>
+            </div>
+             <p style="font-size: 0.8em; color: #888; margin-top: 15px;">Last updated: <span id="lastUpdate">{{ moment(last_updated).format('YYYY-MM-DD HH:mm:ss') }}</span></p>
+        </div>
+        
+        <div class="card">
+            <h3>Market Analysis</h3>
+            <div class="market-grid">
+                {% for symbol, data in market_data.items() %}
+                <div class="market-card">
+                    <h4>{{ symbol }}</h4>
+                    <p>Price: <strong>${{ "%.2f"|format(data.price) }}</strong></p>
+                    <p>MA ({{ MA_PERIOD }}m): ${{ "%.2f"|format(data.ma_value) }}</p>
+                    <p>24h Vol: ${{ "{:,.0f}".format(data.volume_24h) }}</p>
+                    <p>Signal: 
+                        <span class="signal-value {{ 'signal-buy' if data.signal == 1 else 'signal-sell' if data.signal == -1 else '' }}">
+                            {% if data.signal == 1 %}BUY
+                            {% elif data.signal == -1 %}SELL
+                            {% else %}NEUTRAL
+                            {% endif %}
+                        </span>
+                    </p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>Risk Management</h3>
+            <div class="risk-grid">
+                <div class="risk-item">
+                    <p><strong>Max Position:</strong> ${{ risk.max_position_usdt }}</p>
+                    <p><strong>Daily Loss Limit:</strong> ${{ risk.max_daily_loss_usdt }}</p>
+                    <p><strong>Total Loss Limit:</strong> ${{ risk.max_total_loss_usdt }}</p>
+                </div>
+                <div class="risk-item">
+                    <p>Current PnL: <span class="{{ 'signal-buy' if risk.current_pnl >= 0 else 'signal-sell' }}">{{ "%.2f"|format(risk.current_pnl) }}</span></p>
+                    <p>Total PnL: <span class="{{ 'signal-buy' if risk.total_pnl >= 0 else 'signal-sell' }}">{{ "%.2f"|format(risk.total_pnl) }}</span></p>
+                </div>
+            </div>
         </div>
 
-        <div class="status-grid">
-            <!-- Risk Status Card -->
-            <div class="card risk-card">
-                <h3>Risk Management</h3>
-                <p><strong>Max Position:</strong> ${{ risk.max_position_usdt }}</p>
-                <p><strong>Daily Loss Limit:</strong> ${{ risk.max_daily_loss_usdt }}</p>
-                <p><strong>Total Loss Limit:</strong> ${{ risk.max_total_loss_usdt }}</p>
-            </div>
-
-            <div class="grid-item">
-                <div class="card">
-                    <h3>System Status</h3>
-                    <div class="status-grid">
-                        <div>
-                            <p>Dashboard: <span class="status-active">{{ system_status.dashboard_status }}</span></p>
-                            <p>Trading Bot: <span class="{{ 'status-active' if system_status.bot_status == 'Active' else 'status-inactive' }}">{{ system_status.bot_status }}</span></p>
-                        </div>
-                        <div>
-                            <p>API Status: <span class="status-active">{{ system_status.api_status }}</span></p>
-                            <p>DB Status: <span class="status-active">Connected</span></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid-item">
-                <div class="card">
-                    <h3>Alerts</h3>
-                    <div class="alerts-list">
-                        {% if alerts %}
-                            {% for alert in alerts %}
-                                <p class="alert-item alert-{{ alert.level }}">{{ alert.message }}</p>
-                            {% endfor %}
-                        {% else %}
-                            <p class="alert-item alert-success">No issues</p>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Controls Card -->
-            <div class="card controls-card">
-                <h3>⚙️ Controls</h3>
-                <button class="btn" onclick="refreshData()">🔄 Refresh</button>
-                <button class="btn btn-danger" onclick="emergencyShutdown()">🛑 Emergency Stop</button>
-                <div style="margin-top: 10px;">
-                    <input type="number" id="maxLoss" placeholder="Max Daily Loss" step="0.01" style="padding: 5px; margin: 2px;">
-                    <button class="btn" onclick="setMaxLoss()">Set</button>
-                </div>
-            </div>
-
-            <!-- PnL Chart Card -->
-            <div class="card">
-                <h3>📈 24h PnL Performance</h3>
-                <div class="chart-container">
-                    {{ pnl_chart | safe }}
-                </div>
-            </div>
-
-            <!-- Positions Card -->
-            <div class="card positions-card">
-                <h3>📊 Current Positions</h3>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Symbol</th>
-                                <th>Size</th>
-                                <th>Entry Price</th>
-                                <th>Current Price</th>
-                                <th>Unrealized PnL</th>
-                            </tr>
-                        </thead>
-                        <tbody id="positionsTable">
-                            <!-- Data will be injected here -->
-                            {% for position in positions %}
-                            <tr>
-                                <td>{{ position.symbol }}</td>
-                                <td>{{ position.position_size }}</td>
-                                <td>${{ "%.2f"|format(position.entry_price) }}</td>
-                                <td>${{ "%.2f"|format(position.current_price) }}</td>
-                                <td class="{{ 'positive' if position.unrealized_pnl >= 0 else 'negative' }}">${{ "%.4f"|format(position.unrealized_pnl) }}</td>
-                            </tr>
-                            {% else %}
-                            <tr>
-                                <td colspan="5">No active positions</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Signals Card -->
-            <div class="card signals-card">
-                <h3>📡 Recent Signals</h3>
-                {% if signals %}
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Symbol</th>
-                            <th>Signal</th>
-                            <th>Price</th>
-                            <th>MA</th>
-                            <th>Time</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for signal in signals %}
-                        <tr>
-                            <td><strong>{{ signal.symbol }}</strong></td>
-                            <td class="
-                                {% if signal.signal == 1 %}signal-buy
-                                {% elif signal.signal == -1 %}signal-sell
-                                {% else %}signal-hold{% endif %}
-                            ">
-                                {% if signal.signal == 1 %}🚀 BUY
-                                {% elif signal.signal == -1 %}🔻 SELL
-                                {% else %}⏸️ HOLD{% endif %}
-                            </td>
-                            <td>${{ "%.2f"|format(signal.current_price) }}</td>
-                            <td>${{ "%.2f"|format(signal.ma_value) }}</td>
-                            <td>{{ signal.timestamp }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+        <div class="card">
+            <h3>Alerts</h3>
+            <div class="alerts-list">
+                {% if alerts %}
+                    {% for alert in alerts %}
+                        <p class="alert-item alert-{{ alert.level }}">{{ alert.message }}</p>
+                    {% endfor %}
                 {% else %}
-                <p style="color: #95a5a6; font-style: italic;">No recent signals</p>
+                    <p class="alert-item alert-success">No issues</p>
                 {% endif %}
             </div>
         </div>
 
-        <div style="padding: 20px; text-align: center; color: #666; border-top: 1px solid #eee;">
-            <p>Last updated: <span id="lastUpdate">{{ moment().format('YYYY-MM-DD HH:mm:ss') }}</span></p>
+        <div class="card">
+            <h3>📈 24h PnL Performance</h3>
+            <div class="chart-container">
+                <div id="pnlChart"></div>
+            </div>
         </div>
+
+        <div class="card">
+            <h3>📊 Current Positions</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Size</th>
+                            <th>Entry Price</th>
+                            <th>Current Price</th>
+                            <th>Unrealized PnL</th>
+                        </tr>
+                    </thead>
+                    <tbody id="positionsTable">
+                        <!-- Data will be injected here -->
+                        {% for position in positions %}
+                        <tr>
+                            <td>{{ position.symbol }}</td>
+                            <td>{{ position.position_size }}</td>
+                            <td>${{ "%.2f"|format(position.entry_price) }}</td>
+                            <td>${{ "%.2f"|format(position.current_price) }}</td>
+                            <td class="{{ 'signal-buy' if position.unrealized_pnl >= 0 else 'signal-sell' }}">${{ "%.4f"|format(position.unrealized_pnl) }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5">No active positions</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>📡 Recent Signals</h3>
+            {% if signals %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Signal</th>
+                        <th>Price</th>
+                        <th>MA</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for signal in signals %}
+                    <tr>
+                        <td><strong>{{ signal.symbol }}</strong></td>
+                        <td class="
+                            {% if signal.signal == 1 %}signal-buy
+                            {% elif signal.signal == -1 %}signal-sell
+                            {% else %}signal-hold{% endif %}
+                        ">
+                            {% if signal.signal == 1 %}🚀 BUY
+                            {% elif signal.signal == -1 %}🔻 SELL
+                            {% else %}⏸️ HOLD{% endif %}
+                        </td>
+                        <td>${{ "%.2f"|format(signal.current_price) }}</td>
+                        <td>${{ "%.2f"|format(signal.ma_value) }}</td>
+                        <td>{{ signal.timestamp }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p style="color: #95a5a6; font-style: italic;">No recent signals</p>
+            {% endif %}
+        </div>
+
     </div>
-
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    {{ moment.include_moment() }}
     <script>
-        function refreshData() {
-            location.reload();
-        }
-
-        function emergencyShutdown() {
-            if (confirm('Are you sure you want to activate emergency shutdown?')) {
-                fetch('/api/shutdown', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    alert(data.message);
-                    location.reload();
-                })
-                .catch(error => {
-                    alert('Error: ' + error);
-                });
-            }
-        }
-
-        function setMaxLoss() {
-            const maxLoss = document.getElementById('maxLoss').value;
-            if (maxLoss) {
-                fetch('/api/set_parameter', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        parameter: 'max_daily_loss',
-                        value: parseFloat(maxLoss)
+        document.getElementById('shutdown-btn').addEventListener('click', function() {
+            if (confirm('Are you sure you want to trigger the EMERGENCY STOP? This will prevent all new trades.')) {
+                fetch('/shutdown', { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        const statusEl = document.getElementById('shutdown-status');
+                        if (data.status === 'success') {
+                            statusEl.style.color = '#03dac6';
+                            statusEl.innerText = data.message;
+                            alert('Emergency Stop Activated!');
+                        } else {
+                            statusEl.style.color = '#cf6679';
+                            statusEl.innerText = 'Error: ' + data.message;
+                            alert('Failed to activate Emergency Stop.');
+                        }
                     })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    alert(data.message);
-                })
-                .catch(error => {
-                    alert('Error: ' + error);
-                });
+                    .catch(error => {
+                        console.error('Error:', error);
+                        const statusEl = document.getElementById('shutdown-status');
+                        statusEl.style.color = '#cf6679';
+                        statusEl.innerText = 'A network error occurred.';
+                        alert('An error occurred while trying to stop the bot.');
+                    });
             }
-        }
+        });
 
-        // Auto-refresh every 30 seconds
-        setInterval(refreshData, 30000);
+        // Auto-refresh the page every 60 seconds to get new data
+        setTimeout(() => {
+            window.location.reload();
+        }, 60000);
 
-        // Update timestamp
-        function updateTimestamp() {
-            document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
-        }
-        setInterval(updateTimestamp, 1000);
+        // Render PnL Chart
+        const pnlData = {{ pnl_chart | tojson }};
+        const layout = {
+            title: 'Portfolio P&L Over Time',
+            xaxis: { title: 'Time' },
+            yaxis: { title: 'PnL (USDT)' },
+            paper_bgcolor: '#1e1e1e',
+            plot_bgcolor: '#1e1e1e',
+            font: { color: '#e0e0e0' }
+        };
+        Plotly.newPlot('pnlChart', pnlData, layout);
+
     </script>
 </body>
 </html>

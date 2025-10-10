@@ -6,7 +6,8 @@ import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from src.strategy import MovingAverageStrategy
+# Import the shared strategy instance
+from src.strategy import strategy
 from config.config import STRATEGY_INTERVAL_MINUTES
 
 # Basic logging
@@ -16,7 +17,7 @@ def run_strategy_job():
     """Wrapper function to run the strategy."""
     try:
         logging.info("Scheduler is running the strategy...")
-        strategy = MovingAverageStrategy()
+        # The global strategy instance is used here
         strategy.run_strategy()
         logging.info("Strategy run finished.")
     except Exception as e:
@@ -28,17 +29,14 @@ def start_scheduler():
     scheduler.add_job(run_strategy_job, 'interval', minutes=STRATEGY_INTERVAL_MINUTES)
     scheduler.start()
     logging.info(f"Trading strategy scheduled to run every {STRATEGY_INTERVAL_MINUTES} minutes.")
-
-    # Run once immediately on startup
-    run_strategy_job()
-
-    try:
-        # Keep the main thread alive
-        while True:
-            time.sleep(60)
-    except (KeyboardInterrupt, SystemExit):
-        scheduler.shutdown()
-        logging.info("Scheduler shut down.")
+    
+    # Keep the main thread alive if this script is run directly
+    if __name__ == '__main__':
+        try:
+            while True:
+                time.sleep(2)
+        except (KeyboardInterrupt, SystemExit):
+            scheduler.shutdown()
 
 if __name__ == "__main__":
     start_scheduler()

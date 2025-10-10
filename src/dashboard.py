@@ -9,6 +9,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from config.config import *
 from database import db_manager
 from risk_manager import risk_manager
+from strategy import strategy # Import the shared strategy instance
 import json
 from flask_moment import Moment
 
@@ -16,7 +17,7 @@ app = Flask(__name__)
 moment = Moment(app)
 
 class TradingDashboard:
-    """Simple mobile-friendly trading dashboard"""
+    """Handles data fetching for the Flask dashboard"""
 
     def __init__(self):
         self.db = db_manager
@@ -29,6 +30,10 @@ class TradingDashboard:
             'bot_status': 'Active' if bot_is_active else 'Inactive',
             'api_status': 'OK',  # Placeholder - can be improved
         }
+
+    def get_market_data(self):
+        """Get live market data from the strategy instance"""
+        return strategy.market_state
 
     def get_alerts(self):
         """Get current alerts from the risk manager"""
@@ -149,17 +154,20 @@ def dashboard():
     pnl_chart_data = trading_dashboard.get_pnl_chart_data()
     positions_data = trading_dashboard.get_positions_data()
     signals_data = trading_dashboard.get_signals_data()
-    risk_status = trading_dashboard.get_risk_status()
+    risk = trading_dashboard.get_risk_status()
     system_status = trading_dashboard.get_system_status()
     alerts = trading_dashboard.get_alerts()
+    market_data = trading_dashboard.get_market_data()
 
     return render_template('dashboard.html',
-                           pnl_data=json.dumps(pnl_chart_data),
+                           pnl_chart=pnl_chart_data,
                            positions=positions_data,
                            signals=signals_data,
-                           risk=risk_status,
+                           risk=risk,
                            system_status=system_status,
-                           alerts=alerts)
+                           alerts=alerts,
+                           market_data=market_data,
+                           last_updated=datetime.now())
 
 @app.route('/api/status')
 def api_status():
@@ -173,22 +181,14 @@ def api_status():
         'pnl_summary': dashboard.get_pnl_chart_data()
     })
 
-@app.route('/api/shutdown', methods=['POST'])
-def api_shutdown():
-    """Emergency shutdown endpoint"""
+@app.route('/shutdown', methods=['POST'])
+def shutdown_bot():
+    """Endpoint to trigger emergency stop"""
     try:
-        # In a real system, this would stop the trading strategy
         risk_manager.emergency_stop()
-
-        return jsonify({
-            'success': True,
-            'message': 'Emergency shutdown activated'
-        })
+        return jsonify({'status': 'success', 'message': 'Emergency stop triggered. Bot will stop trading.'})
     except Exception as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        })
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 @app.route('/api/set_parameter', methods=['POST'])
 def api_set_parameter():
