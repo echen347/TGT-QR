@@ -1490,6 +1490,12 @@
                 return;
             }
 
+            // Ensure Chart.js is available
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js not loaded');
+                return;
+            }
+
             // Trade Duration Analysis
             const durations = tradeData.map(t => {
                 const entry = new Date(t.entry_date);
@@ -1497,7 +1503,12 @@
                 return (exit - entry) / (1000 * 60 * 60); // hours
             });
 
-            const durationCtx = document.getElementById('tradeDurationChart').getContext('2d');
+            const durationChart = document.getElementById('tradeDurationChart');
+            if (!durationChart) {
+                console.error('Trade duration chart element not found');
+                return;
+            }
+            const durationCtx = durationChart.getContext('2d');
             new Chart(durationCtx, {
                 type: 'bar',
                 data: {
@@ -1538,7 +1549,12 @@
                 return trades.reduce((sum, pnl) => sum + pnl, 0) * 100; // percentage
             });
 
-            const monthlyCtx = document.getElementById('monthlyPerformanceChart').getContext('2d');
+            const monthlyChart = document.getElementById('monthlyPerformanceChart');
+            if (!monthlyChart) {
+                console.error('Monthly performance chart element not found');
+                return;
+            }
+            const monthlyCtx = monthlyChart.getContext('2d');
             new Chart(monthlyCtx, {
                 type: 'line',
                 data: {
@@ -1572,7 +1588,12 @@
             const variance = returns.reduce((acc, ret) => acc + Math.pow(ret - avgReturn, 2), 0) / returns.length;
             const volatility = Math.sqrt(variance) * Math.sqrt(12); // Annualized
 
-            const riskCtx = document.getElementById('riskMetricsChart').getContext('2d');
+            const riskChart = document.getElementById('riskMetricsChart');
+            if (!riskChart) {
+                console.error('Risk metrics chart element not found');
+                return;
+            }
+            const riskCtx = riskChart.getContext('2d');
             new Chart(riskCtx, {
                 type: 'doughnut',
                 data: {
