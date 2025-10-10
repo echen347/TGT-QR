@@ -13,6 +13,7 @@ from database import db_manager
 # from strategy import strategy
 import json
 from flask_moment import Moment
+import random
 
 app = Flask(__name__)
 moment = Moment(app)

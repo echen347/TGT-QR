@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TGT QR Backtest Dashboard</title>
+    <title>ethanTGT Backtest Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         :root {
@@ -259,22 +259,31 @@
         <!-- Advanced Metrics Summary -->
         <div style="grid-column: span 12;">
             <h2><i class="fas fa-trophy"></i> Performance Overview</h2>
-            <div class="metric-grid">
-                <div class="metric-card">
-                    <div class="metric-value positive">+12.3%</div>
-                    <div class="metric-label">Best Total Return</div>
+            <div id="performance-overview-container">
+                <div id="performance-loading" style="text-align: center; padding: 40px; color: var(--text-secondary-color);">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 2em; margin-bottom: 15px;"></i>
+                    <p>Select a backtest run above to view performance metrics</p>
                 </div>
-                <div class="metric-card">
-                    <div class="metric-value">2.1</div>
-                    <div class="metric-label">Best Sharpe Ratio</div>
+                <div id="performance-overview" class="metric-grid" style="display: none;">
+                    <div class="metric-card">
+                        <div class="metric-value positive" id="best-return">-</div>
+                        <div class="metric-label">Best Total Return</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="best-sharpe">-</div>
+                        <div class="metric-label">Best Sharpe Ratio</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="best-winrate">-</div>
+                        <div class="metric-label">Best Win Rate</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="best-drawdown">-</div>
+                        <div class="metric-label">Best Max Drawdown</div>
+                    </div>
                 </div>
-                <div class="metric-card">
-                    <div class="metric-value">68.4%</div>
-                    <div class="metric-label">Best Win Rate</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-value">-8.2%</div>
-                    <div class="metric-label">Best Max Drawdown</div>
+                <div id="performance-source" style="text-align: center; color: var(--text-secondary-color); font-size: 0.9em; margin-top: 10px; display: none;">
+                    <span id="performance-run-name">Select a backtest run above to view performance metrics</span>
                 </div>
             </div>
         </div>
@@ -359,28 +368,37 @@
         <div style="grid-column: span 12;">
             <div class="card">
                 <h3><i class="fas fa-lightbulb"></i> Strategy Insights</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
-                    <div>
-                        <h4>📊 Signal Quality</h4>
-                        <p style="color: var(--text-secondary-color);">
-                            The improved MA strategy shows significantly better signal quality with only high-conviction trades.
-                            No trades in recent periods indicates proper filtering of weak signals.
-                        </p>
+                <div id="strategy-insights-content" class="insights-grid">
+                    <div class="insight-item">
+                        <div class="icon-bg" style="--icon-color: #2ecc71;">
+                            <i class="fas fa-signal"></i>
+                        </div>
+                        <div>
+                            <h4>Signal Quality</h4>
+                            <p>The improved MA strategy shows significantly better signal quality with only high-conviction trades. No trades in recent periods indicates proper filtering of weak signals.</p>
+                        </div>
                     </div>
-                    <div>
-                        <h4>⚡ Performance</h4>
-                        <p style="color: var(--text-secondary-color);">
-                            Advanced metrics show the strategy's risk-adjusted returns. Focus on Sharpe ratio > 1.0
-                            and Calmar ratio > 2.0 for production deployment.
-                        </p>
+                    <div class="insight-item">
+                        <div class="icon-bg" style="--icon-color: #f1c40f;">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <div>
+                            <h4>Performance</h4>
+                            <p>Advanced metrics show the strategy's risk-adjusted returns. Focus on Sharpe ratio > 1.0 and Calmar ratio > 2.0 for production deployment.</p>
+                        </div>
                     </div>
-                    <div>
-                        <h4>🎯 Risk Management</h4>
-                        <p style="color: var(--text-secondary-color);">
-                            ATR-based stop losses and 2:1 reward:risk ratios ensure consistent risk management.
-                            Maximum drawdown under 10% indicates good capital preservation.
-                        </p>
+                    <div class="insight-item">
+                        <div class="icon-bg" style="--icon-color: #e74c3c;">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div>
+                            <h4>Risk Management</h4>
+                            <p>ATR-based stop losses and 2:1 reward:risk ratios ensure consistent risk management. Maximum drawdown under 10% indicates good capital preservation.</p>
+                        </div>
                     </div>
+                </div>
+                <div id="dynamic-strategy-insights" class="insights-grid" style="display: none;">
+                    <!-- Dynamic insights will be populated here -->
                 </div>
             </div>
         </div>
@@ -409,6 +427,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         // Backtest functionality
         document.getElementById('run-backtest-btn').addEventListener('click', function() {
@@ -652,24 +671,53 @@
 
         function generateBacktestVisualizations(runId, symbols) {
             // Fetch actual backtest data and create visualizations
-            setTimeout(() => {
-                // Create charts for all selected symbols
-                createBacktestPriceChart(symbols);
-                createBacktestSignalChart(symbols);
-                createBacktestTradeChart(symbols);
-                createBacktestDrawdownChart(symbols);
-                createPerformanceCharts(symbols);
+            fetch(`/api/backtest_results?run_id=${runId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.results && data.results.length > 0) {
+                        // Filter data for selected symbols
+                        const filteredData = data.results.filter(result => symbols.includes(result.symbol));
 
-                document.getElementById('viz-container').style.display = 'block';
+                        if (filteredData.length > 0) {
+                            // Show which backtest run this is from
+                            const runInfo = `Backtest Run ID: ${runId} - ${symbols.join(', ')}`;
+                            document.getElementById('viz-status').innerHTML = `<i class="fas fa-info-circle"></i> Loading data for ${runInfo}...`;
 
-                const statusDiv = document.getElementById('viz-status');
-                statusDiv.style.backgroundColor = 'rgba(46, 204, 113, 0.1)';
-                statusDiv.style.border = '1px solid var(--green-color)';
-                statusDiv.innerHTML = `<i class="fas fa-check-circle"></i> Visualizations generated for ${symbols.length} symbol(s)!`;
+                            // Create charts with real data
+                            setTimeout(() => {
+                                createBacktestPriceChartWithData(filteredData, symbols);
+                                createBacktestSignalChartWithData(filteredData, symbols);
+                                createBacktestTradeChartWithData(filteredData, symbols);
+                                createBacktestDrawdownChartWithData(filteredData, symbols);
+                                createPerformanceChartsWithData(filteredData, symbols);
 
-                document.getElementById('generate-viz-btn').innerHTML = '<i class="fas fa-magic"></i> Generate Visualizations';
-                document.getElementById('generate-viz-btn').disabled = false;
-            }, 1500);
+                                document.getElementById('viz-container').style.display = 'block';
+
+                                const statusDiv = document.getElementById('viz-status');
+                                statusDiv.style.backgroundColor = 'rgba(46, 204, 113, 0.1)';
+                                statusDiv.style.border = '1px solid var(--green-color)';
+                                statusDiv.innerHTML = `<i class="fas fa-check-circle"></i> Visualizations generated for ${runInfo}!`;
+
+                                document.getElementById('generate-viz-btn').innerHTML = '<i class="fas fa-magic"></i> Generate Visualizations';
+                                document.getElementById('generate-viz-btn').disabled = false;
+                            }, 1000);
+                        } else {
+                            throw new Error('No data found for selected symbols');
+                        }
+                    } else {
+                        throw new Error('No backtest results found for this run');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error generating visualizations:', error);
+                    const statusDiv = document.getElementById('viz-status');
+                    statusDiv.style.backgroundColor = 'rgba(231, 76, 60, 0.1)';
+                    statusDiv.style.border = '1px solid var(--red-color)';
+                    statusDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Error: ${error.message}`;
+
+                    document.getElementById('generate-viz-btn').innerHTML = '<i class="fas fa-magic"></i> Generate Visualizations';
+                    document.getElementById('generate-viz-btn').disabled = false;
+                });
         }
 
         function createBacktestPriceChart(symbols) {
@@ -816,68 +864,95 @@
             return Array.from({length: 5}, (_, i) => -Math.abs((Math.random() - 0.5) * 10));
         }
 
-        function createPerformanceCharts(symbols) {
+        function createPerformanceCharts(results) {
+            if (results.length === 0) {
+                clearPerformanceCharts();
+                return;
+            }
             // Create return distribution and drawdown charts for the performance section
-            createReturnDistributionChart(symbols);
-            createPortfolioDrawdownChart(symbols);
+            createReturnDistributionChart(results);
+            createPortfolioDrawdownChart(results);
         }
 
-        function createReturnDistributionChart(symbols) {
-            const ctx = document.getElementById('returnDistributionChart').getContext('2d');
+        function clearPerformanceCharts() {
+            const returnCtx = document.getElementById('returnDistributionChart');
+            const drawdownCtx = document.getElementById('drawdownChart');
 
-            // Create datasets for each symbol
-            const datasets = symbols.map((symbol, index) => ({
-                label: `${symbol} Returns`,
-                data: generateReturnDistributionData(symbol),
-                backgroundColor: ['rgba(157, 114, 255, 0.8)', 'rgba(46, 204, 113, 0.8)', 'rgba(231, 76, 60, 0.8)', 'rgba(241, 196, 15, 0.8)', 'rgba(155, 89, 182, 0.8)'][index % 5],
-                borderColor: ['#9d72ff', '#2ecc71', '#e74c3c', '#f1c40f', '#9b59b6'][index % 5],
-                borderWidth: 1
-            }));
+            if (returnCtx.chart) {
+                returnCtx.chart.destroy();
+            }
+            if (drawdownCtx.chart) {
+                drawdownCtx.chart.destroy();
+            }
+        }
 
-            new Chart(ctx, {
+        function createReturnDistributionChart(results) {
+            const ctx = document.getElementById('returnDistributionChart');
+            if (ctx.chart) {
+                ctx.chart.destroy();
+            }
+
+            const returns = results.map(r => r.total_return_pct);
+            const labels = results.map(r => r.symbol);
+            
+            ctx.chart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['-10%', '-5%', '0%', '+5%', '+10%'],
-                    datasets: datasets
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: 'var(--text-color)' } } },
-                    scales: {
-                        x: { ticks: { color: 'var(--text-secondary-color)' } },
-                        y: { ticks: { color: 'var(--text-secondary-color)' } }
-                    }
-                }
-            });
-        }
-
-        function createPortfolioDrawdownChart(symbols) {
-            const ctx = document.getElementById('drawdownChart').getContext('2d');
-
-            // Create a combined portfolio drawdown chart
-            const portfolioDrawdown = Array.from({length: 10}, (_, i) => -Math.abs((Math.random() - 0.5) * 15));
-
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: Array.from({length: 10}, (_, i) => `Day ${i+1}`),
+                    labels: labels,
                     datasets: [{
-                        label: 'Portfolio Drawdown',
-                        data: portfolioDrawdown,
-                        borderColor: '#e74c3c',
-                        backgroundColor: 'rgba(231, 76, 60, 0.1)',
-                        fill: true,
-                        tension: 0.4
+                        label: 'Total Return %',
+                        data: returns,
+                        backgroundColor: returns.map(r => r >= 0 ? 'rgba(46, 204, 113, 0.8)' : 'rgba(231, 76, 60, 0.8)'),
+                        borderColor: returns.map(r => r >= 0 ? '#2ecc71' : '#e74c3c'),
+                        borderWidth: 1
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: 'var(--text-color)' } } },
+                    plugins: { legend: { display: false } },
                     scales: {
                         x: { ticks: { color: 'var(--text-secondary-color)' } },
-                        y: { ticks: { color: 'var(--text-secondary-color)' } }
+                        y: { 
+                            ticks: { color: 'var(--text-secondary-color)' },
+                            title: { display: true, text: 'Total Return (%)', color: 'var(--text-color)'}
+                        }
+                    }
+                }
+            });
+        }
+
+        function createPortfolioDrawdownChart(results) {
+            const ctx = document.getElementById('drawdownChart');
+            if (ctx.chart) {
+                ctx.chart.destroy();
+            }
+
+            const drawdowns = results.map(r => r.max_drawdown_pct);
+            const labels = results.map(r => r.symbol);
+
+            ctx.chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Max Drawdown %',
+                        data: drawdowns,
+                        backgroundColor: 'rgba(231, 76, 60, 0.8)',
+                        borderColor: '#e74c3c',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: 'var(--text-secondary-color)' } },
+                        y: { 
+                            ticks: { color: 'var(--text-secondary-color)' },
+                            title: { display: true, text: 'Max Drawdown (%)', color: 'var(--text-color)'}
+                        }
                     }
                 }
             });
@@ -924,6 +999,95 @@
 
                 tbody.appendChild(row);
             });
+        }
+
+        function updatePerformanceOverview(results, runText) {
+            const overviewTitle = document.getElementById('performance-overview-title');
+            overviewTitle.innerHTML = `<i class="fas fa-tachometer-alt"></i> Performance Overview for ${runText}`;
+
+            if (results.length === 0) {
+                document.getElementById('best-return').textContent = '-';
+                document.getElementById('best-sharpe').textContent = '-';
+                document.getElementById('best-winrate').textContent = '-';
+                document.getElementById('best-drawdown').textContent = '-';
+                return;
+            }
+
+            const bestReturn = Math.max(...results.map(r => r.total_return_pct));
+            const bestSharpe = Math.max(...results.map(r => r.sharpe_ratio));
+            const bestWinRate = Math.max(...results.map(r => r.win_rate_pct));
+            const bestDrawdown = Math.max(...results.map(r => r.max_drawdown_pct)); // Max drawdown is negative, so max is closest to zero
+
+            updateCard('best-return', bestReturn, '%', 2);
+            updateCard('best-sharpe', bestSharpe, '', 2);
+            updateCard('best-winrate', bestWinRate, '%', 1);
+            updateCard('best-drawdown', bestDrawdown, '%', 1);
+        }
+        
+        function updateCard(elementId, value, suffix, precision) {
+            const element = document.getElementById(elementId);
+            element.textContent = `${value.toFixed(precision)}${suffix}`;
+            
+            element.classList.remove('positive', 'negative', 'neutral');
+            if (elementId === 'best-drawdown') {
+                if (value > -10) element.classList.add('positive');
+                else if (value < -20) element.classList.add('negative');
+                else element.classList.add('neutral');
+            } else {
+                if (value > 0) element.classList.add('positive');
+                else if (value < 0) element.classList.add('negative');
+                else element.classList.add('neutral');
+            }
+        }
+
+        function updateStrategyInsights(results) {
+            const staticInsights = document.getElementById('strategy-insights-content');
+            const dynamicInsights = document.getElementById('dynamic-strategy-insights');
+
+            if (results.length === 0) {
+                staticInsights.style.display = 'grid';
+                dynamicInsights.style.display = 'none';
+                return;
+            }
+
+            const avgReturn = results.reduce((acc, r) => acc + r.total_return_pct, 0) / results.length;
+            const avgSharpe = results.reduce((acc, r) => acc + r.sharpe_ratio, 0) / results.length;
+            const avgWinRate = results.reduce((acc, r) => acc + r.win_rate_pct, 0) / results.length;
+            const avgDrawdown = results.reduce((acc, r) => acc + r.max_drawdown_pct, 0) / results.length;
+
+            let insightsHTML = `
+                <div class="insight-item">
+                    <div class="icon-bg" style="--icon-color: #2ecc71;">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div>
+                        <h4>Average Return</h4>
+                        <p>This run achieved an average return of <strong>${avgReturn.toFixed(2)}%</strong> across ${results.length} symbols.</p>
+                    </div>
+                </div>
+                <div class="insight-item">
+                    <div class="icon-bg" style="--icon-color: #f1c40f;">
+                        <i class="fas fa-balance-scale"></i>
+                    </div>
+                    <div>
+                        <h4>Risk-Adjusted Performance</h4>
+                        <p>The average Sharpe Ratio was <strong>${avgSharpe.toFixed(2)}</strong>, with a win rate of <strong>${avgWinRate.toFixed(1)}%</strong>.</p>
+                    </div>
+                </div>
+                <div class="insight-item">
+                    <div class="icon-bg" style="--icon-color: #e74c3c;">
+                        <i class="fas fa-arrow-down"></i>
+                    </div>
+                    <div>
+                        <h4>Drawdown Profile</h4>
+                        <p>The average maximum drawdown was <strong>${avgDrawdown.toFixed(1)}%</strong>, indicating the strategy's risk profile.</p>
+                    </div>
+                </div>
+            `;
+
+            dynamicInsights.innerHTML = insightsHTML;
+            staticInsights.style.display = 'none';
+            dynamicInsights.style.display = 'grid';
         }
 
         // Update last updated time

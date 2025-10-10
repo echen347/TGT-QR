@@ -18,15 +18,18 @@ SYMBOLS = [
     'BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'ADAUSDT', 'SOLUSDT', 'XRPUSDT',
     'AVAXUSDT', 'MATICUSDT', 'LINKUSDT', 'UNIUSDT', 'DOTUSDT'
 ]  # Mix of major and mid-tier coins
+MAX_POSITION_USDT = 0.25 # Max size of a single position in USDT
 LEVERAGE = 5  # Reduced leverage for better risk management
-MAX_POSITION_USDT = 0.10  # 10¢ per position (ultra-conservative for quant research)
+MAX_POSITIONS = 5  # Allow up to 5 positions at once (broader diversification)
+MIN_VOLUME_USDT = 500000  # Only trade reasonably liquid pairs (500K+ USD volume)
 TIMEFRAME = '60'  # 1-hour candles for less noise
-MA_PERIOD = 20  # 20-period MA on 1-hour data
+MA_PERIOD = 50  # 20-period MA on 1-hour data
+ATR_PERIOD = 14
 
 # Strategy Configuration - MODERATE RISK
 STRATEGY_INTERVAL_MINUTES = 15  # Run strategy every 15 minutes
-MAX_DAILY_LOSS_USDT = 0.20  # Maximum daily loss (conservative for 10¢ positions × 5)
-MAX_TOTAL_LOSS_USDT = 0.50  # Absolute maximum loss before stopping (ultra-conservative) 
+MAX_DAILY_LOSS_USDT = 0.50 # Max aggregate loss per day in USDT before pausing trading
+MAX_TOTAL_LOSS_USDT = 1.0 # Max total loss from starting capital before stopping the bot
 
 # Database Configuration
 DATABASE_URL = 'sqlite:///data/trading_data.db'
@@ -42,8 +45,6 @@ LOG_RETENTION_DAYS = 30  # Keep 30 days of logs
 # Risk Management - BALANCED APPROACH
 STOP_LOSS_PCT = 0.02  # 2% stop loss
 TAKE_PROFIT_PCT = 0.04  # 4% take profit (2:1 reward:risk ratio)
-MAX_POSITIONS = 5  # Allow up to 5 positions at once (broader diversification)
-MIN_VOLUME_USDT = 500000  # Only trade reasonably liquid pairs (500K+ USD volume)
 
 # Dashboard Configuration
 DASHBOARD_PORT = 5000
