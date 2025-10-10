@@ -360,15 +360,26 @@ def api_run_backtest():
             # If any part of the backtest run fails, update the status to 'failed'
             if backtester.run_id:
                 db_manager.update_backtest_run_status(backtester.run_id, 'failed')
-            print(f"Error during backtest run: {e}")
+            
             import traceback
-            traceback.print_exc()
-            return jsonify({'success': False, 'error': str(e)}), 500
+            tb_str = traceback.format_exc()
+            app.logger.error(f"!!!!!!!! An error occurred during backtest execution !!!!!!!!")
+            app.logger.error(f"Error Type: {type(e).__name__}")
+            app.logger.error(f"Error Message: {e}")
+            app.logger.error(f"Traceback:\n{tb_str}")
+            app.logger.error(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            return jsonify({'success': False, 'error': str(e), 'traceback': tb_str}), 500
 
     except Exception as e:
+        import traceback
+        tb_str = traceback.format_exc()
+        app.logger.error(f"!!!!!!!! An error occurred in api_run_backtest setup !!!!!!!!")
+        app.logger.error(f"Error: {e}\n{tb_str}")
+        app.logger.error(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': str(e),
+            'traceback': tb_str
         }), 500
 
 @app.route('/api/market_data')
