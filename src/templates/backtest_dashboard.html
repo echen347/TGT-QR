@@ -1238,7 +1238,28 @@
             if (activeCharts['drawdownChart']) activeCharts['drawdownChart'].destroy();
 
             if (!tradeData || tradeData.length === 0) {
-                // You can add a placeholder message if you want
+                // Show message when no trades to visualize
+                const returnChart = document.getElementById('returnDistributionChart');
+                const drawdownChart = document.getElementById('drawdownChart');
+
+                if (returnChart) {
+                    const ctx = returnChart.getContext('2d');
+                    ctx.clearRect(0, 0, returnChart.width, returnChart.height);
+                    ctx.fillStyle = 'var(--text-secondary-color)';
+                    ctx.font = '16px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('No trades to visualize', returnChart.width / 2, returnChart.height / 2);
+                }
+
+                if (drawdownChart) {
+                    const ctx = drawdownChart.getContext('2d');
+                    ctx.clearRect(0, 0, drawdownChart.width, drawdownChart.height);
+                    ctx.fillStyle = 'var(--text-secondary-color)';
+                    ctx.font = '16px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('No trades to visualize', drawdownChart.width / 2, drawdownChart.height / 2);
+                }
+
                 return;
             }
 
