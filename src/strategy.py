@@ -52,7 +52,7 @@ class MovingAverageStrategy:
             self.market_state[symbol] = {
                 'price': 0,
                 'ma_value': 0,
-                'signal': 0,
+                'signal': "NEUTRAL",
                 'volume_24h': 0,
                 'position_size': 0,
                 'entry_price': 0,
@@ -135,6 +135,10 @@ class MovingAverageStrategy:
         ma = prices['close'].rolling(window=MA_PERIOD).mean().iloc[-1]
         current_price = prices['close'].iloc[-1]
 
+        # Store for dashboard state
+        self.market_state[symbol]['ma_value'] = ma
+        self.market_state[symbol]['price'] = current_price
+
         # Calculate trend strength using MA slope
         ma_slope = (ma - prices['close'].rolling(window=MA_PERIOD).mean().iloc[-5]) / MA_PERIOD
         trend_strength = abs(ma_slope) / current_price
@@ -156,12 +160,15 @@ class MovingAverageStrategy:
         if current_price > ma * (1 + threshold):
             # Additional confirmation: price above MA and MA is rising
             if ma_slope > 0:
+                self.market_state[symbol]['signal'] = "STRONG_BUY"
                 return 1
         elif current_price < ma * (1 - threshold):
             # Additional confirmation: price below MA and MA is falling
             if ma_slope < 0:
+                self.market_state[symbol]['signal'] = "STRONG_SELL"
                 return -1
 
+        self.market_state[symbol]['signal'] = "NEUTRAL"
         return 0
 
     def set_stop_loss_take_profit(self, symbol, entry_price, position_size, side):
@@ -259,6 +266,47 @@ class MovingAverageStrategy:
         except Exception as e:
             self.logger.error(f"Exception getting positions: {str(e)}")
             return {}
+
+    def update_market_data(self):
+        """Update price history and market state for all symbols."""
+        self.logger.info("Updating market data for all symbols...")
+        for symbol in SYMBOLS:
+            try:
+                # Fetch latest k-line data
+                prices = self.get_historical_prices(symbol, MA_PERIOD + 20)
+                if not prices:
+                    self.logger.warning(f"Could not fetch price data for {symbol}. Keeping stale data.")
+                    # Ensure default state if it was never populated
+                    if not self.price_history.get(symbol):
+                        self.price_history[symbol] = []
+                    continue
+
+                self.price_history[symbol] = prices
+
+                # Fetch ticker data for volume and live price
+                ticker_response = self.session.get_tickers(category="linear", symbol=symbol)
+                if ticker_response.get('retCode') == 0 and ticker_response['result']['list']:
+                    ticker_data = ticker_response['result']['list'][0]
+                    current_price = float(ticker_data.get('lastPrice', 0))
+                    volume_24h = float(ticker_data.get('volume24h', 0))
+                    
+                    self.market_state[symbol]['price'] = current_price
+                    self.market_state[symbol]['volume_24h'] = volume_24h
+                    
+                    # Update the latest price in our history for consistency
+                    if self.price_history[symbol]:
+                        self.price_history[symbol][-1]['close'] = current_price
+                else:
+                    self.logger.warning(f"Could not fetch ticker data for {symbol}. Using last k-line price.")
+                    if self.price_history[symbol]:
+                         self.market_state[symbol]['price'] = self.price_history[symbol][-1]['close']
+                
+            except Exception as e:
+                self.logger.error(f"An unexpected error occurred while updating data for {symbol}: {e}")
+                # Ensure a default state exists to prevent crashes
+                if symbol not in self.market_state:
+                    self.market_state[symbol] = {'price': 0, 'ma_value': 0, 'signal': 'NEUTRAL', 'volume_24h': 0}
+
     def close_position(self, symbol, side, size):
         """Places a closing order for a specific position using base currency size."""
         try:
@@ -368,32 +416,33 @@ class MovingAverageStrategy:
                 self.logger.error(f"Daily Loss: ${risk_status['daily_loss']:.2f}/${risk_status['max_daily_loss_usdt']:.2f}")
                 self.logger.error(f"Total Loss: ${risk_status['total_loss']:.2f}/${risk_status['max_total_loss_usdt']:.2f}")
                 return
-            # Update price history for all symbols
+
+            # Update all market data before making decisions
+            self.update_market_data()
+
+            # --- TRADING LOGIC ---
             for symbol in SYMBOLS:
-                prices = self.get_historical_prices(symbol, MA_PERIOD + 10)
-                if not prices:
-                    self.logger.warning(f"Could not fetch price data for {symbol}. Skipping this symbol for now.")
-                    continue # Don't exit, just skip to the next symbol
-                    
-                self.price_history[symbol] = prices[-MA_PERIOD:]
-                # Save price data to database
-                for price_data in prices[-10:]:  # Save last 10 candles
-                    db_manager.save_price_data(symbol, price_data)
-            # Calculate signals and execute trades
-            for symbol in SYMBOLS:
-                if len(self.price_history[symbol]) < MA_PERIOD:
-                    self.logger.warning(f"Not enough historical data for {symbol} to calculate signal. Need {MA_PERIOD}, have {len(self.price_history[symbol])}.")
-                    continue # Skip to the next symbol
-                    
-                signal = self.calculate_ma_signal(symbol)
-                current_price = self.price_history[symbol][-1]['close']
-                ma_value = pd.DataFrame(self.price_history[symbol])['close'].rolling(window=MA_PERIOD).mean().iloc[-1]
+                if len(self.price_history.get(symbol, [])) < MA_PERIOD:
+                    self.logger.warning(f"Not enough historical data for {symbol} to calculate signal. Need {MA_PERIOD}, have {len(self.price_history.get(symbol, []))}.")
+                    continue
+
+                signal = self.calculate_ma_signal(symbol) # This now also updates market_state
+                current_price = self.market_state[symbol].get('price', 0)
+                ma_value = self.market_state[symbol].get('ma_value', 0)
+
+                if current_price == 0:
+                    self.logger.warning(f"Skipping {symbol} due to zero price.")
+                    continue
+
                 # Save signal to database
                 db_manager.save_signal_record(symbol, signal, ma_value, current_price)
+                
                 # Get current positions
                 positions = self.get_current_positions()
-                current_position = positions.get(symbol, {'position_size': 0, 'position_value': 0})
-                self.logger.info(f"📊 {symbol}: Signal={signal}, Price=${current_price:.2f}, MA=${ma_value:.2f}")
+                current_position = positions.get(symbol, {'position_size': 0, 'position_value': 0, 'side': 'N/A'})
+
+                self.logger.info(f"📊 {symbol}: Price=${current_price:.2f}, MA=${ma_value:.2f}, Signal='{self.market_state[symbol]['signal']}', Position={current_position['position_size']} ({current_position['side']})")
+
                 # Check if we should exit current position due to stop loss/take profit
                 should_exit, exit_side = self.check_exit_conditions(symbol, current_price)
                 if should_exit and current_position['position_size'] > 0:
@@ -430,42 +479,52 @@ class MovingAverageStrategy:
                     # Close position when signal goes neutral (MA crossover)
                     position_value = abs(current_position['position_value'])
                     side = "Sell" if current_position['side'] == "Buy" else "Buy"
-                    success = self.place_order(symbol, side, position_value)
-                    if success:
-                        self.logger.info(f"🔄 Position closed for {symbol} (MA crossover)")
-                        self.market_state[symbol]['position_size'] = 0  # Reset position tracking
-                        self.risk_manager.positions_count -= 1
+                    
+                    # Use reduceOnly order with quote currency to close
+                    self.logger.info(f"Attempting to close position for {symbol} due to neutral signal.")
+                    try:
+                        response = self.session.place_order(
+                            category="linear",
+                            symbol=symbol,
+                            side=side,
+                            orderType="Market",
+                            qty=str(position_value),
+                            reduceOnly=True,
+                            marketUnit="quoteCurrency"
+                        )
+                        if response.get('retCode') == 0:
+                            self.logger.info(f"🔄 Position closed for {symbol} (MA crossover)")
+                            self.market_state[symbol]['position_size'] = 0
+                            self.risk_manager.positions_count -= 1
+                        else:
+                            self.logger.error(f"Failed to close position for {symbol} on neutral signal. Response: {response}")
+                    except Exception as e:
+                        self.logger.exception(f"Exception while closing position for {symbol}: {e}")
+
                 self.signals[symbol] = signal
                     
-                # Update market state for the dashboard
-                current_state = self.market_state[symbol]
-                self.market_state[symbol] = {
-                    'price': current_price,
-                    'ma_value': ma_value,
-                    'signal': signal,
-                    'volume_24h': self.get_symbol_volume(symbol),
-                    'position_size': current_state.get('position_size', 0),
-                    'entry_price': current_state.get('entry_price', 0),
-                    'stop_loss': current_state.get('stop_loss', 0),
-                    'take_profit': current_state.get('take_profit', 0)
-                }
-            # Log current state
+            # Log current state after all symbols are processed
             self.log_trading_state()
             self.logger.info("=" * 60)
         except Exception as e:
             self.logger.exception(f"An unexpected error occurred during strategy execution: {e}")
+
+    def get_market_state(self):
+        """Returns the current market state for the dashboard."""
+        return self.market_state
+        
     def log_trading_state(self):
         """Log the current state of all tracked symbols and risk"""
         self.logger.info("📈 TRADING STATE SUMMARY")
         self.logger.info("----------------------------------------")
         for symbol in SYMBOLS:
-            price = self.price_history[symbol][-1]['close'] if self.price_history[symbol] else 0
-            position_info = self.positions.get(symbol, {'size': 0, 'pnl': 0})
-            self.logger.info(f"  {symbol}:")
-            self.logger.info(f"    Signal: {self.signals.get(symbol, 0)}")
-            self.logger.info(f"    Price: ${price:.2f}")
-            self.logger.info(f"    Position: {position_info['size']}")
-            self.logger.info(f"    PnL: ${position_info['pnl']:.4f}")
+            state = self.market_state.get(symbol, {})
+            price = state.get('price', 0)
+            ma = state.get('ma_value', 0)
+            signal = state.get('signal', 'N/A')
+            pos_size = state.get('position_size', 0)
+            
+            self.logger.info(f"  {symbol}: Price=${price:.2f}, MA=${ma:.2f}, Signal='{signal}', Position={pos_size}")
         self.logger.info("----------------------------------------")
         self.logger.info("🛡️ RISK STATUS")
         risk_status = self.risk_manager.get_risk_status()

@@ -350,10 +350,10 @@
             </div>
         </div>
 
-        <!-- Performance Charts -->
+        <!-- Performance Visualizations -->
         <div style="grid-column: span 12;">
             <div class="card">
-                <h3><i class="fas fa-chart-area"></i> Performance Visualizations</h3>
+                <h3 id="performance-viz-title"><i class="fas fa-chart-area"></i> Performance Visualizations</h3>
                 <div id="performance-charts-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 24px;">
                     <div>
                         <h4>Return Distribution</h4>
@@ -363,21 +363,17 @@
                                 <i class="fas fa-spinner fa-spin"></i> Loading Chart...
                             </div>
                         </div>
-                        <p style="font-size: 0.8em; color: var(--text-secondary-color); margin-top: 8px;">
-                            Distribution of trade returns for selected symbols
-                        </p>
+                        <p class="chart-description">Distribution of PnL from individual trades.</p>
                     </div>
                     <div>
-                        <h4>Drawdown Analysis</h4>
+                        <h4>Portfolio Growth & Drawdown</h4>
                         <div class="chart-placeholder">
                             <canvas id="drawdownChart" width="400" height="250"></canvas>
                             <div class="chart-loader" style="display: none;">
                                 <i class="fas fa-spinner fa-spin"></i> Loading Chart...
                             </div>
                         </div>
-                        <p style="font-size: 0.8em; color: var(--text-secondary-color); margin-top: 8px;">
-                            Portfolio drawdown over time
-                        </p>
+                        <p class="chart-description">Cumulative PnL over time, illustrating overall performance and drawdowns.</p>
                     </div>
                 </div>
             </div>
@@ -906,74 +902,80 @@
         }
 
         function createReturnDistributionChart(results) {
-            const ctx = document.getElementById('returnDistributionChart');
-            if (ctx.chart) {
-                ctx.chart.destroy();
+            const pnlValues = results.filter(r => r.pnl !== null).map(r => r.pnl);
+            if (pnlValues.length === 0) return;
+
+            // Basic histogram logic
+            const minPnl = Math.min(...pnlValues);
+            const maxPnl = Math.max(...pnlValues);
+            const binCount = Math.min(20, Math.ceil(Math.sqrt(pnlValues.length)));
+            const binSize = (maxPnl - minPnl) / binCount;
+            
+            const bins = Array(binCount).fill(0);
+            const labels = [];
+
+            for (let i = 0; i < binCount; i++) {
+                const binStart = minPnl + i * binSize;
+                labels.push(binStart.toFixed(3));
             }
 
-            const returns = results.map(r => r.total_return_pct);
-            const labels = results.map(r => r.symbol);
-            
-            ctx.chart = new Chart(ctx, {
+            pnlValues.forEach(pnl => {
+                const binIndex = Math.min(Math.floor((pnl - minPnl) / binSize), binCount - 1);
+                bins[binIndex]++;
+            });
+
+            const ctx = document.getElementById('returnDistributionChart').getContext('2d');
+            new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Total Return %',
-                        data: returns,
-                        backgroundColor: returns.map(r => r >= 0 ? 'rgba(46, 204, 113, 0.8)' : 'rgba(231, 76, 60, 0.8)'),
-                        borderColor: returns.map(r => r >= 0 ? '#2ecc71' : '#e74c3c'),
+                        label: 'Frequency',
+                        data: bins,
+                        backgroundColor: '#9d72ff',
+                        borderColor: '#8e64e5',
                         borderWidth: 1
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { ticks: { color: 'var(--text-secondary-color)' } },
-                        y: { 
-                            ticks: { color: 'var(--text-secondary-color)' },
-                            title: { display: true, text: 'Total Return (%)', color: 'var(--text-color)'}
-                        }
-                    }
-                }
+                options: getChartOptions('Trade PnL Distribution', 'PnL (USDT)', 'Number of Trades')
             });
         }
 
-        function createPortfolioDrawdownChart(results) {
-            const ctx = document.getElementById('drawdownChart');
-            if (ctx.chart) {
-                ctx.chart.destroy();
-            }
+        function createDrawdownChart(results) {
+            const trades = results
+                .filter(r => r.pnl !== null)
+                .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
-            const drawdowns = results.map(r => r.max_drawdown_pct);
-            const labels = results.map(r => r.symbol);
+            if (trades.length === 0) return;
 
-            ctx.chart = new Chart(ctx, {
-                type: 'bar',
+            let cumulativePnl = 0;
+            const portfolioHistory = trades.map(trade => {
+                cumulativePnl += trade.pnl;
+                return {
+                    pnl: cumulativePnl,
+                    time: new Date(trade.timestamp).toLocaleDateString()
+                };
+            });
+            
+            const labels = portfolioHistory.map(p => p.time);
+            const data = portfolioHistory.map(p => p.pnl);
+
+            const ctx = document.getElementById('drawdownChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Max Drawdown %',
-                        data: drawdowns,
-                        backgroundColor: 'rgba(231, 76, 60, 0.8)',
-                        borderColor: '#e74c3c',
-                        borderWidth: 1
+                        label: 'Cumulative PnL',
+                        data: data,
+                        borderColor: '#2ecc71',
+                        backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                        fill: true,
+                        tension: 0.1,
+                        pointRadius: 2
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { ticks: { color: 'var(--text-secondary-color)' } },
-                        y: { 
-                            ticks: { color: 'var(--text-secondary-color)' },
-                            title: { display: true, text: 'Max Drawdown (%)', color: 'var(--text-color)'}
-                        }
-                    }
-                }
+                options: getChartOptions('Portfolio Growth (Cumulative PnL)', 'Time', 'Cumulative PnL (USDT)')
             });
         }
 

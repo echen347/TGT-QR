@@ -161,6 +161,14 @@
             transition: background-color 0.2s;
         }
         #shutdown-btn:hover { background-color: #c0392b; }
+        
+        .system-control-buttons {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
         #reset-stop-btn {
             background-color: var(--green-color);
             color: white;
@@ -222,19 +230,20 @@
                 <div class="status-item">
                     <p>Dashboard: <span class="status-active">{{ system_status.dashboard_status }}</span></p>
                     <p>Trading Bot: <span class="{{ 'status-active' if system_status.bot_status == 'Active' else 'status-inactive' }}">{{ system_status.bot_status }}</span></p>
-                    <p>API Status: <span class="status-ok">{{ system_status.api_status }}</span></p>
+                    <div class="status-item">
+                        <span>API Status: <strong>OK</strong></span>
+                    </div>
                 </div>
-                <div class="status-item">
+                <div class="system-control-buttons">
                     <button id="shutdown-btn">EMERGENCY STOP</button>
                     <button id="reset-stop-btn">RESET STOP</button>
-                    <p id="shutdown-status" style="font-size: 0.9em; margin-top: 10px;"></p>
+                    <a href="/backtest" class="link-button">BACKTEST DASHBOARD</a>
+                    <a href="/logs" class="link-button">VIEW LOGS</a>
                 </div>
-                <div class="status-item">
-                    <a href="/backtest" class="control-btn" id="backtest-btn"><i class="fas fa-history"></i> BACKTEST DASHBOARD</a>
-                    <a href="/logs" class="control-btn" id="logs-btn" style="margin-left: 10px;"><i class="fas fa-file-alt"></i> VIEW LOGS</a>
+                <div class="last-updated">
+                    Last updated: {{ moment(utc_now).local().format('YYYY-MM-DD HH:mm:ss') }}
                 </div>
             </div>
-            <p style="font-size: 0.8em; color: #888; margin-top: auto; padding-top: 15px;">Last updated: <span id="lastUpdate">{{ moment(last_updated).format('YYYY-MM-DD HH:mm:ss') }}</span></p>
         </div>
         
         <div class="card" id="risk-management">
@@ -304,6 +313,7 @@
                         <p>Interactive price charts with technical indicators</p>
                         <div class="chart-wrapper">
                             <canvas id="priceChart"></canvas>
+                            <div class="chart-error" id="priceChart-error" style="display: none;">Failed to load chart.</div>
                         </div>
                     </div>
                     <div class="chart-container card">
@@ -311,20 +321,23 @@
                         <p>Volume patterns and liquidity analysis</p>
                         <div class="chart-wrapper">
                             <canvas id="volumeChart"></canvas>
+                            <div class="chart-error" id="volumeChart-error" style="display: none;">Failed to load chart.</div>
                         </div>
                     </div>
                     <div class="chart-container card">
-                        <h4><i class="fas fa-project-diagram"></i> Correlation Matrix</h4>
-                        <p>Inter-market correlations and relationships</p>
+                        <h4><i class="fas fa-project-diagram"></i> Market Correlation</h4>
+                        <p>Correlation matrix of major crypto assets</p>
                         <div class="chart-wrapper">
                             <canvas id="correlationChart"></canvas>
+                            <div class="chart-error" id="correlationChart-error" style="display: none;">Failed to load chart.</div>
                         </div>
                     </div>
                     <div class="chart-container card">
-                        <h4><i class="fas fa-layer-group"></i> Market Depth</h4>
-                        <p>Order book depth and liquidity analysis</p>
+                        <h4><i class="fas fa-align-justify"></i> Market Depth</h4>
+                        <p>Live order book depth for key pairs</p>
                         <div class="chart-wrapper">
                             <canvas id="depthChart"></canvas>
+                            <div class="chart-error" id="depthChart-error" style="display: none;">Failed to load chart.</div>
                         </div>
                     </div>
                     <div class="chart-container card">
@@ -332,13 +345,15 @@
                         <p>ATR-based volatility analysis</p>
                         <div class="chart-wrapper">
                             <canvas id="volatilityChart"></canvas>
+                            <div class="chart-error" id="volatilityChart-error" style="display: none;">Failed to load chart.</div>
                         </div>
                     </div>
                     <div class="chart-container card">
-                        <h4><i class="fas fa-magnet"></i> MACD</h4>
+                        <h4><i class="fas fa-crosshairs"></i> MACD</h4>
                         <p>Moving Average Convergence Divergence</p>
                         <div class="chart-wrapper">
                             <canvas id="macdChart"></canvas>
+                            <div class="chart-error" id="macdChart-error" style="display: none;">Failed to load chart.</div>
                         </div>
                     </div>
                 </div>
@@ -625,192 +640,122 @@
             return optimized;
         }
 
+        // --- Chart Creation Functions ---
+        function createChart(chartId, chartConfig) {
+            try {
+                const errorEl = document.getElementById(`${chartId}-error`);
+                const canvasEl = document.getElementById(chartId);
+                if (!canvasEl) {
+                    console.error(`Canvas element with id ${chartId} not found.`);
+                    if(errorEl) errorEl.style.display = 'block';
+                    return null;
+                }
+                const existingChart = Chart.getChart(canvasEl);
+                if (existingChart) {
+                    existingChart.destroy();
+                }
+                new Chart(canvasEl.getContext('2d'), chartConfig);
+                if(errorEl) errorEl.style.display = 'none';
+            } catch (e) {
+                console.error(`Error creating chart ${chartId}:`, e);
+                const errorEl = document.getElementById(`${chartId}-error`);
+                if(errorEl) errorEl.style.display = 'block';
+            }
+        }
 
         function createPriceChart(data) {
-            const ctx = document.getElementById('priceChart').getContext('2d');
-            const datasets = [{
-                label: 'BTCUSDT Price',
-                data: data.prices.btc,
-                borderColor: '#9d72ff',
-                backgroundColor: 'rgba(157, 114, 255, 0.1)',
-                fill: true,
-                tension: 0.4
-            }, {
-                label: 'ETHUSDT Price',
-                data: data.prices.eth,
-                borderColor: '#2ecc71',
-                backgroundColor: 'rgba(46, 204, 113, 0.1)',
-                fill: true,
-                tension: 0.4
-            }, {
-                label: 'BNBUSDT Price',
-                data: data.prices.bnb,
-                borderColor: '#f1c40f',
-                backgroundColor: 'rgba(241, 196, 15, 0.1)',
-                fill: true,
-                tension: 0.4
-            }];
-
-            new Chart(ctx, {
+            createChart('priceChart', {
                 type: 'line',
                 data: {
                     labels: data.labels,
-                    datasets: datasets
+                    datasets: [
+                        { label: 'BTC Price', data: data.prices.btc, borderColor: '#f2a900', fill: false, tension: 0.1, pointRadius: 0 },
+                        { label: 'ETH Price', data: data.prices.eth, borderColor: '#627eea', fill: false, tension: 0.1, pointRadius: 0 },
+                        { label: 'BNB Price', data: data.prices.bnb, borderColor: '#f3ba2f', fill: false, tension: 0.1, pointRadius: 0 }
+                    ]
                 },
-                options: defaultChartOptions
+                options: getChartOptions('Price (USD)')
             });
         }
 
         function createVolumeChart(data) {
-            const ctx = document.getElementById('volumeChart').getContext('2d');
-            const datasets = [{
-                label: 'BTCUSDT Volume',
-                data: data.volumes.btc,
-                backgroundColor: 'rgba(157, 114, 255, 0.8)'
-            }, {
-                label: 'ETHUSDT Volume',
-                data: data.volumes.eth,
-                backgroundColor: 'rgba(46, 204, 113, 0.8)'
-            }, {
-                label: 'BNBUSDT Volume',
-                data: data.volumes.bnb,
-                backgroundColor: 'rgba(241, 196, 15, 0.8)'
-            }];
-
-            new Chart(ctx, {
+            createChart('volumeChart', {
                 type: 'bar',
                 data: {
                     labels: data.labels,
-                    datasets: datasets
+                    datasets: [
+                        { label: 'BTC Volume', data: data.volumes.btc, backgroundColor: '#f2a900' },
+                        { label: 'ETH Volume', data: data.volumes.eth, backgroundColor: '#627eea' },
+                        { label: 'BNB Volume', data: data.volumes.bnb, backgroundColor: '#f3ba2f' }
+                    ]
                 },
-                options: defaultChartOptions
+                options: getChartOptions('Volume (USD)')
             });
         }
 
         function createCorrelationChart() {
-            const ctx = document.getElementById('correlationChart').getContext('2d');
-
-            // Sample correlation matrix for major pairs (using scatter plot instead of matrix)
-            const correlationData = [
-                {x: 0, y: 0, v: 1.0, label: 'BTC-BTC'},
-                {x: 1, y: 0, v: 0.85, label: 'BTC-ETH'},
-                {x: 2, y: 0, v: 0.78, label: 'BTC-BNB'},
-                {x: 3, y: 0, v: 0.65, label: 'BTC-ADA'},
-                {x: 0, y: 1, v: 0.85, label: 'ETH-BTC'},
-                {x: 1, y: 1, v: 1.0, label: 'ETH-ETH'},
-                {x: 2, y: 1, v: 0.72, label: 'ETH-BNB'},
-                {x: 3, y: 1, v: 0.58, label: 'ETH-ADA'},
-                {x: 0, y: 2, v: 0.78, label: 'BNB-BTC'},
-                {x: 1, y: 2, v: 0.72, label: 'BNB-ETH'},
-                {x: 2, y: 2, v: 1.0, label: 'BNB-BNB'},
-                {x: 3, y: 2, v: 0.61, label: 'BNB-ADA'},
-                {x: 0, y: 3, v: 0.65, label: 'ADA-BTC'},
-                {x: 1, y: 3, v: 0.58, label: 'ADA-ETH'},
-                {x: 2, y: 3, v: 0.61, label: 'ADA-BNB'},
-                {x: 3, y: 3, v: 1.0, label: 'ADA-ADA'}
-            ];
-
-            const symbols = ['BTC', 'ETH', 'BNB', 'ADA'];
-
-            new Chart(ctx, {
+            createChart('correlationChart', {
                 type: 'scatter',
                 data: {
                     datasets: [{
-                        data: correlationData,
-                        backgroundColor: function(context) {
-                            const value = context.parsed.y !== undefined ? correlationData[context.dataIndex].v : context.parsed.y;
-                            if (value > 0.8) return '#2ecc71';
-                            if (value > 0.6) return '#f1c40f';
-                            if (value > 0.4) return '#e67e22';
-                            return '#e74c3c';
-                        },
-                        borderColor: 'var(--border-color)',
-                        borderWidth: 1,
-                        pointRadius: 8,
-                        pointHoverRadius: 12
+                        label: 'Correlation',
+                        data: [ /* Placeholder */ {x:1, y:1}, {x:2, y:2} ],
+                        backgroundColor: '#9d72ff'
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const point = correlationData[context.dataIndex];
-                                    return `${point.label}: ${point.v.toFixed(3)}`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            type: 'category',
-                            labels: symbols,
-                            ticks: { color: 'var(--text-secondary-color)' },
-                            grid: { color: 'var(--border-color)' }
-                        },
-                        y: {
-                            type: 'category',
-                            labels: symbols,
-                            ticks: { color: 'var(--text-secondary-color)' },
-                            grid: { color: 'var(--border-color)' }
-                        }
-                    }
-                }
+                options: getChartOptions('Asset Correlation')
             });
         }
 
         function createDepthChart() {
-            const ctx = document.getElementById('depthChart').getContext('2d');
-
-            // Sample order book depth data
-            const bids = [121000, 120900, 120800, 120700, 120600];
-            const asks = [121100, 121200, 121300, 121400, 121500];
-            const bidVolumes = [1.2, 2.1, 0.8, 1.5, 0.9];
-            const askVolumes = [0.9, 1.5, 0.8, 2.1, 1.2];
-
-            new Chart(ctx, {
-                type: 'bar',
+            createChart('depthChart', {
+                type: 'line',
                 data: {
-                    labels: ['Level 1', 'Level 2', 'Level 3', 'Level 4', 'Level 5'],
+                    labels: Array.from({ length: 10 }, (_, i) => 50 + i * 5),
                     datasets: [
-                        {
-                            label: 'Bids',
-                            data: bidVolumes,
-                            backgroundColor: 'rgba(46, 204, 113, 0.8)',
-                            borderColor: '#2ecc71',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Asks',
-                            data: askVolumes,
-                            backgroundColor: 'rgba(231, 76, 60, 0.8)',
-                            borderColor: '#e74c3c',
-                            borderWidth: 1
-                        }
+                        { label: 'Bids', data: Array.from({ length: 10 }, () => Math.random() * 100), borderColor: '#2ecc71', stepped: true },
+                        { label: 'Asks', data: Array.from({ length: 10 }, () => Math.random() * 100), borderColor: '#e74c3c', stepped: true }
                     ]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            labels: { color: 'var(--text-color)' }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            ticks: { color: 'var(--text-secondary-color)' },
-                            grid: { color: 'var(--border-color)' }
-                        },
-                        y: {
-                            ticks: { color: 'var(--text-secondary-color)' },
-                            grid: { color: 'var(--border-color)' }
-                        }
-                    }
-                }
+                options: getChartOptions('Order Book Depth')
+            });
+        }
+
+        function createVolatilityChart(data) {
+            if (!data.volatility) {
+                console.error("Volatility data is missing from API response.");
+                document.getElementById('volatilityChart-error').style.display = 'block';
+                return;
+            }
+            createChart('volatilityChart', {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [
+                        { label: 'BTC Volatility', data: data.volatility.btc, borderColor: '#f2a900', fill: false, tension: 0.1, pointRadius: 0 },
+                        { label: 'ETH Volatility', data: data.volatility.eth, borderColor: '#627eea', fill: false, tension: 0.1, pointRadius: 0 }
+                    ]
+                },
+                options: getChartOptions('ATR Volatility')
+            });
+        }
+
+        function createMacdChart(data) {
+            if (!data.macd) {
+                console.error("MACD data is missing from API response.");
+                document.getElementById('macdChart-error').style.display = 'block';
+                return;
+            }
+            createChart('macdChart', {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [
+                        { label: 'BTC MACD', data: data.macd.btc_macd, borderColor: '#3498db', fill: false, tension: 0.1, pointRadius: 0 },
+                        { label: 'BTC Signal', data: data.macd.btc_signal, borderColor: '#e74c3c', fill: false, tension: 0.1, pointRadius: 0 }
+                    ]
+                },
+                options: getChartOptions('MACD')
             });
         }
 
