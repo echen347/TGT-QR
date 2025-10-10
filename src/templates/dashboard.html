@@ -158,6 +158,8 @@
         .signal-buy { color: var(--green-color); font-weight: bold; }
         .signal-sell { color: var(--red-color); font-weight: bold; }
         .signal-hold { color: var(--text-secondary-color); }
+        .signal-strong-buy { color: #4CAF50; font-weight: bold; background: rgba(76, 175, 80, 0.1); padding: 2px 6px; border-radius: 3px; }
+        .signal-strong-sell { color: #F44336; font-weight: bold; background: rgba(244, 67, 54, 0.1); padding: 2px 6px; border-radius: 3px; }
 
         #shutdown-btn {
             background-color: var(--red-color);
@@ -218,7 +220,8 @@
         .chart-container {
             padding: 20px;
             border-radius: 12px;
-            background-color: var(--background-color);
+            background-color: var(--card-background-color);
+            border: 1px solid var(--border-color);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
@@ -229,7 +232,7 @@
 
         .chart-container h4 {
             margin-top: 0;
-            color: var(--text-color);
+            color: var(--primary-color);
             font-size: 1.1em;
         }
 
@@ -242,6 +245,9 @@
         .chart-wrapper {
             position: relative;
             height: 280px;
+            background-color: var(--background-color);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
         }
 
         #error-container {
@@ -446,6 +452,11 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Dynamic Indicator Explanations -->
+                <div id="indicator-explanations" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+                    <!-- Dynamic explanations will be populated here -->
+                </div>
             </div>
         </div>
 
@@ -639,10 +650,12 @@
             });
         });
         
-        // Auto-refresh the page every 60 seconds to get new data
-        setTimeout(() => {
-            window.location.reload();
-        }, 60000);
+        // Auto-refresh charts every 30 seconds instead of full page reload
+        setInterval(() => {
+            if (document.visibilityState === 'visible') {
+                loadChartData();
+            }
+        }, 30000);
         // Render PnL Chart
         const pnlData = {{ pnl_chart | tojson }};
         if (pnlData && !pnlData.error) {
@@ -911,10 +924,85 @@
             const avgStoch = symbols.length > 0 ?
                 (symbols.reduce((sum, sym) => sum + parseFloat((indicators[sym]?.stoch || '50/50').split('/')[0]), 0) / symbols.length).toFixed(0) : '-';
 
-            document.getElementById('rsi-value').textContent = avgRsi;
-            document.getElementById('macd-value').textContent = btcMacd;
+            // Update values with color coding
+            const rsiElement = document.getElementById('rsi-value');
+            rsiElement.textContent = avgRsi;
+            rsiElement.className = getRsiClass(parseFloat(avgRsi));
+
+            const macdElement = document.getElementById('macd-value');
+            macdElement.textContent = btcMacd;
+
             document.getElementById('bb-value').textContent = avgBB;
             document.getElementById('stoch-value').textContent = `${avgStoch}/50`;
+
+            // Add dynamic explanations
+            updateIndicatorExplanations(indicators);
+        }
+
+        function getRsiClass(rsi) {
+            if (rsi === '-') return '';
+            if (rsi > 70) return 'signal-strong-sell'; // Overbought
+            if (rsi < 30) return 'signal-strong-buy'; // Oversold
+            if (rsi > 55) return 'signal-buy'; // Bullish
+            if (rsi < 45) return 'signal-sell'; // Bearish
+            return 'signal-hold'; // Neutral
+        }
+
+        function updateIndicatorExplanations(indicators) {
+            const explanationsDiv = document.getElementById('indicator-explanations');
+            if (!explanationsDiv) return;
+
+            if (!indicators || Object.keys(indicators).length === 0) {
+                explanationsDiv.innerHTML = '<p class="secondary-text">No indicator data available.</p>';
+                return;
+            }
+
+            let explanations = [];
+
+            // RSI Explanation
+            const avgRsi = Object.values(indicators).reduce((sum, ind) => sum + (ind.rsi || 50), 0) / Object.values(indicators).length;
+            if (avgRsi > 70) {
+                explanations.push(`<div class="indicator-explanation"><strong>RSI Overbought:</strong> Market may be overbought (RSI > 70). Consider taking profits or waiting for a pullback.</div>`);
+            } else if (avgRsi < 30) {
+                explanations.push(`<div class="indicator-explanation"><strong>RSI Oversold:</strong> Market may be oversold (RSI < 30). Potential buying opportunity.</div>`);
+            }
+
+            // MACD Explanation (BTC focused)
+            const btcMacd = indicators.btc?.macd;
+            if (btcMacd) {
+                const macdParts = btcMacd.split('/');
+                if (macdParts.length >= 3) {
+                    const macd = parseFloat(macdParts[0]);
+                    const signal = parseFloat(macdParts[1]);
+                    const histogram = parseFloat(macdParts[2]);
+
+                    if (macd > signal && histogram > 0) {
+                        explanations.push(`<div class="indicator-explanation"><strong>MACD Bullish:</strong> MACD is above signal line with positive histogram. Bullish momentum.</div>`);
+                    } else if (macd < signal && histogram < 0) {
+                        explanations.push(`<div class="indicator-explanation"><strong>MACD Bearish:</strong> MACD is below signal line with negative histogram. Bearish momentum.</div>`);
+                    }
+                }
+            }
+
+            // Bollinger Bands Explanation
+            const bbValues = Object.values(indicators).map(ind => ind.bb).filter(bb => bb !== '-');
+            if (bbValues.length > 0) {
+                const currentPrices = Object.values(indicators).map(ind => {
+                    const bb = ind.bb;
+                    if (bb !== '-') {
+                        const parts = bb.split('-');
+                        if (parts.length >= 2) {
+                            return (parseFloat(parts[0]) + parseFloat(parts[1])) / 2; // Middle of bands
+                        }
+                    }
+                    return null;
+                }).filter(price => price !== null);
+
+                // This is simplified - in reality we'd need current prices to compare
+                explanations.push(`<div class="indicator-explanation"><strong>Bollinger Bands:</strong> Price volatility bands help identify overbought/oversold conditions.</div>`);
+            }
+
+            explanationsDiv.innerHTML = explanations.join('');
         }
 
         function showChartError(message) {
@@ -956,16 +1044,16 @@
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { labels: { color: 'var(--text-color)' } }
+                legend: { labels: { color: 'var(--text-color)', font: { size: 12 } } }
             },
             scales: {
                 x: {
-                    ticks: { color: 'var(--text-secondary-color)' },
-                    grid: { color: 'var(--border-color)' }
+                    ticks: { color: 'var(--text-color)', font: { size: 11 } },
+                    grid: { color: 'rgba(255, 255, 255, 0.05)' }
                 },
                 y: {
-                    ticks: { color: 'var(--text-secondary-color)' },
-                    grid: { color: 'var(--border-color)' }
+                    ticks: { color: 'var(--text-color)', font: { size: 11 } },
+                    grid: { color: 'rgba(255, 255, 255, 0.05)' }
                 }
             }
         };
