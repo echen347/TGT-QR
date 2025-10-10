@@ -475,7 +475,7 @@
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
     <script>
         document.getElementById('shutdown-btn').addEventListener('click', function() {
             const password = prompt('To trigger the EMERGENCY STOP, please enter the password:');
@@ -792,6 +792,32 @@
                     <p>${message}</p>
                 </div>`;
             });
+        }
+
+        function getChartOptions(title, yAxisLabel = '', xAxisLabel = '') {
+            return {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { labels: { color: 'var(--text-color)' } },
+                    title: {
+                        display: true,
+                        text: title,
+                        color: 'var(--text-color)',
+                        font: { size: 14 }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: 'var(--text-secondary-color)' },
+                        grid: { color: 'var(--border-color)' }
+                    },
+                    y: {
+                        ticks: { color: 'var(--text-secondary-color)' },
+                        grid: { color: 'var(--border-color)' }
+                    }
+                }
+            };
         }
 
         const defaultChartOptions = {
