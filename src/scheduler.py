@@ -13,30 +13,24 @@ from config.config import STRATEGY_INTERVAL_MINUTES
 # Basic logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-def run_strategy_job():
-    """Wrapper function to run the strategy."""
-    try:
-        logging.info("Scheduler is running the strategy...")
-        # The global strategy instance is used here
-        strategy.run_strategy()
-        logging.info("Strategy run finished.")
-    except Exception as e:
-        logging.exception(f"Error in scheduled strategy run: {e}")
-
 def start_scheduler():
-    """Starts the background scheduler."""
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(run_strategy_job, 'interval', minutes=STRATEGY_INTERVAL_MINUTES)
-    scheduler.start()
-    logging.info(f"Trading strategy scheduled to run every {STRATEGY_INTERVAL_MINUTES} minutes.")
+    """
+    Starts a simple loop to run the strategy at a set interval.
+    This replaces BackgroundScheduler for robustness.
+    """
+    logging.info("Starting simple scheduler...")
+    logging.info(f"Strategy will run every {STRATEGY_INTERVAL_MINUTES} minutes.")
     
-    # Keep the main thread alive if this script is run directly
-    if __name__ == '__main__':
+    while True:
         try:
-            while True:
-                time.sleep(2)
-        except (KeyboardInterrupt, SystemExit):
-            scheduler.shutdown()
+            logging.info("Scheduler is triggering the strategy run...")
+            strategy.run_strategy()
+            logging.info("Strategy run finished. Waiting for next interval.")
+        except Exception as e:
+            logging.exception(f"An error occurred in the strategy execution loop: {e}")
+        
+        # Wait for the specified interval before the next run
+        time.sleep(STRATEGY_INTERVAL_MINUTES * 60)
 
 if __name__ == "__main__":
     start_scheduler()
