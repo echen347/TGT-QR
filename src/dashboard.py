@@ -342,35 +342,78 @@ def api_run_backtest():
 
 @app.route('/api/market_data')
 def api_market_data():
-    """API endpoint for advanced market data"""
-    dashboard = TradingDashboard(strategy_instance, risk_manager_instance)
+    """Provides aggregated market data for the advanced charts."""
+    try:
+        # Fetch recent data for key symbols (e.g., BTC, ETH, BNB)
+        symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT']
+        all_data = {}
+        
+        # Use a shorter period for dashboard visuals to keep it fast
+        end_time = datetime.now()
+        start_time = end_time - timedelta(hours=24) # 24 hours of data
+        
+        for symbol in symbols:
+            # This is a simplified fetch, ideally this would be cached or more robust
+            klines = db_manager.get_recent_prices(symbol, limit=200) # Fetch last 200 candles
+            if klines:
+                df = pd.DataFrame(klines)
+                df['timestamp'] = pd.to_datetime(df['timestamp'])
+                df.set_index('timestamp', inplace=True)
+                all_data[symbol] = df
+        
+        if not all_data:
+            return jsonify({'error': 'No market data available'}), 500
 
-    # Get price history for charts
-    price_data = {}
-    for symbol in ['BTCUSDT', 'ETHUSDT', 'BNBUSDT']:
-        prices = db_manager.get_recent_prices(symbol, limit=50)
-        if prices:
-            # Convert to chart format
-            timestamps = [p['timestamp'].strftime('%H:%M') for p in prices[-20:]]
-            close_prices = [p['close'] for p in prices[-20:]]
-            volumes = [p['volume'] for p in prices[-20:]]
+        # --- Prepare data for charts ---
+        # Labels (timestamps) - using BTC as the reference
+        labels = all_data['BTCUSDT'].index.strftime('%H:%M').tolist()
+        
+        # 1. Price Data
+        prices = {s.replace('USDT', '').lower(): df['close'].tolist() for s, df in all_data.items()}
 
-            price_data[symbol] = {
-                'timestamps': timestamps,
-                'prices': close_prices,
-                'volumes': volumes
-            }
+        # 2. Volume Data
+        volumes = {s.replace('USDT', '').lower(): df['volume'].tolist() for s, df in all_data.items()}
 
-    return jsonify({
-        'price_data': price_data,
-        'indicators': {
-            'rsi': {'BTCUSDT': 65.2, 'ETHUSDT': 58.7, 'BNBUSDT': 71.3},
-            'macd': {'BTCUSDT': '0.12/0.08/0.04', 'ETHUSDT': '0.09/0.06/0.03', 'BNBUSDT': '0.15/0.10/0.05'},
-            'bb': {'BTCUSDT': '120000-125000', 'ETHUSDT': '4300-4500', 'BNBUSDT': '580-620'},
-            'stoch': {'BTCUSDT': '75/80', 'ETHUSDT': '65/70', 'BNBUSDT': '80/85'}
-        },
-        'timestamp': datetime.now().isoformat()
-    })
+        # 3. Volatility Data (ATR)
+        volatility = {}
+        for symbol, df in all_data.items():
+            tr1 = df['high'] - df['low']
+            tr2 = abs(df['high'] - df['close'].shift(1))
+            tr3 = abs(df['low'] - df['close'].shift(1))
+            tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
+            atr = tr.rolling(window=14).mean()
+            volatility[symbol.replace('USDT', '').lower()] = atr.fillna(0).tolist()
+
+        # 4. MACD Data (using BTC as an example)
+        btc_df = all_data['BTCUSDT']
+        exp1 = btc_df['close'].ewm(span=12, adjust=False).mean()
+        exp2 = btc_df['close'].ewm(span=26, adjust=False).mean()
+        macd_line = exp1 - exp2
+        signal_line = macd_line.ewm(span=9, adjust=False).mean()
+        macd = {
+            'btc_macd': macd_line.fillna(0).tolist(),
+            'btc_signal': signal_line.fillna(0).tolist()
+        }
+
+        # Construct the final JSON response
+        chart_data = {
+            'labels': labels,
+            'prices': prices,
+            'volumes': volumes,
+            'volatility': volatility,
+            'macd': macd,
+            # Correlation and Depth are complex and will be left as placeholders for now
+        }
+
+        return jsonify(chart_data)
+
+    except Exception as e:
+        # Log the error for debugging
+        print(f"Error in /api/market_data: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': 'Failed to fetch market data'}), 500
+
 
 @app.route('/logs')
 def logs_page():
@@ -393,7 +436,7 @@ def api_logs():
 
 @app.route('/reset_stop', methods=['POST'])
 def reset_stop():
-    """Endpoint to reset the emergency stop."""
+    """Resets the emergency stop."""
     data = request.get_json()
     if not data or data.get('password') != 'chaewon':
         return jsonify({'status': 'error', 'message': 'Incorrect password.'}), 401
