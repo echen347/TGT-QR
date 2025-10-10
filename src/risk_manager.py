@@ -142,6 +142,11 @@ class RiskManager:
         else:
             self.logger.error("Strategy object not set in RiskManager. Cannot close positions immediately.")
 
+    def reset_stop(self):
+        """Resets the emergency stop state."""
+        self.is_stopped = False
+        self.logger.warning("RISK MANAGER: Emergency stop has been reset. Trading is re-enabled.")
+
     def get_risk_status(self):
         """Get current risk status"""
         return {

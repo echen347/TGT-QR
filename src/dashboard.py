@@ -355,6 +355,21 @@ def api_logs():
         logging.error(f"Error reading log file: {e}")
         return jsonify({'error': 'An error occurred while reading logs.'}), 500
 
+@app.route('/reset_stop', methods=['POST'])
+def reset_stop():
+    """Endpoint to reset the emergency stop."""
+    data = request.get_json()
+    if not data or data.get('password') != 'chaewon':
+        return jsonify({'status': 'error', 'message': 'Incorrect password.'}), 401
+    
+    try:
+        risk_manager_instance.reset_stop()
+        logging.warning("EMERGENCY STOP RESET VIA DASHBOARD")
+        return jsonify({'status': 'success', 'message': 'Emergency stop reset. Trading is re-enabled.'})
+    except Exception as e:
+        logging.error(f"Error resetting emergency stop: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
 # Function to run the dashboard with shared instances
 def run_dashboard(strategy, risk_manager):
     global strategy_instance, risk_manager_instance

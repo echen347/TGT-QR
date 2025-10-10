@@ -161,6 +161,18 @@
             transition: background-color 0.2s;
         }
         #shutdown-btn:hover { background-color: #c0392b; }
+        #reset-stop-btn {
+            background-color: var(--green-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+            margin-left: 10px;
+        }
+        #reset-stop-btn:hover { background-color: #27ae60; }
         .analysis-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
@@ -214,13 +226,12 @@
                 </div>
                 <div class="status-item">
                     <button id="shutdown-btn">EMERGENCY STOP</button>
+                    <button id="reset-stop-btn">RESET STOP</button>
                     <p id="shutdown-status" style="font-size: 0.9em; margin-top: 10px;"></p>
                 </div>
                 <div class="status-item">
-                    <a href="/backtest" id="backtest-btn" style="display: inline-block; padding: 10px 16px; background-color: var(--primary-color); color: white; text-decoration: none; border-radius: 6px; border: none; cursor: pointer; font-weight: 600;">
-                        <i class="fas fa-chart-line"></i> BACKTEST DASHBOARD
-                    </a>
-                    <p style="font-size: 0.8em; color: var(--text-secondary-color); margin-top: 8px;">Advanced strategy analysis</p>
+                    <a href="/backtest" class="control-btn" id="backtest-btn"><i class="fas fa-history"></i> BACKTEST DASHBOARD</a>
+                    <a href="/logs" class="control-btn" id="logs-btn" style="margin-left: 10px;"><i class="fas fa-file-alt"></i> VIEW LOGS</a>
                 </div>
             </div>
             <p style="font-size: 0.8em; color: #888; margin-top: auto; padding-top: 15px;">Last updated: <span id="lastUpdate">{{ moment(last_updated).format('YYYY-MM-DD HH:mm:ss') }}</span></p>
@@ -473,6 +484,46 @@
                 });
             }
         });
+
+        document.getElementById('reset-stop-btn').addEventListener('click', function() {
+            const password = prompt('To reset the emergency stop, please enter the password:');
+            if (password === null) {
+                return; // User cancelled
+            }
+
+            if (password !== 'chaewon') {
+                alert('Incorrect password. Emergency stop was not reset.');
+                return;
+            }
+
+            fetch('/reset_stop', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const statusEl = document.getElementById('shutdown-status');
+                if (data.status === 'success') {
+                    statusEl.style.color = 'var(--green-color)';
+                    statusEl.innerText = data.message;
+                    alert('Emergency Stop Reset! Trading re-enabled.');
+                    setTimeout(() => window.location.reload(), 1000); // Reload to see updated status
+                } else {
+                    statusEl.style.color = 'var(--red-color)';
+                    statusEl.innerText = 'Error: ' + data.message;
+                    alert('Failed to reset stop: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                const statusEl = document.getElementById('shutdown-status');
+                statusEl.style.color = 'var(--red-color)';
+                statusEl.innerText = 'A network error occurred.';
+                alert('An error occurred while trying to reset the stop.');
+            });
+        });
+        
         // Auto-refresh the page every 60 seconds to get new data
         setTimeout(() => {
             window.location.reload();
