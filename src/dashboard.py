@@ -375,8 +375,8 @@ def api_run_backtest():
 def api_market_data():
     """Provides aggregated market data for the advanced charts."""
     try:
-        # Fetch recent data for key symbols (e.g., BTC, ETH, BNB)
-        symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT']
+        # Fetch recent data for all symbols in SYMBOLS
+        symbols = SYMBOLS
         all_data = {}
         
         # Use a shorter period for dashboard visuals to keep it fast
@@ -408,11 +408,21 @@ def api_market_data():
         # 3. Volatility Data (ATR)
         volatility = {}
         for symbol, df in all_data.items():
+            if len(df) < 2:
+                volatility[symbol.replace('USDT', '').lower()] = [0] * len(df)
+                continue
+
+            # Calculate True Range
             tr1 = df['high'] - df['low']
             tr2 = abs(df['high'] - df['close'].shift(1))
             tr3 = abs(df['low'] - df['close'].shift(1))
+
+            # Handle NaN values in tr2 and tr3 for first row
+            tr2 = tr2.fillna(df['high'] - df['low'])
+            tr3 = tr3.fillna(df['high'] - df['low'])
+
             tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
-            atr = tr.rolling(window=14).mean()
+            atr = tr.rolling(window=14, min_periods=1).mean()
             volatility[symbol.replace('USDT', '').lower()] = atr.fillna(0).tolist()
 
         # 4. MACD Data (using BTC as an example)
@@ -426,6 +436,43 @@ def api_market_data():
             'btc_signal': signal_line.fillna(0).tolist()
         }
 
+        # 5. Technical Indicators
+        indicators = {}
+        for symbol, df in all_data.items():
+            if len(df) < 20:  # Need enough data for indicators
+                indicators[symbol.replace('USDT', '').lower()] = {
+                    'rsi': 50,  # Neutral RSI
+                    'macd': '0.00/0.00/0.00',
+                    'bb': f"{df['close'].iloc[-1] * 0.98:.0f}-{df['close'].iloc[-1] * 1.02:.0f}",
+                    'stoch': '50/50'
+                }
+                continue
+
+            # RSI Calculation
+            delta = df['close'].diff()
+            gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
+            loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
+            rs = gain / loss
+            rsi = 100 - (100 / (1 + rs.iloc[-1]))
+
+            # Bollinger Bands
+            sma = df['close'].rolling(window=20).mean().iloc[-1]
+            std = df['close'].rolling(window=20).std().iloc[-1]
+            bb_upper = sma + (std * 2)
+            bb_lower = sma - (std * 2)
+
+            # Stochastic Oscillator
+            lowest_low = df['low'].rolling(window=14).min().iloc[-1]
+            highest_high = df['high'].rolling(window=14).max().iloc[-1]
+            stoch_k = 100 * ((df['close'].iloc[-1] - lowest_low) / (highest_high - lowest_low))
+
+            indicators[symbol.replace('USDT', '').lower()] = {
+                'rsi': round(rsi, 1),
+                'macd': f"{macd['btc_macd'][-1]:.2f}/{macd['btc_signal'][-1]:.2f}/{macd['btc_macd'][-1] - macd['btc_signal'][-1]:.2f}" if symbol == 'BTCUSDT' else '0.00/0.00/0.00',
+                'bb': f"{bb_lower:.0f}-{bb_upper:.0f}",
+                'stoch': f"{stoch_k:.0f}/50"
+            }
+
         # Construct the final JSON response
         chart_data = {
             'labels': labels,
@@ -433,6 +480,7 @@ def api_market_data():
             'volumes': volumes,
             'volatility': volatility,
             'macd': macd,
+            'indicators': indicators,
             # Correlation and Depth are complex and will be left as placeholders for now
         }
 

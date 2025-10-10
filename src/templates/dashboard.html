@@ -323,6 +323,42 @@
             </div>
         </div>
 
+        <!-- Ticker Selection for Individual Analysis -->
+        <div style="grid-column: span 12; margin-top: 24px;">
+            <div class="card">
+                <h3><i class="fas fa-search"></i> Individual Ticker Analysis</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 20px;">
+                    <div>
+                        <label for="ticker-select">Select Ticker:</label>
+                        <select id="ticker-select" style="width: 100%; padding: 8px; border-radius: 4px; background-color: var(--card-background-color); color: var(--text-color); border: 1px solid var(--border-color);">
+                            <option value="">All Tickers</option>
+                            <option value="BTCUSDT">BTC</option>
+                            <option value="ETHUSDT">ETH</option>
+                            <option value="BNBUSDT">BNB</option>
+                            <option value="ADAUSDT">ADA</option>
+                            <option value="SOLUSDT">SOL</option>
+                            <option value="XRPUSDT">XRP</option>
+                            <option value="AVAXUSDT">AVAX</option>
+                            <option value="LINKUSDT">LINK</option>
+                            <option value="UNIUSDT">UNI</option>
+                            <option value="DOTUSDT">DOT</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="chart-type-select">Chart Type:</label>
+                        <select id="chart-type-select" style="width: 100%; padding: 8px; border-radius: 4px; background-color: var(--card-background-color); color: var(--text-color); border: 1px solid var(--border-color);">
+                            <option value="price">Price & Volume</option>
+                            <option value="indicators">Technical Indicators</option>
+                            <option value="combined">Combined View</option>
+                        </select>
+                    </div>
+                </div>
+                <button id="update-charts-btn" style="padding: 12px 24px; background-color: var(--primary-color); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 1em;">
+                    <i class="fas fa-refresh"></i> Update Charts
+                </button>
+            </div>
+        </div>
+
         <!-- Advanced Market Analysis -->
         <div style="grid-column: span 12; margin-top: 24px;">
             <div class="card">
@@ -387,15 +423,60 @@
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
                     <div>
                         <strong>RSI (14):</strong> <span id="rsi-value">-</span>
+                        <div class="indicator-explanation" style="font-size: 0.8em; color: var(--text-secondary-color); margin-top: 4px;">
+                            Relative Strength Index - measures momentum (overbought >70, oversold <30)
+                        </div>
                     </div>
                     <div>
                         <strong>MACD:</strong> <span id="macd-value">-</span>
+                        <div class="indicator-explanation" style="font-size: 0.8em; color: var(--text-secondary-color); margin-top: 4px;">
+                            Moving Average Convergence Divergence - trend following momentum indicator
+                        </div>
                     </div>
                     <div>
                         <strong>Bollinger Bands:</strong> <span id="bb-value">-</span>
+                        <div class="indicator-explanation" style="font-size: 0.8em; color: var(--text-secondary-color); margin-top: 4px;">
+                            Volatility bands - price touching bands indicates potential reversal
+                        </div>
                     </div>
                     <div>
                         <strong>Stochastic:</strong> <span id="stoch-value">-</span>
+                        <div class="indicator-explanation" style="font-size: 0.8em; color: var(--text-secondary-color); margin-top: 4px;">
+                            Momentum oscillator - compares closing price to price range over time
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart Explanations -->
+        <div style="grid-column: span 12; margin-top: 24px;">
+            <div class="card">
+                <h3><i class="fas fa-info-circle"></i> Chart Explanations</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                    <div>
+                        <h4><i class="fas fa-chart-line"></i> Price Charts</h4>
+                        <p>Real-time price movements across major cryptocurrencies. Use this to identify trends, support/resistance levels, and potential entry/exit points.</p>
+                    </div>
+                    <div>
+                        <h4><i class="fas fa-chart-bar"></i> Volume Analysis</h4>
+                        <p>Trading volume indicates market interest and liquidity. High volume during price movements confirms trend strength, while low volume may signal weakness.</p>
+                    </div>
+                    <div>
+                        <h4><i class="fas fa-project-diagram"></i> Market Correlation</h4>
+                        <p>Shows how different cryptocurrencies move in relation to each other. High correlation suggests similar market forces, while low correlation indicates diversification opportunities.</p>
+                    </div>
+                    <div>
+                        <h4><i class="fas fa-align-justify"></i> Market Depth</h4>
+                        <p>Order book depth showing buy/sell pressure at different price levels. Thick order books indicate strong support/resistance levels.</p>
+                    </div>
+                    <div>
+                        <h4><i class="fas fa-wave-square"></i> Volatility</h4>
+                        <p>ATR (Average True Range) measures price volatility. Higher ATR indicates more volatile markets, which may present more trading opportunities but also higher risk.</p>
+                    </div>
+                    <div>
+                        <h4><i class="fas fa-crosshairs"></i> MACD</h4>
+                        <p>MACD shows the relationship between two moving averages. When MACD crosses above/below the signal line, it may indicate trend changes or momentum shifts.</p>
                     </div>
                 </div>
             </div>
@@ -588,6 +669,20 @@
                     chartsInitialized = true;
                 }
             }, 200);
+
+            // Add event listener for update charts button
+            const updateBtn = document.getElementById('update-charts-btn');
+            if (updateBtn) {
+                updateBtn.addEventListener('click', function() {
+                    const tickerSelect = document.getElementById('ticker-select');
+                    const chartTypeSelect = document.getElementById('chart-type-select');
+
+                    const selectedTicker = tickerSelect ? tickerSelect.value : '';
+                    const selectedChartType = chartTypeSelect ? chartTypeSelect.value : 'price';
+
+                    loadChartData(selectedTicker, selectedChartType);
+                });
+            }
         });
 
         function initializeAdvancedCharts() {
@@ -611,7 +706,7 @@
             }
         }
 
-        function loadChartData() {
+        function loadChartData(selectedTicker = '', chartType = 'price') {
             fetch('/api/market_data')
                 .then(response => {
                     if (!response.ok) {
@@ -624,21 +719,46 @@
                         throw new Error('No chart data available from API');
                     }
 
-                    // Render charts with the fetched data
-                    createPriceChart(data);
-                    createVolumeChart(data);
-                    createCorrelationChart(); // Still uses sample data
-                    createDepthChart(); // Still uses sample data
-                    createVolatilityChart(data);
-                    createMacdChart(data);
+                    // Filter data for selected ticker if specified
+                    const filteredData = filterDataForTicker(data, selectedTicker);
 
-                    // This part seems to be for a different section, assuming it's for the summary boxes
-                    // updateIndicators(data.indicators);
+                    // Render charts based on selected type
+                    if (chartType === 'price' || chartType === 'combined') {
+                        createPriceChart(filteredData);
+                        createVolumeChart(filteredData);
+                    }
+
+                    if (chartType === 'indicators' || chartType === 'combined') {
+                        createVolatilityChart(filteredData);
+                        createMacdChart(filteredData);
+                    }
+
+                    // Always show these
+                    createCorrelationChart();
+                    createDepthChart();
+
+                    // Update indicators
+                    updateIndicators(data.indicators);
                 })
                 .catch(error => {
                     console.error('Error loading chart data:', error);
                     showChartError(`Chart Error: ${error.message}`);
                 });
+        }
+
+        function filterDataForTicker(data, ticker) {
+            if (!ticker) return data;
+
+            // For single ticker view, create filtered data
+            const tickerKey = ticker.toLowerCase().replace('usdt', '');
+            return {
+                labels: data.labels,
+                prices: { [tickerKey]: data.prices[tickerKey] || [] },
+                volumes: { [tickerKey]: data.volumes[tickerKey] || [] },
+                volatility: { [tickerKey]: data.volatility[tickerKey] || [] },
+                macd: data.macd, // Keep MACD as is for now
+                indicators: data.indicators
+            };
         }
 
         function optimizeChartData(priceData) {
@@ -779,10 +899,22 @@
         }
 
         function updateIndicators(indicators) {
-            document.getElementById('rsi-value').textContent = Object.values(indicators.rsi).join(' / ');
-            document.getElementById('macd-value').textContent = Object.values(indicators.macd).join(' / ');
-            document.getElementById('bb-value').textContent = Object.values(indicators.bb).join(' / ');
-            document.getElementById('stoch-value').textContent = Object.values(indicators.stoch).join(' / ');
+            if (!indicators) return;
+
+            // Get average or representative values for each indicator
+            const symbols = Object.keys(indicators);
+            const avgRsi = symbols.length > 0 ?
+                (symbols.reduce((sum, sym) => sum + (indicators[sym]?.rsi || 50), 0) / symbols.length).toFixed(1) : '-';
+            const btcMacd = indicators.btc?.macd || '-';
+            const avgBB = symbols.length > 0 ?
+                symbols.map(sym => indicators[sym]?.bb || '-').filter(val => val !== '-')[0] || '-' : '-';
+            const avgStoch = symbols.length > 0 ?
+                (symbols.reduce((sum, sym) => sum + parseFloat((indicators[sym]?.stoch || '50/50').split('/')[0]), 0) / symbols.length).toFixed(0) : '-';
+
+            document.getElementById('rsi-value').textContent = avgRsi;
+            document.getElementById('macd-value').textContent = btcMacd;
+            document.getElementById('bb-value').textContent = avgBB;
+            document.getElementById('stoch-value').textContent = `${avgStoch}/50`;
         }
 
         function showChartError(message) {
