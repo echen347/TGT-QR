@@ -254,21 +254,40 @@ class DatabaseManager:
             self.session.rollback()
             print(f"Error updating backtest run status: {e}")
 
-    def update_backtest_run_summary(self, run_id, summary):
-        """Update a backtest run with its calculated summary metrics."""
+    def update_backtest_run_summary(self, run_id, summary_data):
+        """Updates a backtest run with summary metrics."""
         try:
-            run = self.session.query(BacktestRun).filter(BacktestRun.id == run_id).first()
+            run = self.session.query(BacktestRun).filter_by(id=run_id).one_or_none()
             if run:
-                run.total_pnl = summary.get('total_pnl')
-                run.total_trades = summary.get('total_trades')
-                run.win_rate = summary.get('win_rate')
-                run.sharpe_ratio = summary.get('sharpe_ratio')
-                run.max_drawdown = summary.get('max_drawdown')
-                run.avg_return = summary.get('avg_return')
+                run.total_pnl = summary_data.get('total_pnl')
+                run.total_trades = summary_data.get('total_trades')
+                run.win_rate = summary_data.get('win_rate')
+                run.sharpe_ratio = summary_data.get('sharpe_ratio')
+                run.max_drawdown = summary_data.get('max_drawdown')
+                run.avg_return = summary_data.get('avg_return')
                 self.session.commit()
+                # Use app.logger if available, otherwise print
+                try:
+                    from flask import current_app
+                    current_app.logger.info(f"Updated summary for run {run_id}.")
+                except (ImportError, RuntimeError):
+                    print(f"Updated summary for run {run_id}.")
+            else:
+                # Use app.logger if available, otherwise print
+                try:
+                    from flask import current_app
+                    current_app.logger.warning(f"Could not find run {run_id} to update summary.")
+                except (ImportError, RuntimeError):
+                    print(f"Could not find run {run_id} to update summary.")
         except Exception as e:
             self.session.rollback()
-            print(f"Error updating backtest run summary for run_id {run_id}: {e}")
+            # Use app.logger if available, otherwise print
+            try:
+                from flask import current_app
+                current_app.logger.error(f"Error updating backtest run summary for run {run_id}: {e}")
+            except (ImportError, RuntimeError):
+                print(f"Error updating backtest run summary for run {run_id}: {e}")
+            raise
 
     def save_backtest_trades(self, run_id, symbol, trades_df):
         """Saves the detailed trades from a backtest dataframe to the database."""

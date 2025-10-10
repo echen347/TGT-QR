@@ -603,7 +603,8 @@ class Backtester:
         # Ensure there are results to process
         if not all_results:
             logging.warning("No results found to generate a summary.")
-            self.db_manager.update_backtest_run_summary(self.run_id, 0, 0, 0, 0, 0, 0)
+            zero_summary = {'total_pnl': 0, 'total_trades': 0, 'win_rate': 0, 'sharpe_ratio': 0, 'max_drawdown': 0, 'avg_return': 0}
+            self.db_manager.update_backtest_run_summary(self.run_id, zero_summary)
             return
 
         # Filter out empty DataFrames before concatenation
@@ -611,7 +612,8 @@ class Backtester:
 
         if not valid_results:
             logging.info("Backtest resulted in no trades across all symbols.")
-            self.db_manager.update_backtest_run_summary(self.run_id, 0, 0, 0, 0, 0, 0)
+            zero_summary = {'total_pnl': 0, 'total_trades': 0, 'win_rate': 0, 'sharpe_ratio': 0, 'max_drawdown': 0, 'avg_return': 0}
+            self.db_manager.update_backtest_run_summary(self.run_id, zero_summary)
             return
 
         all_trades = pd.concat(valid_results)
@@ -619,7 +621,8 @@ class Backtester:
         # Final check if the concatenated frame is empty or lacks the 'pnl' column
         if all_trades.empty or 'pnl' not in all_trades.columns:
             logging.info("Concatenated trades DataFrame is empty or missing 'pnl' column.")
-            self.db_manager.update_backtest_run_summary(self.run_id, 0, 0, 0, 0, 0, 0)
+            zero_summary = {'total_pnl': 0, 'total_trades': 0, 'win_rate': 0, 'sharpe_ratio': 0, 'max_drawdown': 0, 'avg_return': 0}
+            self.db_manager.update_backtest_run_summary(self.run_id, zero_summary)
             return
 
         total_pnl = all_trades['pnl'].sum()
