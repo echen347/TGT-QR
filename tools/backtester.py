@@ -63,45 +63,58 @@ class Backtester:
         self.end_date = end_date
         # Force mainnet and provide keys for historical data fetching
         self.session = HTTP(
-            testnet=False,
+                testnet=False,
             api_key=BYBIT_API_KEY,
             api_secret=BYBIT_API_SECRET
         )
         self.historical_data = {}
 
     def fetch_historical_data(self):
-        """Fetches historical kline data from Bybit for the given date range."""
+        """Fetches historical kline data from Bybit using a robust pagination loop."""
         logging.info("Fetching historical data...")
         for symbol in self.symbols:
-            # Using get_mark_price_kline which is more reliable for historical data
-            try:
-                response = self.session.get_mark_price_kline(
+            all_klines = []
+            start_ms = int(self.start_date.timestamp() * 1000)
+            end_ms = int(self.end_date.timestamp() * 1000)
+            
+            while start_ms < end_ms:
+                try:
+                    response = self.session.get_kline(
                     category="linear",
-                    symbol=symbol,
-                    interval=TIMEFRAME,
-                    start=int(self.start_date.timestamp() * 1000),
-                    end=int(self.end_date.timestamp() * 1000)
-                )
+                        symbol=symbol,
+                        interval=TIMEFRAME,
+                        start=start_ms,
+                        limit=1000  # Max limit per request
+                    )
 
-                if response['retCode'] == 0 and response['result']['list']:
+                    if response['retCode'] == 0 and response['result']['list']:
                     klines = response['result']['list']
-                    df = pd.DataFrame(klines, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume', 'turnover'])
-                    df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
-                    df.set_index('timestamp', inplace=True)
-                    df = df.astype(float)
-                    self.historical_data[symbol] = df.sort_index()
-                    logging.info(f"Fetched {len(df)} candles for {symbol} from {df.index.min()} to {df.index.max()}")
-                else:
-                    logging.error(f"Could not fetch data for {symbol}. Response: {response.get('retMsg', 'Unknown Error')}")
+                        all_klines.extend(klines)
+                        # The next request starts after the last candle's timestamp
+                        start_ms = int(klines[-1][0]) + 60000 # Add one minute in ms
+                    else:
+                        logging.warning(f"Stopping data fetch for {symbol}. Reason: {response.get('retMsg', 'No more data')}")
+                        break 
+                except Exception as e:
+                    logging.error(f"Error fetching data for {symbol}: {e}")
+                    break
+            
+            if not all_klines:
+                logging.error(f"Failed to fetch any klines for {symbol}. Check API keys and symbol validity.")
+                continue
 
-            except Exception as e:
-                logging.error(f"An exception occurred while fetching data for {symbol}: {e}")
+            df = pd.DataFrame(all_klines, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume', 'turnover'])
+            df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
+            df.set_index('timestamp', inplace=True)
+            df = df.astype(float).drop_duplicates()
+            self.historical_data[symbol] = df.sort_index()
+            logging.info(f"Fetched {len(df)} candles for {symbol} from {df.index.min()} to {df.index.max()}")
 
     def _get_signal(self, historical_prices):
         """Calculates the MA signal. Replicates the logic from strategy.py."""
         if len(historical_prices) < MA_PERIOD:
             return 0
-        
+
         ma = historical_prices['close'].rolling(window=MA_PERIOD).mean().iloc[-1]
         current_price = historical_prices['close'].iloc[-1]
         
@@ -194,9 +207,9 @@ class Backtester:
             daily_returns = trades_df.set_index('exit_date')['pnl'].resample('D').sum() * LEVERAGE
             if daily_returns.std() > 0:
                 sharpe_ratio = (daily_returns.mean() / daily_returns.std()) * np.sqrt(365)
-            else:
-                sharpe_ratio = 0
-            
+        else:
+            sharpe_ratio = 0
+
             # --- Print Results ---
             print("\n" + "="*50)
             print(f"SYMBOL: {symbol} | PERIOD: {self.start_date.strftime('%Y-%m-%d')} to {self.end_date.strftime('%Y-%m-%d')}")

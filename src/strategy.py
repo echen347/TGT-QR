@@ -103,17 +103,12 @@ class MovingAverageStrategy:
         return logger
 
     def get_historical_prices(self, symbol, limit=200):
-        """Get historical price data. Uses get_mark_price_kline for better reliability."""
+        """Get historical price data. Reverted to get_kline for reliability."""
         try:
-            # Calculate start time for the request
-            end_time = int(datetime.now().timestamp() * 1000)
-            start_time = end_time - (limit * 60 * 1000) # limit is in minutes
-
-            response = self.session.get_mark_price_kline(
+            response = self.session.get_kline(
                 category="linear",
                 symbol=symbol,
                 interval=TIMEFRAME,
-                start=start_time,
                 limit=limit
             )
 
@@ -121,13 +116,14 @@ class MovingAverageStrategy:
                 klines = response['result']['list']
                 prices = []
 
-                for kline in reversed(klines):  # Reverse to get chronological order
+                for kline in reversed(klines):
                     prices.append({
                         'timestamp': datetime.fromtimestamp(int(kline[0]) / 1000),
                         'open': float(kline[1]),
                         'high': float(kline[2]),
                         'low': float(kline[3]),
-                        'close': float(kline[4])
+                        'close': float(kline[4]),
+                        'volume': float(kline[5])
                     })
                 return prices
             else:
