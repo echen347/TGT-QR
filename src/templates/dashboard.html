@@ -724,7 +724,6 @@
         }
 
         function loadChartData(selectedTicker = '', chartType = 'price') {
-            console.log('loadChartData called with:', selectedTicker, chartType);
             fetch('/api/market_data')
                 .then(response => {
                     if (!response.ok) {
@@ -733,7 +732,6 @@
                     return response.json();
                 })
                 .then(data => {
-                    console.log('API data received:', data);
                     if (!data.labels || data.labels.length === 0) {
                         throw new Error('No chart data available from API');
                     }
@@ -918,11 +916,9 @@
         }
 
         function updateIndicators(indicators) {
-            console.log('updateIndicators called with:', indicators);
-            if (!indicators) {
-                console.log('No indicators data provided');
-                return;
-            }
+            if (!indicators) return;
+
+            console.log('Updating indicators with data:', indicators);
 
             // Get average or representative values for each indicator
             const symbols = Object.keys(indicators);
@@ -936,14 +932,25 @@
 
             // Update values with color coding
             const rsiElement = document.getElementById('rsi-value');
-            rsiElement.textContent = avgRsi;
-            rsiElement.className = getRsiClass(parseFloat(avgRsi));
+            if (rsiElement) {
+                rsiElement.textContent = avgRsi;
+                rsiElement.className = getRsiClass(parseFloat(avgRsi));
+            }
 
             const macdElement = document.getElementById('macd-value');
-            macdElement.textContent = btcMacd;
+            if (macdElement) {
+                macdElement.textContent = btcMacd;
+            }
 
-            document.getElementById('bb-value').textContent = avgBB;
-            document.getElementById('stoch-value').textContent = `${avgStoch}/50`;
+            const bbElement = document.getElementById('bb-value');
+            if (bbElement) {
+                bbElement.textContent = avgBB;
+            }
+
+            const stochElement = document.getElementById('stoch-value');
+            if (stochElement) {
+                stochElement.textContent = `${avgStoch}/50`;
+            }
 
             // Add dynamic explanations
             updateIndicatorExplanations(indicators);
