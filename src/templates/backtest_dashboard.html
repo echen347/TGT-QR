@@ -534,7 +534,7 @@
                                   run.status === 'running' ? 'status-neutral' : 'status-bad';
 
                 html += `
-                    <div class="metric-card" style="cursor: pointer;" onclick="selectRun(${run.id})">
+                    <div class="metric-card" style="cursor: pointer;" onclick="selectRun(${run.id}, '${run.name}')">
                         <h4>${run.name}</h4>
                         <p style="font-size: 0.9em; color: var(--text-secondary-color); margin-bottom: 8px;">
                             ${run.symbols.join(', ')} • ${run.start_date} → ${run.end_date}
@@ -551,9 +551,9 @@
             container.innerHTML = html;
         }
 
-        function selectRun(runId) {
+        function selectRun(runId, runText) {
             currentRunId = runId;
-            loadBacktestResults(runId);
+            loadBacktestResults(runId, runText);
 
             // Update visual selection
             document.querySelectorAll('#runs-container .metric-card').forEach(card => {
@@ -562,13 +562,29 @@
             event.currentTarget.style.border = '2px solid var(--primary-color)';
         }
 
-        function loadBacktestResults(runId) {
+        function loadBacktestResults(runId, runText) {
+            // Show loading states
+            document.getElementById('performance-loading').style.display = 'block';
+            document.getElementById('performance-overview').style.display = 'none';
+            document.getElementById('results-body').innerHTML = '<tr><td colspan="9" class="loading-text">Loading results...</td></tr>';
+
             fetch(`/api/backtest_results?run_id=${runId}`)
                 .then(response => response.json())
                 .then(data => {
+                    // Hide loading and show content
+                    document.getElementById('performance-loading').style.display = 'none';
+                    document.getElementById('performance-overview').style.display = 'grid';
+                    
                     updateResultsTable(data.results);
+                    updatePerformanceOverview(data.results, runText);
+                    updateStrategyInsights(data.results);
                 })
-                .catch(error => console.error('Error fetching backtest results:', error));
+                .catch(error => {
+                    console.error('Error fetching backtest results:', error);
+                    document.getElementById('results-body').innerHTML = '<tr><td colspan="9" class="error-text">Failed to load results</td></tr>';
+                    // Hide performance overview on error
+                    document.getElementById('performance-loading').style.display = 'none';
+                });
         }
 
         // Load runs on page load
