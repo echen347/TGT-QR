@@ -619,8 +619,10 @@ class Backtester:
                 summary[key] = value.item()
         
         if self.run_id:
-            print(f"📈 Saving overall run summary for run_id {self.run_id}...")
+            logger.info(f"📈 Attempting to save overall run summary for run_id {self.run_id}...")
+            logger.info(f"Summary data to be saved: {summary}")
             db_manager.update_backtest_run_summary(self.run_id, summary)
+            logger.info(f"✅ Successfully saved summary for run_id {self.run_id}.")
 
 
 if __name__ == "__main__":
