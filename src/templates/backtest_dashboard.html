@@ -146,6 +146,10 @@
             color: var(--text-secondary-color);
             font-style: italic;
         }
+        .active-run {
+            border: 2px solid var(--primary-color);
+            box-shadow: 0 0 10px rgba(157, 114, 255, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -558,8 +562,9 @@
             // Update visual selection
             document.querySelectorAll('#runs-container .metric-card').forEach(card => {
                 card.style.border = '1px solid var(--border-color)';
+                card.classList.remove('active-run');
             });
-            event.currentTarget.style.border = '2px solid var(--primary-color)';
+            event.currentTarget.classList.add('active-run');
         }
 
         function loadBacktestResults(runId, runText) {
