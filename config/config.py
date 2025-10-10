@@ -28,6 +28,8 @@ LOG_LEVEL = 'INFO'
 LOG_FILE = 'logs/trading_system.log'
 LOG_MAX_SIZE_MB = 10
 LOG_BACKUP_COUNT = 5
+LOG_ROTATION = 'daily'  # Daily log rotation for live trading
+LOG_RETENTION_DAYS = 30  # Keep 30 days of logs
 
 # Risk Management - BALANCED APPROACH
 STOP_LOSS_PCT = 0.02  # 2% stop loss

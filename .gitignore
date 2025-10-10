@@ -43,7 +43,8 @@ Thumbs.db
 
 # Logs
 *.log
-logs/
+logs/*.log
+logs/archive/
 
 # Database files
 *.db
@@ -52,9 +53,16 @@ logs/
 
 # Environment variables (contains API keys)
 .env
+.env.*
 .env.local
 .env.production
 .env.staging
+
+# Private keys
+*.pem
+
+# Live trading results
+results/live_results/
 
 # Temporary files
 *.tmp
