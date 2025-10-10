@@ -310,19 +310,6 @@
             </div>
         </div>
         
-        <div class="card" id="alerts">
-            <h3><i class="fas fa-bell"></i>Alerts</h3>
-            <div class="alerts-list">
-                {% if alerts %}
-                    {% for alert in alerts %}
-                        <p class="alert-item alert-{{ alert.level }}">{{ alert.message }}</p>
-                    {% endfor %}
-                {% else %}
-                    <p class="empty-placeholder">No issues</p>
-                {% endif %}
-            </div>
-        </div>
-        
         <div class="card" id="current-positions">
             <h3><i class="fas fa-folder-open"></i>Current Positions</h3>
             <div class="table-container">
@@ -352,6 +339,19 @@
                         {% endfor %}
                     </tbody>
                 </table>
+            </div>
+        </div>
+        
+        <div class="card" id="alerts">
+            <h3><i class="fas fa-bell"></i>Alerts</h3>
+            <div class="alerts-list">
+                {% if alerts %}
+                    {% for alert in alerts %}
+                        <p class="alert-item alert-{{ alert.level }}">{{ alert.message }}</p>
+                    {% endfor %}
+                {% else %}
+                    <p class="empty-placeholder">No issues</p>
+                {% endif %}
             </div>
         </div>
         
