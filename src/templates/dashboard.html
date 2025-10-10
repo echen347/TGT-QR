@@ -177,6 +177,12 @@
                     <button id="shutdown-btn">EMERGENCY STOP</button>
                     <p id="shutdown-status" style="font-size: 0.9em; margin-top: 10px;"></p>
                 </div>
+                <div class="status-item">
+                    <a href="/backtest" id="backtest-btn" style="display: inline-block; padding: 10px 16px; background-color: var(--primary-color); color: white; text-decoration: none; border-radius: 6px; border: none; cursor: pointer; font-weight: 600;">
+                        <i class="fas fa-chart-line"></i> BACKTEST DASHBOARD
+                    </a>
+                    <p style="font-size: 0.8em; color: var(--text-secondary-color); margin-top: 8px;">Advanced strategy analysis</p>
+                </div>
             </div>
             <p style="font-size: 0.8em; color: #888; margin-top: auto; padding-top: 15px;">Last updated: <span id="lastUpdate">{{ moment(last_updated).format('YYYY-MM-DD HH:mm:ss') }}</span></p>
         </div>

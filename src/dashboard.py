@@ -240,13 +240,63 @@ def backtest_dashboard():
 @app.route('/api/backtest_results')
 def api_backtest_results():
     """API endpoint for backtest results"""
+    run_id = request.args.get('run_id', type=int)
     dashboard = TradingDashboard(strategy_instance, risk_manager_instance)
-    results = db_manager.get_backtest_results(50)
+    results = db_manager.get_backtest_results(run_id=run_id, limit=100)
 
     return jsonify({
         'results': results,
         'timestamp': datetime.now().isoformat()
     })
+
+@app.route('/api/backtest_runs')
+def api_backtest_runs():
+    """API endpoint for backtest runs"""
+    dashboard = TradingDashboard(strategy_instance, risk_manager_instance)
+    runs = db_manager.get_backtest_runs(20)
+
+    return jsonify({
+        'runs': runs,
+        'timestamp': datetime.now().isoformat()
+    })
+
+@app.route('/api/run_backtest', methods=['POST'])
+def api_run_backtest():
+    """API endpoint to run backtests from web interface"""
+    try:
+        data = request.get_json()
+        symbols = data.get('symbols', ['BTCUSDT', 'ETHUSDT'])
+        days = data.get('days', 30)
+
+        # Import and run backtester
+        from tools.backtester import Backtester
+        from datetime import datetime, timedelta
+
+        start_date = datetime.now() - timedelta(days=days)
+        end_date = datetime.now()
+
+        run_name = f"Web Backtest - {', '.join(symbols)} - {days} days"
+        run_description = f"Backtest run from web dashboard: {len(symbols)} symbols, {days} days of data"
+
+        backtester = Backtester(
+            symbols=symbols,
+            start_date=start_date,
+            end_date=end_date,
+            run_name=run_name,
+            run_description=run_description
+        )
+        backtester.run()
+
+        return jsonify({
+            'success': True,
+            'message': f'Backtest completed for {len(symbols)} symbols over {days} days',
+            'results_count': len(db_manager.get_backtest_results(10))
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 # Function to run the dashboard with shared instances
 def run_dashboard(strategy, risk_manager):

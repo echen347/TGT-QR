@@ -70,11 +70,26 @@ class SignalRecord(Base):
     current_price = Column(Float, nullable=False)
     timestamp = Column(DateTime, nullable=False)
 
+class BacktestRun(Base):
+    """Store backtest run metadata"""
+    __tablename__ = 'backtest_runs'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), nullable=False)
+    description = Column(Text, nullable=True)
+    symbols = Column(String(200), nullable=False)  # JSON array of symbols
+    start_date = Column(DateTime, nullable=False)
+    end_date = Column(DateTime, nullable=False)
+    parameters = Column(Text, nullable=True)  # JSON of parameters used
+    status = Column(String(20), nullable=False, default='completed')  # running, completed, failed
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
 class BacktestResult(Base):
     """Store backtest results"""
     __tablename__ = 'backtest_results'
 
     id = Column(Integer, primary_key=True)
+    run_id = Column(Integer, nullable=False)  # Link to backtest run
     symbol = Column(String(20), nullable=False)
     start_date = Column(DateTime, nullable=False)
     end_date = Column(DateTime, nullable=False)
@@ -186,10 +201,42 @@ class DatabaseManager:
             self.session.rollback()
             print(f"Error saving signal record: {e}")
 
-    def save_backtest_result(self, symbol, start_date, end_date, metrics):
-        """Save backtest results to database"""
+    def create_backtest_run(self, name, description, symbols, start_date, end_date, parameters=None):
+        """Create a new backtest run record"""
+        try:
+            run = BacktestRun(
+                name=name,
+                description=description,
+                symbols=json.dumps(symbols),
+                start_date=start_date,
+                end_date=end_date,
+                parameters=json.dumps(parameters) if parameters else None,
+                status='running'
+            )
+            self.session.add(run)
+            self.session.commit()
+            return run.id
+        except Exception as e:
+            self.session.rollback()
+            print(f"Error creating backtest run: {e}")
+            return None
+
+    def update_backtest_run_status(self, run_id, status):
+        """Update backtest run status"""
+        try:
+            run = self.session.query(BacktestRun).filter(BacktestRun.id == run_id).first()
+            if run:
+                run.status = status
+                self.session.commit()
+        except Exception as e:
+            self.session.rollback()
+            print(f"Error updating backtest run status: {e}")
+
+    def save_backtest_result(self, run_id, symbol, start_date, end_date, metrics):
+        """Save backtest results to database with run_id"""
         try:
             record = BacktestResult(
+                run_id=run_id,
                 symbol=symbol,
                 start_date=start_date,
                 end_date=end_date,
@@ -213,26 +260,56 @@ class DatabaseManager:
             self.session.rollback()
             print(f"Error saving backtest result: {e}")
 
-    def get_backtest_results(self, limit=50):
-        """Get recent backtest results"""
+    def get_backtest_runs(self, limit=20):
+        """Get recent backtest runs"""
         try:
-            records = self.session.query(BacktestResult)\
-                .order_by(BacktestResult.timestamp.desc())\
+            runs = self.session.query(BacktestRun)\
+                .order_by(BacktestRun.created_at.desc())\
                 .limit(limit)\
                 .all()
 
             return [{
                 'id': r.id,
-                'symbol': r.symbol,
+                'name': r.name,
+                'description': r.description,
+                'symbols': json.loads(r.symbols),
                 'start_date': r.start_date.strftime('%Y-%m-%d'),
                 'end_date': r.end_date.strftime('%Y-%m-%d'),
-                'total_return_pct': r.total_return_pct,
-                'total_trades': r.total_trades,
-                'win_rate_pct': r.win_rate_pct,
-                'sharpe_ratio': r.sharpe_ratio,
-                'max_drawdown_pct': r.max_drawdown_pct,
-                'timestamp': r.timestamp.strftime('%Y-%m-%d %H:%M:%S')
-            } for r in records]
+                'status': r.status,
+                'parameters': json.loads(r.parameters) if r.parameters else {},
+                'created_at': r.created_at.strftime('%Y-%m-%d %H:%M:%S')
+            } for r in runs]
+        except Exception as e:
+            print(f"Error getting backtest runs: {e}")
+            return []
+
+    def get_backtest_results(self, run_id=None, limit=50):
+        """Get backtest results, optionally filtered by run_id"""
+        try:
+            query = self.session.query(BacktestResult)
+
+            if run_id:
+                query = query.filter(BacktestResult.run_id == run_id)
+
+            records = query.order_by(BacktestResult.timestamp.desc()).limit(limit).all()
+
+            results = []
+            for r in records:
+                results.append({
+                    'id': r.id,
+                    'run_id': r.run_id,
+                    'symbol': r.symbol,
+                    'start_date': r.start_date.strftime('%Y-%m-%d'),
+                    'end_date': r.end_date.strftime('%Y-%m-%d'),
+                    'total_return_pct': r.total_return_pct,
+                    'total_trades': r.total_trades,
+                    'win_rate_pct': r.win_rate_pct,
+                    'sharpe_ratio': r.sharpe_ratio,
+                    'max_drawdown_pct': r.max_drawdown_pct,
+                    'timestamp': r.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+                })
+
+            return results
         except Exception as e:
             print(f"Error getting backtest results: {e}")
             return []

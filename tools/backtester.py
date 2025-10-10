@@ -13,6 +13,7 @@ import os
 import logging
 import pickle
 import threading
+import json
 from concurrent.futures import ThreadPoolExecutor
 from dotenv import load_dotenv
 from pybit.unified_trading import HTTP
@@ -58,10 +59,13 @@ class Backtester:
     Simulates trading on historical data to evaluate performance.
     """
 
-    def __init__(self, symbols, start_date, end_date):
+    def __init__(self, symbols, start_date, end_date, run_name=None, run_description=None):
         self.symbols = symbols
         self.start_date = start_date
         self.end_date = end_date
+        self.run_name = run_name or f"Backtest {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+        self.run_description = run_description
+        self.run_id = None
         # Force mainnet and provide keys for historical data fetching
         self.session = HTTP(
                 testnet=False,
@@ -236,8 +240,22 @@ class Backtester:
 
     def run(self):
         """Runs the backtest and prints the results."""
+        # Create backtest run record
+        self.run_id = db_manager.create_backtest_run(
+            name=self.run_name,
+            description=self.run_description,
+            symbols=self.symbols,
+            start_date=self.start_date,
+            end_date=self.end_date,
+            parameters={'ma_period': MA_PERIOD, 'leverage': LEVERAGE, 'timeframe': TIMEFRAME}
+        )
+
+        if not self.run_id:
+            print("❌ Failed to create backtest run record")
+            return
+
         self.fetch_historical_data()
-        
+
         all_results = {}
         for symbol in self.symbols:
             if symbol not in self.historical_data or self.historical_data[symbol].empty:
@@ -538,7 +556,12 @@ class Backtester:
                 'sortino_ratio': sortino_ratio
             }
 
-            db_manager.save_backtest_result(symbol, self.start_date, self.end_date, metrics)
+            db_manager.save_backtest_result(self.run_id, symbol, self.start_date, self.end_date, metrics)
+
+        # Mark run as completed
+        if self.run_id:
+            db_manager.update_backtest_run_status(self.run_id, 'completed')
+            print(f"✅ Backtest run {self.run_id} completed!")
 
 
 if __name__ == "__main__":
@@ -546,10 +569,15 @@ if __name__ == "__main__":
     BACKTEST_START_DATE = datetime.now() - timedelta(days=30) # 1 month of data
     BACKTEST_END_DATE = datetime.now()
 
+    run_name = f"Terminal Backtest - {', '.join(SYMBOLS)} - {BACKTEST_START_DATE.strftime('%Y-%m-%d')} to {BACKTEST_END_DATE.strftime('%Y-%m-%d')}"
+    run_description = f"Backtest run from terminal: {len(SYMBOLS)} symbols, {(BACKTEST_END_DATE - BACKTEST_START_DATE).days} days"
+
     backtester = Backtester(
         symbols=SYMBOLS,
         start_date=BACKTEST_START_DATE,
-        end_date=BACKTEST_END_DATE
+        end_date=BACKTEST_END_DATE,
+        run_name=run_name,
+        run_description=run_description
     )
 
     backtester.run()
