@@ -690,14 +690,18 @@
             const updateBtn = document.getElementById('update-charts-btn');
             if (updateBtn) {
                 updateBtn.addEventListener('click', function() {
+                    console.log('Update Charts button clicked');
                     const tickerSelect = document.getElementById('ticker-select');
                     const chartTypeSelect = document.getElementById('chart-type-select');
 
                     const selectedTicker = tickerSelect ? tickerSelect.value : '';
                     const selectedChartType = chartTypeSelect ? chartTypeSelect.value : 'price';
 
+                    console.log('Selected ticker:', selectedTicker, 'Chart type:', selectedChartType);
                     loadChartData(selectedTicker, selectedChartType);
                 });
+            } else {
+                console.error('Update Charts button not found');
             }
         });
 
