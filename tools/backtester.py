@@ -6,8 +6,15 @@ Tests the strategy on historical data without placing real orders
 
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
+
+# Try to import matplotlib for visualizations, but handle gracefully if not available
+try:
+    import matplotlib.pyplot as plt
+    HAS_MATPLOTLIB = True
+except ImportError:
+    HAS_MATPLOTLIB = False
+    print("⚠️ matplotlib not available - visualizations will be skipped")
 import sys
 import os
 import logging
@@ -397,6 +404,10 @@ class Backtester:
 
     def visualize_results(self, symbol=None):
         """Create visualizations for backtest results"""
+        if not HAS_MATPLOTLIB:
+            print("❌ matplotlib not installed - install with: pip install matplotlib")
+            return
+
         if not self.signal_data:
             print("❌ No signal data available for visualization")
             return
