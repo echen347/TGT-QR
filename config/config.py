@@ -1,10 +1,15 @@
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+# Load .env file from the project root. This makes the config robust.
+# It assumes this file is in /config and the .env is in the parent directory.
+dotenv_path = os.path.join(os.path.dirname(__file__), '..', '.env')
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path=dotenv_path)
 
 # Bybit API Configuration
 BYBIT_TESTNET = os.getenv('BYBIT_TESTNET', 'true').lower() == 'true'
+# Try to get keys from environment, otherwise they will be None
 BYBIT_API_KEY = os.getenv('BYBIT_API_KEY')
 BYBIT_API_SECRET = os.getenv('BYBIT_API_SECRET')
 
