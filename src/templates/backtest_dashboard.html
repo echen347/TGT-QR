@@ -457,6 +457,53 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             loadBacktestRuns();
+
+            // --- FIX: Re-implement the event listener for the Run Backtest button ---
+            const runBtn = document.getElementById('run-backtest-btn');
+            if (runBtn) {
+                runBtn.addEventListener('click', function() {
+                    const symbols = Array.from(document.getElementById('symbols-select').selectedOptions).map(option => option.value);
+                    const days = parseInt(document.getElementById('days-select').value);
+                    const statusDiv = document.getElementById('backtest-status');
+
+                    if (symbols.length === 0) {
+                        statusDiv.innerHTML = '<p class="error-message" style="margin-top: 10px;">Please select at least one symbol.</p>';
+                        return;
+                    }
+
+                    // Show loading state
+                    runBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Running...';
+                    runBtn.disabled = true;
+                    statusDiv.innerHTML = '<p class="secondary-text" style="margin-top: 10px;">Starting backtest... This may take a few minutes.</p>';
+
+                    fetch('/api/run_backtest', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ symbols: symbols, days: days })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            statusDiv.innerHTML = `<p class="success-message" style="margin-top: 10px;"><i class="fas fa-check-circle"></i> ${data.message}</p>`;
+                            // Refresh the list of runs after a short delay to allow completion
+                            setTimeout(() => {
+                                statusDiv.innerHTML = '';
+                                loadBacktestRuns();
+                            }, 2000);
+                        } else {
+                            throw new Error(data.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error running backtest:', error);
+                        statusDiv.innerHTML = `<p class="error-message" style="margin-top: 10px;"><i class="fas fa-exclamation-triangle"></i> Error: ${error.message}</p>`;
+                    })
+                    .finally(() => {
+                        runBtn.innerHTML = '<i class="fas fa-play"></i> Run Backtest';
+                        runBtn.disabled = false;
+                    });
+                });
+            }
         });
 
         function loadBacktestRuns() {
