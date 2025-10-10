@@ -74,27 +74,28 @@ class Backtester:
         logging.info("Fetching historical data...")
         for symbol in self.symbols:
             all_klines = []
-            start_ms = int(self.start_date.timestamp() * 1000)
-            end_ms = int(self.end_date.timestamp() * 1000)
-            
-            while start_ms < end_ms:
+            # Start from the end date and go backwards
+            current_end_ms = int(self.end_date.timestamp() * 1000)
+            start_limit_ms = int(self.start_date.timestamp() * 1000)
+
+            while current_end_ms > start_limit_ms:
                 try:
                     response = self.session.get_kline(
-                    category="linear",
+                        category="linear",
                         symbol=symbol,
                         interval=TIMEFRAME,
-                        start=start_ms,
-                        limit=1000  # Max limit per request
+                        end=current_end_ms,
+                        limit=1000
                     )
 
                     if response['retCode'] == 0 and response['result']['list']:
                         klines = response['result']['list']
                         all_klines.extend(klines)
-                        # The next request starts after the last candle's timestamp
-                        start_ms = int(klines[-1][0]) + 60000 # Add one minute in ms
+                        # The next request ends before the first candle of this batch
+                        current_end_ms = int(klines[0][0]) - 60000 # Subtract one minute
                     else:
                         logging.warning(f"Stopping data fetch for {symbol}. Reason: {response.get('retMsg', 'No more data')}")
-                        break 
+                        break
                 except Exception as e:
                     logging.error(f"Error fetching data for {symbol}: {e}")
                     break
