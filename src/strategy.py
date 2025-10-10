@@ -390,19 +390,18 @@ class MovingAverageStrategy:
                 self.logger.error(f"Leverage mismatch: requested {leverage}, configured {LEVERAGE}")
                 return False
             # Use the working order placement from day1_test.py
-            # Calculate leveraged order size for Bybit (margin * leverage)
-            leveraged_qty = qty_usdt * leverage
+            # For quote currency orders, qty should be the margin amount, not leveraged amount
             response = self.session.place_order(
                 category="linear",
                 symbol=symbol,
                 side=side,
                 orderType="Market",
-                qty=str(leveraged_qty),  # Leveraged USDT amount for quote currency orders
+                qty=str(qty_usdt),  # Margin amount for quote currency orders
                 leverage=str(leverage),
                 marketUnit="quoteCurrency"
             )
             if response['retCode'] == 0:
-                self.logger.info(f"✅ Order placed: {side} {leveraged_qty} USDT (${qty_usdt} margin) of {symbol} at ${current_price:.2f}")
+                self.logger.info(f"✅ Order placed: {side} {qty_usdt} USDT margin of {symbol} at ${current_price:.2f}")
                 self.risk_manager.positions_count += 1
                 # Save trade record to database
                 db_manager.save_trade_record(
