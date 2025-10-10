@@ -642,11 +642,11 @@
                 tableHtml += `
                     <tr>
                         <td>${r.symbol}</td>
-                        <td>${(r.total_return_pct * 100).toFixed(2)}</td>
+                        <td>${(r.total_return_pct).toFixed(2)}</td>
                         <td>${r.total_trades}</td>
-                        <td>${r.win_rate.toFixed(2)}</td>
+                        <td>${r.win_rate_pct.toFixed(2)}</td>
                         <td>${r.sharpe_ratio.toFixed(2)}</td>
-                        <td>${(r.max_drawdown * 100).toFixed(2)}</td>
+                        <td>${(r.max_drawdown_pct).toFixed(2)}</td>
                         <td>${new Date(r.start_date).toLocaleDateString()}</td>
                         <td>${new Date(r.end_date).toLocaleDateString()}</td>
                     </tr>
