@@ -27,6 +27,12 @@
             padding: 20px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             border: 1px solid #2c2c2c;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card.full-width {
+            grid-column: 1 / -1; /* Span full width */
         }
 
         .card h3 {
@@ -122,12 +128,14 @@
         .alert-warning { background-color: #f39c12; color: #121212; }
         .alert-error { background-color: #cf6679; color: #121212; }
         .empty-placeholder {
+            flex-grow: 1; /* Allow it to fill space */
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: #777;
             font-style: italic;
             text-align: center;
-            padding: 40px 0; /* More vertical padding */
-            display: block; /* Simpler display property */
-            width: 100%;
+            padding: 20px 0;
         }
 
     </style>
@@ -150,6 +158,21 @@
              <p style="font-size: 0.8em; color: #888; margin-top: 15px;">Last updated: <span id="lastUpdate">{{ moment(last_updated).format('YYYY-MM-DD HH:mm:ss') }}</span></p>
         </div>
         
+        <div class="card full-width">
+            <h3>Risk Management</h3>
+            <div class="risk-grid">
+                <div class="risk-item">
+                    <p><strong>Max Position:</strong> ${{ risk.max_position_usdt }}</p>
+                    <p><strong>Daily Loss Limit:</strong> ${{ risk.max_daily_loss_usdt }}</p>
+                    <p><strong>Total Loss Limit:</strong> ${{ risk.max_total_loss_usdt }}</p>
+                </div>
+                <div class="risk-item">
+                    <p>Active Positions: {{ risk.positions_count }} / {{ risk.max_positions }}</p>
+                    <p>Emergency Stopped: <span class="{{ 'status-inactive' if risk.is_stopped else 'status-active' }}">{{ risk.is_stopped }}</span></p>
+                </div>
+            </div>
+        </div>
+        
         <div class="card">
             <h3>Market Analysis</h3>
             <div class="market-grid">
@@ -169,21 +192,6 @@
                     </p>
                 </div>
                 {% endfor %}
-            </div>
-        </div>
-        
-        <div class="card">
-            <h3>Risk Management</h3>
-            <div class="risk-grid">
-                <div class="risk-item">
-                    <p><strong>Max Position:</strong> ${{ risk.max_position_usdt }}</p>
-                    <p><strong>Daily Loss Limit:</strong> ${{ risk.max_daily_loss_usdt }}</p>
-                    <p><strong>Total Loss Limit:</strong> ${{ risk.max_total_loss_usdt }}</p>
-                </div>
-                <div class="risk-item">
-                    <p>Active Positions: {{ risk.positions_count }} / {{ risk.max_positions }}</p>
-                    <p>Emergency Stopped: <span class="{{ 'status-inactive' if risk.is_stopped else 'status-active' }}">{{ risk.is_stopped }}</span></p>
-                </div>
             </div>
         </div>
 
@@ -232,9 +240,7 @@
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="5">
-                                <p class="empty-placeholder" style="padding: 10px 0;">No active positions</p>
-                            </td>
+                            <td colspan="5" class="empty-placeholder">No active positions</td>
                         </tr>
                         {% endfor %}
                     </tbody>
