@@ -1235,8 +1235,8 @@
 
         function generatePerformanceVisualizations(tradeData) {
             // Destroy existing charts to prevent conflicts
-            if (activeCharts['return-distribution-chart']) activeCharts['return-distribution-chart'].destroy();
-            if (activeCharts['portfolio-growth-chart']) activeCharts['portfolio-growth-chart'].destroy();
+            if (activeCharts['returnDistributionChart']) activeCharts['returnDistributionChart'].destroy();
+            if (activeCharts['drawdownChart']) activeCharts['drawdownChart'].destroy();
 
             if (!tradeData || tradeData.length === 0) {
                 // You can add a placeholder message if you want
@@ -1245,8 +1245,8 @@
 
             // --- 1. Return Distribution Chart (Histogram) ---
             const returns = tradeData.map(t => t.pnl_pct * 100);
-            const returnCtx = document.getElementById('return-distribution-chart').getContext('2d');
-            activeCharts['return-distribution-chart'] = new Chart(returnCtx, {
+            const returnCtx = document.getElementById('returnDistributionChart').getContext('2d');
+            activeCharts['returnDistributionChart'] = new Chart(returnCtx, {
                 type: 'bar',
                 data: {
                     labels: returns.map((_, i) => `Trade ${i+1}`),
@@ -1275,15 +1275,15 @@
                 return { x: new Date(t.exit_date), y: cumulativePnl };
             });
 
-            const growthCtx = document.getElementById('portfolio-growth-chart').getContext('2d');
-            activeCharts['portfolio-growth-chart'] = new Chart(growthCtx, {
+            const growthCtx = document.getElementById('drawdownChart').getContext('2d');
+            activeCharts['drawdownChart'] = new Chart(growthCtx, {
                 type: 'line',
                 data: {
                     datasets: [{
                         label: 'Portfolio Growth',
                         data: portfolioGrowth,
                         borderColor: 'var(--primary-color)',
-                        backgroundColor: 'rgba(var(--primary-color-rgb), 0.1)',
+                        backgroundColor: 'rgba(157, 114, 255, 0.1)',
                         fill: true,
                         tension: 0.1
                     }]
@@ -1298,84 +1298,6 @@
             });
         }
         
-        function createReturnDistributionChart(chartData) {
-            const pnlValues = chartData.map(d => d.pnl).filter(pnl => pnl !== null);
-            if (pnlValues.length === 0) return;
-
-            // Basic histogram logic
-            const minPnl = Math.min(...pnlValues);
-            const maxPnl = Math.max(...pnlValues);
-            const binCount = Math.min(20, Math.ceil(Math.sqrt(pnlValues.length)));
-            const binSize = (maxPnl - minPnl) / binCount;
-            
-            const bins = Array(binCount).fill(0);
-            const labels = [];
-
-            for (let i = 0; i < binCount; i++) {
-                const binStart = minPnl + i * binSize;
-                labels.push(binStart.toFixed(3));
-            }
-
-            pnlValues.forEach(pnl => {
-                const binIndex = Math.min(Math.floor((pnl - minPnl) / binSize), binCount - 1);
-                bins[binIndex]++;
-            });
-
-            const ctx = document.getElementById('returnDistributionChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Frequency',
-                        data: bins,
-                        backgroundColor: '#9d72ff',
-                        borderColor: '#8e64e5',
-                        borderWidth: 1
-                    }]
-                },
-                options: getChartOptions('Trade PnL Distribution', 'PnL (USDT)', 'Number of Trades')
-            });
-        }
-
-        function createDrawdownChart(results) {
-            const trades = results
-                .filter(r => r.pnl !== null)
-                .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-
-            if (trades.length === 0) return;
-
-            let cumulativePnl = 0;
-            const portfolioHistory = trades.map(trade => {
-                cumulativePnl += trade.pnl;
-                return {
-                    pnl: cumulativePnl,
-                    time: new Date(trade.timestamp).toLocaleDateString()
-                };
-            });
-            
-            const labels = portfolioHistory.map(p => p.time);
-            const data = portfolioHistory.map(p => p.pnl);
-
-            const ctx = document.getElementById('drawdownChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Cumulative PnL',
-                        data: data,
-                        borderColor: '#2ecc71',
-                        backgroundColor: 'rgba(46, 204, 113, 0.1)',
-                        fill: true,
-                        tension: 0.1,
-                        pointRadius: 2
-                    }]
-                },
-                options: getChartOptions('Portfolio Growth (Cumulative PnL)', 'Time', 'Cumulative PnL (USDT)')
-            });
-        }
-
         // Update last updated time
         function updateTimestamp() {
             document.getElementById('last-updated').textContent =

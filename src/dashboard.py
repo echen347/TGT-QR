@@ -327,13 +327,23 @@ def api_run_backtest():
             run_name=run_name,
             run_description=run_description
         )
-        backtester.run()
+        if not backtester.run_id:
+            # If the backtester failed to create a run record, it's an error
+            return jsonify({'success': False, 'error': 'Failed to create a backtest run in the database.'}), 500
 
-        return jsonify({
-            'success': True,
-            'message': f'Backtest completed for {len(symbols)} symbols over {days} days',
-            'results_count': len(db_manager.get_backtest_results(10))
-        })
+        try:
+            # The backtester's run method will handle fetching, simulation, and saving results.
+            backtester.run()
+            return jsonify({'success': True, 'run_id': backtester.run_id, 'message': f'Backtest completed for run ID {backtester.run_id}.'})
+        except Exception as e:
+            # If any part of the backtest run fails, update the status to 'failed'
+            if backtester.run_id:
+                db_manager.update_backtest_run_status(backtester.run_id, 'failed')
+            print(f"Error during backtest run: {e}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({'success': False, 'error': str(e)}), 500
+
     except Exception as e:
         return jsonify({
             'success': False,
