@@ -454,6 +454,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         let backtestRunsData = []; // Cache the runs data
+        let activeCharts = {}; // To hold chart instances
 
         document.addEventListener('DOMContentLoaded', function() {
             loadBacktestRuns();
@@ -575,15 +576,16 @@
                 document.getElementById('strategy-insights-content').innerHTML = '<p class="secondary-text">No insights available for this run.</p>';
             }
 
-            // --- NEW: Asynchronously load the detailed results table ---
-            loadDetailedResults(runId, runName);
+            // --- NEW: Asynchronously load the detailed results table and charts ---
+            loadDetailedResultsAndCharts(runId, runName);
         }
 
-        function loadDetailedResults(runId, runText) {
+        function loadDetailedResultsAndCharts(runId, runText) {
             const resultsBody = document.getElementById('results-body');
             resultsBody.innerHTML = '<tr><td colspan="8" style="text-align: center;" class="secondary-text">Loading results...</td></tr>';
             document.getElementById('results-history-title').innerText = `Results History for: ${runText}`;
             
+            // Fetch detailed results for the table
             fetch(`/api/backtest_results?run_id=${runId}`)
                 .then(response => response.json())
                 .then(data => {
@@ -592,6 +594,17 @@
                 .catch(error => {
                     console.error('Error fetching detailed results:', error);
                     resultsBody.innerHTML = '<tr><td colspan="8" class="error-message">Error loading detailed results.</td></tr>';
+                });
+
+            // Fetch chart data for visualizations
+            fetch(`/api/backtest_chart_data?run_id=${runId}`)
+                .then(response => response.json())
+                .then(data => {
+                    generatePerformanceVisualizations(data.chart_data);
+                })
+                .catch(error => {
+                    console.error('Error fetching chart data:', error);
+                    // Handle chart loading errors if necessary
                 });
         }
 
@@ -1184,34 +1197,69 @@
             dynamicInsights.style.display = 'grid';
         }
 
-        function generatePerformanceVisualizations(runId) {
-            const vizContainer = document.getElementById('performance-charts-container');
-            vizContainer.querySelectorAll('.chart-loader').forEach(loader => loader.style.display = 'block');
+        function generatePerformanceVisualizations(tradeData) {
+            // Destroy existing charts to prevent conflicts
+            if (activeCharts['return-distribution-chart']) activeCharts['return-distribution-chart'].destroy();
+            if (activeCharts['portfolio-growth-chart']) activeCharts['portfolio-growth-chart'].destroy();
 
-            // Use the new, optimized endpoint
-            fetch(`/api/backtest_chart_data?run_id=${runId}`)
-                .then(response => response.json())
-                .then(data => {
-                    vizContainer.querySelectorAll('.chart-loader').forEach(loader => loader.style.display = 'none');
-                    
-                    if (data.chart_data && data.chart_data.length > 0) {
-                        // Destroy old charts before creating new ones
-                        ['returnDistributionChart', 'drawdownChart'].forEach(id => {
-                            const chart = Chart.getChart(id);
-                            if (chart) chart.destroy();
-                        });
+            if (!tradeData || tradeData.length === 0) {
+                // You can add a placeholder message if you want
+                return;
+            }
 
-                        createReturnDistributionChart(data.chart_data);
-                        createDrawdownChart(data.chart_data);
-                    } else {
-                        vizContainer.innerHTML = '<p style="text-align: center; color: var(--text-secondary-color);">No trade data available to generate performance visualizations for this run.</p>';
-                    }
-                })
-                .catch(error => {
-                    vizContainer.querySelectorAll('.chart-loader').forEach(loader => loader.style.display = 'none');
-                    vizContainer.innerHTML = `<p class="error">Failed to load visualization data: ${error.message}</p>`;
-                    console.error('Error fetching backtest viz data:', error);
-                });
+            // --- 1. Return Distribution Chart (Histogram) ---
+            const returns = tradeData.map(t => t.pnl_pct * 100);
+            const returnCtx = document.getElementById('return-distribution-chart').getContext('2d');
+            activeCharts['return-distribution-chart'] = new Chart(returnCtx, {
+                type: 'bar',
+                data: {
+                    labels: returns.map((_, i) => `Trade ${i+1}`),
+                    datasets: [{
+                        label: 'Return %',
+                        data: returns,
+                        backgroundColor: returns.map(r => r >= 0 ? 'rgba(46, 204, 113, 0.6)' : 'rgba(231, 76, 60, 0.6)'),
+                        borderColor: returns.map(r => r >= 0 ? 'rgba(46, 204, 113, 1)' : 'rgba(231, 76, 60, 1)'),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: { beginAtZero: true, ticks: { color: 'var(--text-secondary-color)' } },
+                        x: { ticks: { color: 'var(--text-secondary-color)' } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // --- 2. Portfolio Growth & Drawdown Chart ---
+            tradeData.sort((a, b) => new Date(a.exit_date) - new Date(b.exit_date));
+            let cumulativePnl = 1.0;
+            const portfolioGrowth = tradeData.map(t => {
+                cumulativePnl *= (1 + t.pnl_pct);
+                return { x: new Date(t.exit_date), y: cumulativePnl };
+            });
+
+            const growthCtx = document.getElementById('portfolio-growth-chart').getContext('2d');
+            activeCharts['portfolio-growth-chart'] = new Chart(growthCtx, {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: 'Portfolio Growth',
+                        data: portfolioGrowth,
+                        borderColor: 'var(--primary-color)',
+                        backgroundColor: 'rgba(var(--primary-color-rgb), 0.1)',
+                        fill: true,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: { type: 'time', time: { unit: 'day' }, ticks: { color: 'var(--text-secondary-color)' } },
+                        y: { ticks: { color: 'var(--text-secondary-color)' } }
+                    },
+                    plugins: { legend: { labels: { color: 'var(--text-color)' } } }
+                }
+            });
         }
         
         function createReturnDistributionChart(chartData) {

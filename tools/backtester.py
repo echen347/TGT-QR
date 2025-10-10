@@ -573,6 +573,9 @@ class Backtester:
 
             db_manager.save_backtest_result(self.run_id, symbol, self.start_date, self.end_date, metrics)
 
+            # Save detailed trades for visualization
+            db_manager.save_backtest_trades(self.run_id, symbol, trades_df)
+
         # Mark run as completed
         if self.run_id:
             db_manager.update_backtest_run_status(self.run_id, 'completed')

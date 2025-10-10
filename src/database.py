@@ -7,6 +7,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from config.config import DATABASE_URL
 import json
+import pandas as pd
 
 Base = declarative_base()
 
@@ -91,6 +92,19 @@ class BacktestRun(Base):
     sharpe_ratio = Column(Float, nullable=True)
     max_drawdown = Column(Float, nullable=True)
     avg_return = Column(Float, nullable=True)
+
+class BacktestTrade(Base):
+    """Stores individual trades from a backtest run for detailed analysis."""
+    __tablename__ = 'backtest_trades'
+    id = Column(Integer, primary_key=True)
+    run_id = Column(Integer, nullable=False)
+    symbol = Column(String(20), nullable=False)
+    entry_date = Column(DateTime, nullable=False)
+    exit_date = Column(DateTime, nullable=False)
+    entry_price = Column(Float, nullable=False)
+    exit_price = Column(Float, nullable=False)
+    pnl_pct = Column(Float, nullable=False)
+    trade_type = Column(String(10), nullable=False) # long/short
 
 class BacktestResult(Base):
     """Store backtest results"""
@@ -256,6 +270,35 @@ class DatabaseManager:
             self.session.rollback()
             print(f"Error updating backtest run summary for run_id {run_id}: {e}")
 
+    def save_backtest_trades(self, run_id, symbol, trades_df):
+        """Saves the detailed trades from a backtest dataframe to the database."""
+        if trades_df.empty:
+            return
+        
+        try:
+            records = []
+            for _, row in trades_df.iterrows():
+                # Ensure we have the necessary columns before proceeding
+                if 'exit_date' in row and pd.notna(row['exit_date']):
+                    record = BacktestTrade(
+                        run_id=run_id,
+                        symbol=symbol,
+                        entry_date=row['entry_date'],
+                        exit_date=row['exit_date'],
+                        entry_price=row['entry_price'],
+                        exit_price=row['exit_price'],
+                        pnl_pct=row['pnl'],
+                        trade_type=row['type']
+                    )
+                    records.append(record)
+            
+            if records:
+                self.session.bulk_save_objects(records)
+                self.session.commit()
+        except Exception as e:
+            self.session.rollback()
+            print(f"Error saving backtest trades for run_id {run_id}: {e}")
+
     def save_backtest_result(self, run_id, symbol, start_date, end_date, metrics):
         """Save backtest results to database with run_id"""
         try:
@@ -375,6 +418,21 @@ class DatabaseManager:
 
         except Exception as e:
             print(f"Error getting chart data for run {run_id}: {e}")
+            return []
+
+    def get_trades_for_run(self, run_id):
+        """Fetches all individual trades for a specific backtest run."""
+        try:
+            trades = self.session.query(BacktestTrade).filter(BacktestTrade.run_id == run_id).all()
+            return [{
+                'symbol': t.symbol,
+                'entry_date': t.entry_date.isoformat(),
+                'exit_date': t.exit_date.isoformat(),
+                'pnl_pct': t.pnl_pct,
+                'trade_type': t.trade_type
+            } for t in trades]
+        except Exception as e:
+            print(f"Error getting trades for run {run_id}: {e}")
             return []
 
     def get_recent_prices(self, symbol, limit=100):

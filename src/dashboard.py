@@ -275,10 +275,10 @@ def api_backtest_chart_data():
         return jsonify({'error': 'run_id is required'}), 400
 
     # This query will be much faster as it only pulls the necessary columns
-    chart_data = db_manager.get_chart_data_for_run(run_id)
+    trade_data = db_manager.get_trades_for_run(run_id)
     
     return jsonify({
-        'chart_data': chart_data,
+        'chart_data': trade_data,
         'timestamp': datetime.now().isoformat()
     })
 
