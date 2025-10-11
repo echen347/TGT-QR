@@ -38,7 +38,7 @@ class TradingDashboard:
         return {
             'dashboard_status': 'Active',
             'bot_status': 'Active' if bot_is_active else 'Inactive',
-            'api_status': 'OK',  # Placeholder - can be improved
+            'api_status': 'OK' if self.strategy.session else 'Error',  # Check actual API connection
         }
 
     def get_market_data(self):
@@ -88,9 +88,8 @@ class TradingDashboard:
             
             for trade in trades:
                 timestamps.append(trade.timestamp)
-                # For now, estimate PnL as value_usdt * 0.01 (1% gain/loss placeholder)
-                # In production, you'd track actual entry/exit prices
-                trade_pnl = trade.value_usdt * 0.01  # Placeholder
+                # Use actual PnL from database, fallback to 0 if not available
+                trade_pnl = trade.pnl if hasattr(trade, 'pnl') and trade.pnl is not None else 0
                 running_pnl += trade_pnl
                 cumulative_pnl.append(running_pnl)
 

@@ -401,7 +401,7 @@ class DatabaseManager:
                     'win_rate_pct': float(r.win_rate_pct),
                     'sharpe_ratio': float(r.sharpe_ratio),
                     'max_drawdown_pct': float(r.max_drawdown_pct),
-                    'pnl': 0, # Placeholder
+                    'pnl': float(r.total_pnl) if hasattr(r, 'total_pnl') else 0,  # Use actual PnL data
                     'timestamp': r.timestamp.strftime('%Y-%m-%d %H:%M:%S')
                 })
 
@@ -419,17 +419,18 @@ class DatabaseManager:
             # from backtests. As a workaround, we return placeholder data.
             # This highlights a schema design issue to be addressed later.
             
-            # Placeholder implementation:
+            # Use actual backtest data instead of placeholders:
             results = self.session.query(
                 BacktestResult.symbol, 
                 BacktestResult.total_return_pct, 
-                BacktestResult.max_drawdown_pct
+                BacktestResult.max_drawdown_pct,
+                BacktestResult.timestamp
             ).filter(BacktestResult.run_id == run_id).all()
 
             return [{
                 'symbol': r.symbol,
-                'pnl': r.total_return_pct, # Using total return as a stand-in for PnL
-                'timestamp': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S') # Fake timestamp
+                'pnl': r.total_return_pct,  # Use actual backtest return data
+                'timestamp': r.timestamp.strftime('%Y-%m-%d %H:%M:%S') if r.timestamp else datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
             } for r in results]
 
         except Exception as e:

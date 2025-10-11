@@ -485,18 +485,18 @@ class MovingAverageStrategy:
                 # Save signal to database
                 db_manager.save_signal_record(symbol, signal, ma_value, current_price)
                 
-                # Get current positions
-                positions = self.get_current_positions()
-                current_position = positions.get(symbol, {'position_size': 0, 'position_value': 0, 'side': 'N/A'})
+                # Use market_state for position tracking (synced with Bybit)
+                current_position_size = self.market_state[symbol]['position_size']
+                current_position_side = self.market_state[symbol]['side']
 
                 # Only log if signal is not NEUTRAL or we have a position
-                if self.market_state[symbol]['signal'] != 'NEUTRAL' or current_position['position_size'] > 0:
-                    self.logger.info(f"📊 {symbol}: Price=${current_price:.2f}, MA=${ma_value:.2f}, Signal='{self.market_state[symbol]['signal']}', Position={current_position['position_size']} ({current_position['side']})")
+                if self.market_state[symbol]['signal'] != 'NEUTRAL' or current_position_size != 0:
+                    self.logger.info(f"📊 {symbol}: Price=${current_price:.2f}, MA=${ma_value:.2f}, Signal='{self.market_state[symbol]['signal']}', Position={current_position_size} ({current_position_side})")
 
                 # Check if we should exit current position due to stop loss/take profit
                 should_exit, exit_side = self.check_exit_conditions(symbol, current_price)
-                if should_exit and current_position['position_size'] > 0:
-                    position_value = abs(current_position['position_value'])
+                if should_exit and current_position_size != 0:
+                    position_value = abs(self.market_state[symbol]['position_value'])
                     success = self.place_order(symbol, exit_side, position_value)
                     if success:
                         self.logger.info(f"🎯 {exit_side} position closed for {symbol} (Stop Loss/Take Profit)")
@@ -505,40 +505,42 @@ class MovingAverageStrategy:
                     continue  # Skip to next symbol after exit
 
                 # Trading logic with improved risk management
-                if signal == 1 and current_position['position_size'] == 0:
+                if signal == 1 and current_position_size == 0:
                     # Go long - only if we can open position
                     current_volume = self.get_symbol_volume(symbol)
                     if self.risk_manager.can_open_position(symbol, MAX_POSITION_USDT, current_volume):
                         success = self.place_order(symbol, "Buy", MAX_POSITION_USDT)
                         if success:
                             self.logger.info(f"🚀 LONG position opened for {symbol}")
-                            # Update position tracking
+                            # ATOMIC: Update position tracking immediately after successful order
                             self.market_state[symbol]['position_size'] = MAX_POSITION_USDT
                             self.market_state[symbol]['side'] = 'Buy'
                             self.market_state[symbol]['entry_price'] = current_price
+                            self.market_state[symbol]['position_value'] = MAX_POSITION_USDT
                             # Set stop loss and take profit
                             self.set_stop_loss_take_profit(symbol, current_price, MAX_POSITION_USDT, "Buy")
                     else:
                         self.logger.warning(f"⚠️ LONG signal for {symbol} but risk management blocked")
-                elif signal == -1 and current_position['position_size'] == 0:
+                elif signal == -1 and current_position_size == 0:
                     # Go short - only if we can open position
                     current_volume = self.get_symbol_volume(symbol)
                     if self.risk_manager.can_open_position(symbol, MAX_POSITION_USDT, current_volume):
                         success = self.place_order(symbol, "Sell", MAX_POSITION_USDT)
                         if success:
                             self.logger.info(f"🔻 SHORT position opened for {symbol}")
-                            # Update position tracking
+                            # ATOMIC: Update position tracking immediately after successful order
                             self.market_state[symbol]['position_size'] = -MAX_POSITION_USDT
                             self.market_state[symbol]['side'] = 'Sell'
                             self.market_state[symbol]['entry_price'] = current_price
+                            self.market_state[symbol]['position_value'] = -MAX_POSITION_USDT
                             # Set stop loss and take profit
                             self.set_stop_loss_take_profit(symbol, current_price, -MAX_POSITION_USDT, "Sell")
                     else:
                         self.logger.warning(f"⚠️ SHORT signal for {symbol} but risk management blocked")
-                elif signal == 0 and current_position['position_size'] > 0:
+                elif signal == 0 and current_position_size != 0:
                     # Close position when signal goes neutral (MA crossover)
-                    position_value = abs(current_position['position_value'])
-                    side = "Sell" if current_position['side'] == "Buy" else "Buy"
+                    position_value = abs(self.market_state[symbol]['position_value'])
+                    side = "Sell" if current_position_side == "Buy" else "Buy"
                     
                     # Use reduceOnly order with quote currency to close
                     self.logger.info(f"Attempting to close position for {symbol} due to neutral signal.")
@@ -554,7 +556,13 @@ class MovingAverageStrategy:
                         )
                         if response.get('retCode') == 0:
                             self.logger.info(f"🔄 Position closed for {symbol} (MA crossover)")
+                            # ATOMIC: Reset position tracking immediately after successful close
                             self.market_state[symbol]['position_size'] = 0
+                            self.market_state[symbol]['position_value'] = 0
+                            self.market_state[symbol]['side'] = 'N/A'
+                            self.market_state[symbol]['entry_price'] = 0
+                            self.market_state[symbol]['stop_loss'] = 0
+                            self.market_state[symbol]['take_profit'] = 0
                             self.risk_manager.positions_count -= 1
                         else:
                             self.logger.error(f"Failed to close position for {symbol} on neutral signal. Response: {response}")
