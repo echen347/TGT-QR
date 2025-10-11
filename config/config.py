@@ -54,6 +54,7 @@ LOG_RETENTION_DAYS = 30  # Keep 30 days of logs
 # Risk Management - ULTRA CONSERVATIVE APPROACH
 STOP_LOSS_PCT = 0.01  # 1% stop loss (very tight)
 TAKE_PROFIT_PCT = 0.02  # 2% take profit (2:1 reward:risk ratio)
+MAX_POSITION_HOLD_HOURS = 24  # Maximum time to hold a position (24 hours)
 
 # Dashboard Configuration
 DASHBOARD_PORT = 5000

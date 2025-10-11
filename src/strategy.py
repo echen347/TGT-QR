@@ -242,13 +242,17 @@ class MovingAverageStrategy:
                 self.market_state[symbol]['side'] = pos['side']
                 self.market_state[symbol]['entry_price'] = pos['entry_price']
                 self.market_state[symbol]['current_price'] = pos['current_price']
+                # Preserve entry time if it exists, otherwise set to now (for existing positions)
+                if 'entry_time' not in self.market_state[symbol] or self.market_state[symbol]['entry_time'] is None:
+                    from datetime import datetime
+                    self.market_state[symbol]['entry_time'] = datetime.utcnow()
                 self.logger.info(f"✅ Synced {symbol}: {pos['side']} {pos['position_size']} contracts")
                 
         except Exception as e:
             self.logger.error(f"❌ Failed to sync positions with Bybit: {e}")
 
     def check_exit_conditions(self, symbol, current_price):
-        """Check if position should be closed due to stop loss or take profit"""
+        """Check if position should be closed due to stop loss, take profit, or time limit"""
         if self.market_state[symbol]['position_size'] == 0:
             return False, None
 
@@ -256,6 +260,16 @@ class MovingAverageStrategy:
         stop_loss = self.market_state[symbol]['stop_loss']
         take_profit = self.market_state[symbol]['take_profit']
         position_size = self.market_state[symbol]['position_size']
+        
+        # Check time limit (24 hours max hold)
+        from datetime import datetime, timedelta
+        entry_time = self.market_state[symbol].get('entry_time')
+        if entry_time:
+            time_held = datetime.utcnow() - entry_time
+            if time_held > timedelta(hours=MAX_POSITION_HOLD_HOURS):
+                self.logger.warning(f"⏰ Time limit reached for {symbol}: {time_held}")
+                side = "Sell" if position_size > 0 else "Buy"
+                return True, side
 
         # Check stop loss and take profit
         if position_size > 0:  # Long position
@@ -513,10 +527,12 @@ class MovingAverageStrategy:
                         if success:
                             self.logger.info(f"🚀 LONG position opened for {symbol}")
                             # ATOMIC: Update position tracking immediately after successful order
+                            from datetime import datetime
                             self.market_state[symbol]['position_size'] = MAX_POSITION_USDT
                             self.market_state[symbol]['side'] = 'Buy'
                             self.market_state[symbol]['entry_price'] = current_price
                             self.market_state[symbol]['position_value'] = MAX_POSITION_USDT
+                            self.market_state[symbol]['entry_time'] = datetime.utcnow()
                             # Set stop loss and take profit
                             self.set_stop_loss_take_profit(symbol, current_price, MAX_POSITION_USDT, "Buy")
                     else:
@@ -529,10 +545,12 @@ class MovingAverageStrategy:
                         if success:
                             self.logger.info(f"🔻 SHORT position opened for {symbol}")
                             # ATOMIC: Update position tracking immediately after successful order
+                            from datetime import datetime
                             self.market_state[symbol]['position_size'] = -MAX_POSITION_USDT
                             self.market_state[symbol]['side'] = 'Sell'
                             self.market_state[symbol]['entry_price'] = current_price
                             self.market_state[symbol]['position_value'] = -MAX_POSITION_USDT
+                            self.market_state[symbol]['entry_time'] = datetime.utcnow()
                             # Set stop loss and take profit
                             self.set_stop_loss_take_profit(symbol, current_price, -MAX_POSITION_USDT, "Sell")
                     else:
@@ -561,6 +579,7 @@ class MovingAverageStrategy:
                             self.market_state[symbol]['position_value'] = 0
                             self.market_state[symbol]['side'] = 'N/A'
                             self.market_state[symbol]['entry_price'] = 0
+                            self.market_state[symbol]['entry_time'] = None
                             self.market_state[symbol]['stop_loss'] = 0
                             self.market_state[symbol]['take_profit'] = 0
                             self.risk_manager.positions_count -= 1
