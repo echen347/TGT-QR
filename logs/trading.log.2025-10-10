@@ -1,0 +1,1507 @@
+2025-10-10 00:10:48,296 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 00:10:49,746 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121206.00, MA=$121459.73
+2025-10-10 00:10:50,890 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4353.11, MA=$4348.03
+2025-10-10 00:10:51,376 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 00:10:51,376 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 00:10:51,376 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 00:10:51,376 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 00:10:51,376 - TradingStrategy - INFO -     Price: $121206.00
+2025-10-10 00:10:51,376 - TradingStrategy - INFO -     Position: 0
+2025-10-10 00:10:51,376 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 00:10:51,376 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 00:10:51,376 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 00:10:51,376 - TradingStrategy - INFO -     Price: $4353.11
+2025-10-10 00:10:51,376 - TradingStrategy - INFO -     Position: 0
+2025-10-10 00:10:51,376 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 00:10:51,376 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 00:10:51,376 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 00:10:51,376 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 00:10:51,376 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 00:10:51,376 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 00:10:51,376 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 00:10:51,376 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 00:10:51,376 - TradingStrategy - INFO - ============================================================
+2025-10-10 00:25:51,447 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 00:25:52,983 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121211.90, MA=$121460.02
+2025-10-10 00:25:54,606 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4346.47, MA=$4347.70
+2025-10-10 00:25:55,084 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 00:25:55,084 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 00:25:55,084 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 00:25:55,084 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 00:25:55,084 - TradingStrategy - INFO -     Price: $121211.90
+2025-10-10 00:25:55,084 - TradingStrategy - INFO -     Position: 0
+2025-10-10 00:25:55,084 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 00:25:55,085 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 00:25:55,085 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 00:25:55,085 - TradingStrategy - INFO -     Price: $4346.47
+2025-10-10 00:25:55,085 - TradingStrategy - INFO -     Position: 0
+2025-10-10 00:25:55,085 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 00:25:55,085 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 00:25:55,085 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 00:25:55,085 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 00:25:55,085 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 00:25:55,085 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 00:25:55,085 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 00:25:55,085 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 00:25:55,085 - TradingStrategy - INFO - ============================================================
+2025-10-10 00:40:55,142 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 00:40:56,567 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121094.20, MA=$121454.14
+2025-10-10 00:40:57,531 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4339.69, MA=$4347.36
+2025-10-10 00:40:58,158 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 00:40:58,160 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 00:40:58,160 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 00:40:58,160 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 00:40:58,160 - TradingStrategy - INFO -     Price: $121094.20
+2025-10-10 00:40:58,160 - TradingStrategy - INFO -     Position: 0
+2025-10-10 00:40:58,161 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 00:40:58,161 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 00:40:58,161 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 00:40:58,161 - TradingStrategy - INFO -     Price: $4339.69
+2025-10-10 00:40:58,161 - TradingStrategy - INFO -     Position: 0
+2025-10-10 00:40:58,161 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 00:40:58,161 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 00:40:58,161 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 00:40:58,162 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 00:40:58,162 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 00:40:58,162 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 00:40:58,162 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 00:40:58,162 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 00:40:58,162 - TradingStrategy - INFO - ============================================================
+2025-10-10 00:55:58,256 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 00:55:59,612 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121189.60, MA=$121458.91
+2025-10-10 00:56:00,407 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4341.15, MA=$4347.43
+2025-10-10 00:56:01,408 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 00:56:01,408 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 00:56:01,408 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 00:56:01,408 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 00:56:01,409 - TradingStrategy - INFO -     Price: $121189.60
+2025-10-10 00:56:01,409 - TradingStrategy - INFO -     Position: 0
+2025-10-10 00:56:01,409 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 00:56:01,409 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 00:56:01,409 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 00:56:01,409 - TradingStrategy - INFO -     Price: $4341.15
+2025-10-10 00:56:01,409 - TradingStrategy - INFO -     Position: 0
+2025-10-10 00:56:01,409 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 00:56:01,409 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 00:56:01,409 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 00:56:01,409 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 00:56:01,409 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 00:56:01,409 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 00:56:01,409 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 00:56:01,409 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 00:56:01,409 - TradingStrategy - INFO - ============================================================
+2025-10-10 01:11:01,527 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 01:11:03,021 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121029.30, MA=$121423.91
+2025-10-10 01:11:03,661 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4333.09, MA=$4347.53
+2025-10-10 01:11:04,148 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 01:11:04,151 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 01:11:04,155 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 01:11:04,158 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 01:11:04,158 - TradingStrategy - INFO -     Price: $121029.30
+2025-10-10 01:11:04,158 - TradingStrategy - INFO -     Position: 0
+2025-10-10 01:11:04,158 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 01:11:04,158 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 01:11:04,158 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 01:11:04,158 - TradingStrategy - INFO -     Price: $4333.09
+2025-10-10 01:11:04,159 - TradingStrategy - INFO -     Position: 0
+2025-10-10 01:11:04,159 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 01:11:04,159 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 01:11:04,159 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 01:11:04,159 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 01:11:04,159 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 01:11:04,159 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 01:11:04,159 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 01:11:04,159 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 01:11:04,159 - TradingStrategy - INFO - ============================================================
+2025-10-10 01:26:04,183 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 01:26:05,526 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121416.60, MA=$121443.28
+2025-10-10 01:26:06,787 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4357.10, MA=$4348.73
+2025-10-10 01:26:07,144 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 01:26:07,144 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 01:26:07,144 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 01:26:07,144 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 01:26:07,144 - TradingStrategy - INFO -     Price: $121416.60
+2025-10-10 01:26:07,144 - TradingStrategy - INFO -     Position: 0
+2025-10-10 01:26:07,145 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 01:26:07,145 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 01:26:07,145 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 01:26:07,145 - TradingStrategy - INFO -     Price: $4357.10
+2025-10-10 01:26:07,145 - TradingStrategy - INFO -     Position: 0
+2025-10-10 01:26:07,145 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 01:26:07,145 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 01:26:07,145 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 01:26:07,145 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 01:26:07,145 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 01:26:07,145 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 01:26:07,145 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 01:26:07,145 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 01:26:07,145 - TradingStrategy - INFO - ============================================================
+2025-10-10 01:41:07,145 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 01:41:08,404 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121369.80, MA=$121440.94
+2025-10-10 01:41:09,323 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4352.81, MA=$4348.51
+2025-10-10 01:41:09,977 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 01:41:09,978 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 01:41:09,978 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 01:41:09,978 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 01:41:09,978 - TradingStrategy - INFO -     Price: $121369.80
+2025-10-10 01:41:09,978 - TradingStrategy - INFO -     Position: 0
+2025-10-10 01:41:09,978 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 01:41:09,978 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 01:41:09,978 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 01:41:09,978 - TradingStrategy - INFO -     Price: $4352.81
+2025-10-10 01:41:09,978 - TradingStrategy - INFO -     Position: 0
+2025-10-10 01:41:09,978 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 01:41:09,978 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 01:41:09,978 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 01:41:09,978 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 01:41:09,978 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 01:41:09,978 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 01:41:09,978 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 01:41:09,978 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 01:41:09,978 - TradingStrategy - INFO - ============================================================
+2025-10-10 01:56:10,004 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 01:56:11,242 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121536.00, MA=$121449.25
+2025-10-10 01:56:12,528 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4365.80, MA=$4349.16
+2025-10-10 01:56:12,869 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 01:56:12,869 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 01:56:12,869 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 01:56:12,869 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 01:56:12,869 - TradingStrategy - INFO -     Price: $121536.00
+2025-10-10 01:56:12,869 - TradingStrategy - INFO -     Position: 0
+2025-10-10 01:56:12,869 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 01:56:12,869 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 01:56:12,869 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 01:56:12,869 - TradingStrategy - INFO -     Price: $4365.80
+2025-10-10 01:56:12,869 - TradingStrategy - INFO -     Position: 0
+2025-10-10 01:56:12,869 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 01:56:12,869 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 01:56:12,869 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 01:56:12,869 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 01:56:12,870 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 01:56:12,870 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 01:56:12,870 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 01:56:12,870 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 01:56:12,870 - TradingStrategy - INFO - ============================================================
+2025-10-10 02:11:12,877 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 02:11:14,302 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121546.00, MA=$121421.76
+2025-10-10 02:11:15,546 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4363.45, MA=$4349.78
+2025-10-10 02:11:16,930 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 02:11:16,931 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 02:11:16,931 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 02:11:16,931 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 02:11:16,931 - TradingStrategy - INFO -     Price: $121546.00
+2025-10-10 02:11:16,931 - TradingStrategy - INFO -     Position: 0
+2025-10-10 02:11:16,931 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 02:11:16,931 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 02:11:16,932 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 02:11:16,932 - TradingStrategy - INFO -     Price: $4363.45
+2025-10-10 02:11:16,932 - TradingStrategy - INFO -     Position: 0
+2025-10-10 02:11:16,932 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 02:11:16,932 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 02:11:16,932 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 02:11:16,932 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 02:11:16,932 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 02:11:16,932 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 02:11:16,932 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 02:11:16,932 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 02:11:16,932 - TradingStrategy - INFO - ============================================================
+2025-10-10 02:26:17,008 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 02:26:18,742 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121582.20, MA=$121423.57
+2025-10-10 02:26:19,603 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4354.56, MA=$4349.34
+2025-10-10 02:26:20,045 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 02:26:20,045 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 02:26:20,045 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 02:26:20,045 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 02:26:20,045 - TradingStrategy - INFO -     Price: $121582.20
+2025-10-10 02:26:20,046 - TradingStrategy - INFO -     Position: 0
+2025-10-10 02:26:20,046 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 02:26:20,046 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 02:26:20,046 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 02:26:20,046 - TradingStrategy - INFO -     Price: $4354.56
+2025-10-10 02:26:20,046 - TradingStrategy - INFO -     Position: 0
+2025-10-10 02:26:20,046 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 02:26:20,046 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 02:26:20,046 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 02:26:20,046 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 02:26:20,046 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 02:26:20,046 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 02:26:20,046 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 02:26:20,046 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 02:26:20,046 - TradingStrategy - INFO - ============================================================
+2025-10-10 02:41:20,125 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 02:41:21,557 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121660.00, MA=$121427.46
+2025-10-10 02:41:22,426 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4348.60, MA=$4349.04
+2025-10-10 02:41:23,083 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 02:41:23,083 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 02:41:23,083 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 02:41:23,084 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 02:41:23,084 - TradingStrategy - INFO -     Price: $121660.00
+2025-10-10 02:41:23,084 - TradingStrategy - INFO -     Position: 0
+2025-10-10 02:41:23,084 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 02:41:23,084 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 02:41:23,084 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 02:41:23,084 - TradingStrategy - INFO -     Price: $4348.60
+2025-10-10 02:41:23,084 - TradingStrategy - INFO -     Position: 0
+2025-10-10 02:41:23,084 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 02:41:23,084 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 02:41:23,084 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 02:41:23,084 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 02:41:23,084 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 02:41:23,084 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 02:41:23,084 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 02:41:23,084 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 02:41:23,085 - TradingStrategy - INFO - ============================================================
+2025-10-10 02:56:24,920 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 02:56:30,314 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121374.90, MA=$121413.21
+2025-10-10 02:56:31,275 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4323.38, MA=$4347.78
+2025-10-10 02:56:31,648 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 02:56:31,648 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 02:56:31,648 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 02:56:31,649 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 02:56:31,649 - TradingStrategy - INFO -     Price: $121374.90
+2025-10-10 02:56:31,649 - TradingStrategy - INFO -     Position: 0
+2025-10-10 02:56:31,649 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 02:56:31,652 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 02:56:31,653 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 02:56:31,653 - TradingStrategy - INFO -     Price: $4323.38
+2025-10-10 02:56:31,654 - TradingStrategy - INFO -     Position: 0
+2025-10-10 02:56:31,654 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 02:56:31,654 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 02:56:31,654 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 02:56:31,654 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 02:56:31,654 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 02:56:31,655 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 02:56:31,655 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 02:56:31,655 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 02:56:31,656 - TradingStrategy - INFO - ============================================================
+2025-10-10 03:11:32,362 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 03:11:35,229 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121222.50, MA=$121338.23
+2025-10-10 03:11:36,084 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4321.93, MA=$4345.45
+2025-10-10 03:11:36,915 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 03:11:36,918 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 03:11:36,918 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 03:11:36,918 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 03:11:36,919 - TradingStrategy - INFO -     Price: $121222.50
+2025-10-10 03:11:36,919 - TradingStrategy - INFO -     Position: 0
+2025-10-10 03:11:36,919 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 03:11:36,919 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 03:11:36,920 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 03:11:36,920 - TradingStrategy - INFO -     Price: $4321.93
+2025-10-10 03:11:36,920 - TradingStrategy - INFO -     Position: 0
+2025-10-10 03:11:36,920 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 03:11:36,920 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 03:11:36,920 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 03:11:36,921 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 03:11:36,921 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 03:11:36,923 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 03:11:36,933 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 03:11:36,934 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 03:11:36,934 - TradingStrategy - INFO - ============================================================
+2025-10-10 03:26:37,009 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 03:26:38,727 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121243.50, MA=$121339.27
+2025-10-10 03:26:39,572 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4323.24, MA=$4345.52
+2025-10-10 03:26:40,690 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 03:26:40,692 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 03:26:40,693 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 03:26:40,693 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 03:26:40,693 - TradingStrategy - INFO -     Price: $121243.50
+2025-10-10 03:26:40,693 - TradingStrategy - INFO -     Position: 0
+2025-10-10 03:26:40,693 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 03:26:40,694 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 03:26:40,694 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 03:26:40,694 - TradingStrategy - INFO -     Price: $4323.24
+2025-10-10 03:26:40,694 - TradingStrategy - INFO -     Position: 0
+2025-10-10 03:26:40,694 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 03:26:40,694 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 03:26:40,694 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 03:26:40,694 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 03:26:40,694 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 03:26:40,694 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 03:26:40,694 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 03:26:40,694 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 03:26:40,694 - TradingStrategy - INFO - ============================================================
+2025-10-10 03:41:40,902 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 03:41:42,630 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121111.30, MA=$121332.66
+2025-10-10 03:41:43,382 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4331.52, MA=$4345.93
+2025-10-10 03:41:43,749 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 03:41:43,749 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 03:41:43,749 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 03:41:43,749 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 03:41:43,749 - TradingStrategy - INFO -     Price: $121111.30
+2025-10-10 03:41:43,749 - TradingStrategy - INFO -     Position: 0
+2025-10-10 03:41:43,750 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 03:41:43,750 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 03:41:43,750 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 03:41:43,750 - TradingStrategy - INFO -     Price: $4331.52
+2025-10-10 03:41:43,750 - TradingStrategy - INFO -     Position: 0
+2025-10-10 03:41:43,750 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 03:41:43,750 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 03:41:43,750 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 03:41:43,750 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 03:41:43,750 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 03:41:43,750 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 03:41:43,750 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 03:41:43,750 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 03:41:43,750 - TradingStrategy - INFO - ============================================================
+2025-10-10 03:56:43,779 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 03:56:45,203 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121030.00, MA=$121328.60
+2025-10-10 03:56:45,939 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4325.11, MA=$4345.61
+2025-10-10 03:56:46,324 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 03:56:46,325 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 03:56:46,325 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 03:56:46,325 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 03:56:46,325 - TradingStrategy - INFO -     Price: $121030.00
+2025-10-10 03:56:46,325 - TradingStrategy - INFO -     Position: 0
+2025-10-10 03:56:46,325 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 03:56:46,325 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 03:56:46,325 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 03:56:46,325 - TradingStrategy - INFO -     Price: $4325.11
+2025-10-10 03:56:46,325 - TradingStrategy - INFO -     Position: 0
+2025-10-10 03:56:46,326 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 03:56:46,326 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 03:56:46,326 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 03:56:46,326 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 03:56:46,326 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 03:56:46,326 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 03:56:46,326 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 03:56:46,326 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 03:56:46,326 - TradingStrategy - INFO - ============================================================
+2025-10-10 04:11:46,347 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 04:11:47,750 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121107.00, MA=$121202.49
+2025-10-10 04:11:48,503 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4322.68, MA=$4341.47
+2025-10-10 04:11:48,917 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 04:11:48,918 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 04:11:48,918 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 04:11:48,918 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 04:11:48,918 - TradingStrategy - INFO -     Price: $121107.00
+2025-10-10 04:11:48,918 - TradingStrategy - INFO -     Position: 0
+2025-10-10 04:11:48,918 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 04:11:48,918 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 04:11:48,918 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 04:11:48,918 - TradingStrategy - INFO -     Price: $4322.68
+2025-10-10 04:11:48,918 - TradingStrategy - INFO -     Position: 0
+2025-10-10 04:11:48,918 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 04:11:48,919 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 04:11:48,919 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 04:11:48,919 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 04:11:48,919 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 04:11:48,920 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 04:11:48,920 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 04:11:48,920 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 04:11:48,921 - TradingStrategy - INFO - ============================================================
+2025-10-10 04:26:48,968 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 04:26:50,767 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121218.10, MA=$121208.04
+2025-10-10 04:26:52,838 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4331.74, MA=$4341.92
+2025-10-10 04:26:55,394 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 04:26:55,395 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 04:26:55,395 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 04:26:55,395 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 04:26:55,395 - TradingStrategy - INFO -     Price: $121218.10
+2025-10-10 04:26:55,396 - TradingStrategy - INFO -     Position: 0
+2025-10-10 04:26:55,396 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 04:26:55,396 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 04:26:55,396 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 04:26:55,396 - TradingStrategy - INFO -     Price: $4331.74
+2025-10-10 04:26:55,396 - TradingStrategy - INFO -     Position: 0
+2025-10-10 04:26:55,396 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 04:26:55,396 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 04:26:55,396 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 04:26:55,397 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 04:26:55,397 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 04:26:55,397 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 04:26:55,397 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 04:26:55,397 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 04:26:55,397 - TradingStrategy - INFO - ============================================================
+2025-10-10 04:41:55,427 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 04:41:57,241 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121172.90, MA=$121205.78
+2025-10-10 04:41:59,200 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4324.57, MA=$4341.56
+2025-10-10 04:42:00,532 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 04:42:00,532 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 04:42:00,532 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 04:42:00,532 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 04:42:00,532 - TradingStrategy - INFO -     Price: $121172.90
+2025-10-10 04:42:00,532 - TradingStrategy - INFO -     Position: 0
+2025-10-10 04:42:00,532 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 04:42:00,532 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 04:42:00,533 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 04:42:00,533 - TradingStrategy - INFO -     Price: $4324.57
+2025-10-10 04:42:00,533 - TradingStrategy - INFO -     Position: 0
+2025-10-10 04:42:00,533 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 04:42:00,533 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 04:42:00,533 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 04:42:00,533 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 04:42:00,533 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 04:42:00,533 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 04:42:00,533 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 04:42:00,533 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 04:42:00,533 - TradingStrategy - INFO - ============================================================
+2025-10-10 04:57:00,595 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 04:57:02,151 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121499.90, MA=$121222.13
+2025-10-10 04:57:04,103 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4343.50, MA=$4342.51
+2025-10-10 04:57:05,426 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 04:57:05,427 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 04:57:05,427 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 04:57:05,427 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 04:57:05,427 - TradingStrategy - INFO -     Price: $121499.90
+2025-10-10 04:57:05,427 - TradingStrategy - INFO -     Position: 0
+2025-10-10 04:57:05,427 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 04:57:05,427 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 04:57:05,428 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 04:57:05,428 - TradingStrategy - INFO -     Price: $4343.50
+2025-10-10 04:57:05,428 - TradingStrategy - INFO -     Position: 0
+2025-10-10 04:57:05,428 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 04:57:05,428 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 04:57:05,428 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 04:57:05,428 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 04:57:05,428 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 04:57:05,428 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 04:57:05,429 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 04:57:05,429 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 04:57:05,429 - TradingStrategy - INFO - ============================================================
+2025-10-10 05:12:05,478 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 05:12:14,338 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121531.50, MA=$121184.76
+2025-10-10 05:12:23,708 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4339.56, MA=$4342.09
+2025-10-10 05:12:31,007 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 05:12:31,008 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 05:12:31,008 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 05:12:31,008 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 05:12:31,008 - TradingStrategy - INFO -     Price: $121531.50
+2025-10-10 05:12:31,008 - TradingStrategy - INFO -     Position: 0
+2025-10-10 05:12:31,009 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 05:12:31,009 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 05:12:31,009 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 05:12:31,009 - TradingStrategy - INFO -     Price: $4339.56
+2025-10-10 05:12:31,009 - TradingStrategy - INFO -     Position: 0
+2025-10-10 05:12:31,009 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 05:12:31,009 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 05:12:31,009 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 05:12:31,009 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 05:12:31,018 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 05:12:31,019 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 05:12:31,019 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 05:12:31,019 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 05:12:31,019 - TradingStrategy - INFO - ============================================================
+2025-10-10 09:21:11,020 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 09:21:12,960 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121891.30, MA=$121340.11
+2025-10-10 09:21:19,853 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4363.21, MA=$4347.56
+2025-10-10 09:27:58,698 - TradingStrategy - ERROR - Exception getting volume for ETHUSDT: HTTPSConnectionPool(host='api.bybit.com', port=443): Read timed out.
+2025-10-10 09:27:58,704 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 09:27:58,705 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 09:27:58,705 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 09:27:58,705 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 09:27:58,706 - TradingStrategy - INFO -     Price: $121891.30
+2025-10-10 09:27:58,706 - TradingStrategy - INFO -     Position: 0
+2025-10-10 09:27:58,706 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 09:27:58,706 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 09:27:58,706 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 09:27:58,706 - TradingStrategy - INFO -     Price: $4363.21
+2025-10-10 09:27:58,706 - TradingStrategy - INFO -     Position: 0
+2025-10-10 09:27:58,706 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 09:27:58,706 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 09:27:58,707 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 09:27:58,707 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 09:27:58,707 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 09:27:58,707 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 09:27:58,707 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 09:27:58,707 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 09:27:58,707 - TradingStrategy - INFO - ============================================================
+2025-10-10 09:49:56,394 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 09:49:56,826 - TradingStrategy - ERROR - Exception getting prices for BTCUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 13:49:56).
+Request → GET https://api.bybit.com/v5/market/kline: category=linear&interval=60&limit=30&symbol=BTCUSDT.
+2025-10-10 09:49:56,827 - TradingStrategy - WARNING - Could not fetch price data for BTCUSDT. Skipping this symbol for now.
+2025-10-10 09:49:56,833 - TradingStrategy - ERROR - Exception getting prices for ETHUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 13:49:56).
+Request → GET https://api.bybit.com/v5/market/kline: category=linear&interval=60&limit=30&symbol=ETHUSDT.
+2025-10-10 09:49:56,833 - TradingStrategy - WARNING - Could not fetch price data for ETHUSDT. Skipping this symbol for now.
+2025-10-10 09:49:56,985 - TradingStrategy - ERROR - Exception getting positions: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 13:49:56).
+Request → GET https://api.bybit.com/v5/position/list: category=linear&settleCoin=USDT.
+2025-10-10 09:49:56,986 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121891.30, MA=$121340.11
+2025-10-10 09:49:56,994 - TradingStrategy - ERROR - Exception getting volume for BTCUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 13:49:56).
+Request → GET https://api.bybit.com/v5/market/tickers: category=linear.
+2025-10-10 09:49:57,008 - TradingStrategy - ERROR - Exception getting positions: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 13:49:57).
+Request → GET https://api.bybit.com/v5/position/list: category=linear&settleCoin=USDT.
+2025-10-10 09:49:57,008 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4363.21, MA=$4347.56
+2025-10-10 09:49:57,033 - TradingStrategy - ERROR - Exception getting volume for ETHUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 13:49:57).
+Request → GET https://api.bybit.com/v5/market/tickers: category=linear.
+2025-10-10 09:49:57,033 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 09:49:57,033 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 09:49:57,033 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 09:49:57,033 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 09:49:57,033 - TradingStrategy - INFO -     Price: $121891.30
+2025-10-10 09:49:57,033 - TradingStrategy - INFO -     Position: 0
+2025-10-10 09:49:57,033 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 09:49:57,033 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 09:49:57,033 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 09:49:57,033 - TradingStrategy - INFO -     Price: $4363.21
+2025-10-10 09:49:57,033 - TradingStrategy - INFO -     Position: 0
+2025-10-10 09:49:57,033 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 09:49:57,033 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 09:49:57,033 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 09:49:57,033 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 09:49:57,034 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 09:49:57,034 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 09:49:57,034 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 09:49:57,034 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 09:49:57,034 - TradingStrategy - INFO - ============================================================
+2025-10-10 10:04:57,078 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 10:04:57,379 - TradingStrategy - ERROR - Exception getting prices for BTCUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 14:04:57).
+Request → GET https://api.bybit.com/v5/market/kline: category=linear&interval=60&limit=30&symbol=BTCUSDT.
+2025-10-10 10:04:57,380 - TradingStrategy - WARNING - Could not fetch price data for BTCUSDT. Skipping this symbol for now.
+2025-10-10 10:04:57,388 - TradingStrategy - ERROR - Exception getting prices for ETHUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 14:04:57).
+Request → GET https://api.bybit.com/v5/market/kline: category=linear&interval=60&limit=30&symbol=ETHUSDT.
+2025-10-10 10:04:57,388 - TradingStrategy - WARNING - Could not fetch price data for ETHUSDT. Skipping this symbol for now.
+2025-10-10 10:04:57,580 - TradingStrategy - ERROR - Exception getting positions: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 14:04:57).
+Request → GET https://api.bybit.com/v5/position/list: category=linear&settleCoin=USDT.
+2025-10-10 10:04:57,581 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121891.30, MA=$121340.11
+2025-10-10 10:04:57,586 - TradingStrategy - ERROR - Exception getting volume for BTCUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 14:04:57).
+Request → GET https://api.bybit.com/v5/market/tickers: category=linear.
+2025-10-10 10:04:57,595 - TradingStrategy - ERROR - Exception getting positions: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 14:04:57).
+Request → GET https://api.bybit.com/v5/position/list: category=linear&settleCoin=USDT.
+2025-10-10 10:04:57,595 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4363.21, MA=$4347.56
+2025-10-10 10:04:57,605 - TradingStrategy - ERROR - Exception getting volume for ETHUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 14:04:57).
+Request → GET https://api.bybit.com/v5/market/tickers: category=linear.
+2025-10-10 10:04:57,605 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 10:04:57,605 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 10:04:57,605 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 10:04:57,605 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 10:04:57,605 - TradingStrategy - INFO -     Price: $121891.30
+2025-10-10 10:04:57,605 - TradingStrategy - INFO -     Position: 0
+2025-10-10 10:04:57,605 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 10:04:57,605 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 10:04:57,606 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 10:04:57,606 - TradingStrategy - INFO -     Price: $4363.21
+2025-10-10 10:04:57,606 - TradingStrategy - INFO -     Position: 0
+2025-10-10 10:04:57,606 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 10:04:57,606 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 10:04:57,606 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 10:04:57,606 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 10:04:57,606 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 10:04:57,606 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 10:04:57,606 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 10:04:57,606 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 10:04:57,606 - TradingStrategy - INFO - ============================================================
+2025-10-10 10:19:57,682 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 10:19:58,110 - TradingStrategy - ERROR - Exception getting prices for BTCUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 14:19:58).
+Request → GET https://api.bybit.com/v5/market/kline: category=linear&interval=60&limit=30&symbol=BTCUSDT.
+2025-10-10 10:19:58,110 - TradingStrategy - WARNING - Could not fetch price data for BTCUSDT. Skipping this symbol for now.
+2025-10-10 10:19:58,119 - TradingStrategy - ERROR - Exception getting prices for ETHUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 14:19:58).
+Request → GET https://api.bybit.com/v5/market/kline: category=linear&interval=60&limit=30&symbol=ETHUSDT.
+2025-10-10 10:19:58,119 - TradingStrategy - WARNING - Could not fetch price data for ETHUSDT. Skipping this symbol for now.
+2025-10-10 10:19:58,281 - TradingStrategy - ERROR - Exception getting positions: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 14:19:58).
+Request → GET https://api.bybit.com/v5/position/list: category=linear&settleCoin=USDT.
+2025-10-10 10:19:58,281 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121891.30, MA=$121340.11
+2025-10-10 10:19:58,287 - TradingStrategy - ERROR - Exception getting volume for BTCUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 14:19:58).
+Request → GET https://api.bybit.com/v5/market/tickers: category=linear.
+2025-10-10 10:19:58,292 - TradingStrategy - ERROR - Exception getting positions: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 14:19:58).
+Request → GET https://api.bybit.com/v5/position/list: category=linear&settleCoin=USDT.
+2025-10-10 10:19:58,292 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4363.21, MA=$4347.56
+2025-10-10 10:19:58,296 - TradingStrategy - ERROR - Exception getting volume for ETHUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 14:19:58).
+Request → GET https://api.bybit.com/v5/market/tickers: category=linear.
+2025-10-10 10:19:58,296 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 10:19:58,296 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 10:19:58,296 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 10:19:58,296 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 10:19:58,296 - TradingStrategy - INFO -     Price: $121891.30
+2025-10-10 10:19:58,296 - TradingStrategy - INFO -     Position: 0
+2025-10-10 10:19:58,296 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 10:19:58,296 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 10:19:58,297 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 10:19:58,297 - TradingStrategy - INFO -     Price: $4363.21
+2025-10-10 10:19:58,297 - TradingStrategy - INFO -     Position: 0
+2025-10-10 10:19:58,297 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 10:19:58,297 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 10:19:58,297 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 10:19:58,297 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 10:19:58,297 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 10:19:58,297 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 10:19:58,297 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 10:19:58,297 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 10:19:58,297 - TradingStrategy - INFO - ============================================================
+2025-10-10 10:34:58,339 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 10:34:58,675 - TradingStrategy - ERROR - Exception getting prices for BTCUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 14:34:58).
+Request → GET https://api.bybit.com/v5/market/kline: category=linear&interval=60&limit=30&symbol=BTCUSDT.
+2025-10-10 10:34:58,675 - TradingStrategy - WARNING - Could not fetch price data for BTCUSDT. Skipping this symbol for now.
+2025-10-10 10:34:58,683 - TradingStrategy - ERROR - Exception getting prices for ETHUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 14:34:58).
+Request → GET https://api.bybit.com/v5/market/kline: category=linear&interval=60&limit=30&symbol=ETHUSDT.
+2025-10-10 10:34:58,683 - TradingStrategy - WARNING - Could not fetch price data for ETHUSDT. Skipping this symbol for now.
+2025-10-10 10:34:58,774 - TradingStrategy - ERROR - Exception getting positions: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 14:34:58).
+Request → GET https://api.bybit.com/v5/position/list: category=linear&settleCoin=USDT.
+2025-10-10 10:34:58,775 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121891.30, MA=$121340.11
+2025-10-10 10:34:58,779 - TradingStrategy - ERROR - Exception getting volume for BTCUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 14:34:58).
+Request → GET https://api.bybit.com/v5/market/tickers: category=linear.
+2025-10-10 10:34:58,785 - TradingStrategy - ERROR - Exception getting positions: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 14:34:58).
+Request → GET https://api.bybit.com/v5/position/list: category=linear&settleCoin=USDT.
+2025-10-10 10:34:58,785 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4363.21, MA=$4347.56
+2025-10-10 10:34:58,791 - TradingStrategy - ERROR - Exception getting volume for ETHUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 14:34:58).
+Request → GET https://api.bybit.com/v5/market/tickers: category=linear.
+2025-10-10 10:34:58,791 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 10:34:58,791 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 10:34:58,791 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 10:34:58,791 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 10:34:58,791 - TradingStrategy - INFO -     Price: $121891.30
+2025-10-10 10:34:58,791 - TradingStrategy - INFO -     Position: 0
+2025-10-10 10:34:58,791 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 10:34:58,791 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 10:34:58,791 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 10:34:58,791 - TradingStrategy - INFO -     Price: $4363.21
+2025-10-10 10:34:58,791 - TradingStrategy - INFO -     Position: 0
+2025-10-10 10:34:58,791 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 10:34:58,791 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 10:34:58,791 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 10:34:58,791 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 10:34:58,791 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 10:34:58,791 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 10:34:58,791 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 10:34:58,791 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 10:34:58,792 - TradingStrategy - INFO - ============================================================
+2025-10-10 10:49:58,836 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 10:49:59,090 - TradingStrategy - ERROR - Exception getting prices for BTCUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 14:49:59).
+Request → GET https://api.bybit.com/v5/market/kline: category=linear&interval=60&limit=30&symbol=BTCUSDT.
+2025-10-10 10:49:59,090 - TradingStrategy - WARNING - Could not fetch price data for BTCUSDT. Skipping this symbol for now.
+2025-10-10 10:49:59,098 - TradingStrategy - ERROR - Exception getting prices for ETHUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 14:49:59).
+Request → GET https://api.bybit.com/v5/market/kline: category=linear&interval=60&limit=30&symbol=ETHUSDT.
+2025-10-10 10:49:59,099 - TradingStrategy - WARNING - Could not fetch price data for ETHUSDT. Skipping this symbol for now.
+2025-10-10 10:49:59,228 - TradingStrategy - ERROR - Exception getting positions: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 14:49:59).
+Request → GET https://api.bybit.com/v5/position/list: category=linear&settleCoin=USDT.
+2025-10-10 10:49:59,229 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121891.30, MA=$121340.11
+2025-10-10 10:49:59,235 - TradingStrategy - ERROR - Exception getting volume for BTCUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 14:49:59).
+Request → GET https://api.bybit.com/v5/market/tickers: category=linear.
+2025-10-10 10:49:59,243 - TradingStrategy - ERROR - Exception getting positions: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 14:49:59).
+Request → GET https://api.bybit.com/v5/position/list: category=linear&settleCoin=USDT.
+2025-10-10 10:49:59,243 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4363.21, MA=$4347.56
+2025-10-10 10:49:59,248 - TradingStrategy - ERROR - Exception getting volume for ETHUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 14:49:59).
+Request → GET https://api.bybit.com/v5/market/tickers: category=linear.
+2025-10-10 10:49:59,248 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 10:49:59,248 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 10:49:59,248 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 10:49:59,248 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 10:49:59,248 - TradingStrategy - INFO -     Price: $121891.30
+2025-10-10 10:49:59,248 - TradingStrategy - INFO -     Position: 0
+2025-10-10 10:49:59,248 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 10:49:59,248 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 10:49:59,248 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 10:49:59,248 - TradingStrategy - INFO -     Price: $4363.21
+2025-10-10 10:49:59,248 - TradingStrategy - INFO -     Position: 0
+2025-10-10 10:49:59,248 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 10:49:59,248 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 10:49:59,248 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 10:49:59,248 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 10:49:59,248 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 10:49:59,248 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 10:49:59,249 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 10:49:59,249 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 10:49:59,249 - TradingStrategy - INFO - ============================================================
+2025-10-10 11:06:52,945 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 11:06:53,056 - TradingStrategy - ERROR - Exception getting prices for BTCUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 15:06:53).
+Request → GET https://api.bybit.com/v5/market/kline: category=linear&interval=60&limit=30&symbol=BTCUSDT.
+2025-10-10 11:06:53,057 - TradingStrategy - WARNING - Could not fetch price data for BTCUSDT. Skipping this symbol for now.
+2025-10-10 11:06:53,063 - TradingStrategy - ERROR - Exception getting prices for ETHUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 15:06:53).
+Request → GET https://api.bybit.com/v5/market/kline: category=linear&interval=60&limit=30&symbol=ETHUSDT.
+2025-10-10 11:06:53,063 - TradingStrategy - WARNING - Could not fetch price data for ETHUSDT. Skipping this symbol for now.
+2025-10-10 11:06:53,150 - TradingStrategy - ERROR - Exception getting positions: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 15:06:53).
+Request → GET https://api.bybit.com/v5/position/list: category=linear&settleCoin=USDT.
+2025-10-10 11:06:53,151 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121891.30, MA=$121340.11
+2025-10-10 11:06:53,155 - TradingStrategy - ERROR - Exception getting volume for BTCUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 15:06:53).
+Request → GET https://api.bybit.com/v5/market/tickers: category=linear.
+2025-10-10 11:06:53,163 - TradingStrategy - ERROR - Exception getting positions: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 15:06:53).
+Request → GET https://api.bybit.com/v5/position/list: category=linear&settleCoin=USDT.
+2025-10-10 11:06:53,163 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4363.21, MA=$4347.56
+2025-10-10 11:06:53,167 - TradingStrategy - ERROR - Exception getting volume for ETHUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 15:06:53).
+Request → GET https://api.bybit.com/v5/market/tickers: category=linear.
+2025-10-10 11:06:53,167 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 11:06:53,167 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 11:06:53,167 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 11:06:53,167 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 11:06:53,167 - TradingStrategy - INFO -     Price: $121891.30
+2025-10-10 11:06:53,167 - TradingStrategy - INFO -     Position: 0
+2025-10-10 11:06:53,167 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 11:06:53,167 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 11:06:53,167 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 11:06:53,168 - TradingStrategy - INFO -     Price: $4363.21
+2025-10-10 11:06:53,168 - TradingStrategy - INFO -     Position: 0
+2025-10-10 11:06:53,168 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 11:06:53,168 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 11:06:53,168 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 11:06:53,168 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 11:06:53,168 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 11:06:53,168 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 11:06:53,168 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 11:06:53,168 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 11:06:53,168 - TradingStrategy - INFO - ============================================================
+2025-10-10 11:21:53,225 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 11:21:53,318 - TradingStrategy - ERROR - Exception getting prices for BTCUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 15:21:53).
+Request → GET https://api.bybit.com/v5/market/kline: category=linear&interval=60&limit=30&symbol=BTCUSDT.
+2025-10-10 11:21:53,318 - TradingStrategy - WARNING - Could not fetch price data for BTCUSDT. Skipping this symbol for now.
+2025-10-10 11:21:53,327 - TradingStrategy - ERROR - Exception getting prices for ETHUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 15:21:53).
+Request → GET https://api.bybit.com/v5/market/kline: category=linear&interval=60&limit=30&symbol=ETHUSDT.
+2025-10-10 11:21:53,327 - TradingStrategy - WARNING - Could not fetch price data for ETHUSDT. Skipping this symbol for now.
+2025-10-10 11:21:53,382 - TradingStrategy - ERROR - Exception getting positions: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 15:21:53).
+Request → GET https://api.bybit.com/v5/position/list: category=linear&settleCoin=USDT.
+2025-10-10 11:21:53,382 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121891.30, MA=$121340.11
+2025-10-10 11:21:53,389 - TradingStrategy - ERROR - Exception getting volume for BTCUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 15:21:53).
+Request → GET https://api.bybit.com/v5/market/tickers: category=linear.
+2025-10-10 11:21:53,396 - TradingStrategy - ERROR - Exception getting positions: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 15:21:53).
+Request → GET https://api.bybit.com/v5/position/list: category=linear&settleCoin=USDT.
+2025-10-10 11:21:53,396 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4363.21, MA=$4347.56
+2025-10-10 11:21:53,400 - TradingStrategy - ERROR - Exception getting volume for ETHUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 15:21:53).
+Request → GET https://api.bybit.com/v5/market/tickers: category=linear.
+2025-10-10 11:21:53,401 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 11:21:53,401 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 11:21:53,401 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 11:21:53,401 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 11:21:53,401 - TradingStrategy - INFO -     Price: $121891.30
+2025-10-10 11:21:53,401 - TradingStrategy - INFO -     Position: 0
+2025-10-10 11:21:53,401 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 11:21:53,401 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 11:21:53,401 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 11:21:53,401 - TradingStrategy - INFO -     Price: $4363.21
+2025-10-10 11:21:53,401 - TradingStrategy - INFO -     Position: 0
+2025-10-10 11:21:53,401 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 11:21:53,401 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 11:21:53,401 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 11:21:53,401 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 11:21:53,402 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 11:21:53,402 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 11:21:53,402 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 11:21:53,402 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 11:21:53,402 - TradingStrategy - INFO - ============================================================
+2025-10-10 11:36:53,410 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 11:36:53,547 - TradingStrategy - ERROR - Exception getting prices for BTCUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 15:36:53).
+Request → GET https://api.bybit.com/v5/market/kline: category=linear&interval=60&limit=30&symbol=BTCUSDT.
+2025-10-10 11:36:53,547 - TradingStrategy - WARNING - Could not fetch price data for BTCUSDT. Skipping this symbol for now.
+2025-10-10 11:36:53,569 - TradingStrategy - ERROR - Exception getting prices for ETHUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 15:36:53).
+Request → GET https://api.bybit.com/v5/market/kline: category=linear&interval=60&limit=30&symbol=ETHUSDT.
+2025-10-10 11:36:53,569 - TradingStrategy - WARNING - Could not fetch price data for ETHUSDT. Skipping this symbol for now.
+2025-10-10 11:36:53,624 - TradingStrategy - ERROR - Exception getting positions: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 15:36:53).
+Request → GET https://api.bybit.com/v5/position/list: category=linear&settleCoin=USDT.
+2025-10-10 11:36:53,624 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121891.30, MA=$121340.11
+2025-10-10 11:36:53,629 - TradingStrategy - ERROR - Exception getting volume for BTCUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 15:36:53).
+Request → GET https://api.bybit.com/v5/market/tickers: category=linear.
+2025-10-10 11:36:53,638 - TradingStrategy - ERROR - Exception getting positions: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 15:36:53).
+Request → GET https://api.bybit.com/v5/position/list: category=linear&settleCoin=USDT.
+2025-10-10 11:36:53,638 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4363.21, MA=$4347.56
+2025-10-10 11:36:53,642 - TradingStrategy - ERROR - Exception getting volume for ETHUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 15:36:53).
+Request → GET https://api.bybit.com/v5/market/tickers: category=linear.
+2025-10-10 11:36:53,642 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 11:36:53,642 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 11:36:53,642 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 11:36:53,642 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 11:36:53,642 - TradingStrategy - INFO -     Price: $121891.30
+2025-10-10 11:36:53,642 - TradingStrategy - INFO -     Position: 0
+2025-10-10 11:36:53,642 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 11:36:53,642 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 11:36:53,642 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 11:36:53,642 - TradingStrategy - INFO -     Price: $4363.21
+2025-10-10 11:36:53,642 - TradingStrategy - INFO -     Position: 0
+2025-10-10 11:36:53,642 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 11:36:53,643 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 11:36:53,643 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 11:36:53,643 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 11:36:53,643 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 11:36:53,643 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 11:36:53,643 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 11:36:53,643 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 11:36:53,643 - TradingStrategy - INFO - ============================================================
+2025-10-10 14:14:39,173 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 14:14:39,556 - TradingStrategy - ERROR - Exception getting prices for BTCUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 18:14:39).
+Request → GET https://api.bybit.com/v5/market/kline: category=linear&interval=60&limit=30&symbol=BTCUSDT.
+2025-10-10 14:14:39,556 - TradingStrategy - WARNING - Could not fetch price data for BTCUSDT. Skipping this symbol for now.
+2025-10-10 14:14:39,563 - TradingStrategy - ERROR - Exception getting prices for ETHUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 18:14:39).
+Request → GET https://api.bybit.com/v5/market/kline: category=linear&interval=60&limit=30&symbol=ETHUSDT.
+2025-10-10 14:14:39,563 - TradingStrategy - WARNING - Could not fetch price data for ETHUSDT. Skipping this symbol for now.
+2025-10-10 14:14:39,688 - TradingStrategy - ERROR - Exception getting positions: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 18:14:39).
+Request → GET https://api.bybit.com/v5/position/list: category=linear&settleCoin=USDT.
+2025-10-10 14:14:39,690 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121891.30, MA=$121340.11
+2025-10-10 14:14:39,695 - TradingStrategy - ERROR - Exception getting volume for BTCUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 18:14:39).
+Request → GET https://api.bybit.com/v5/market/tickers: category=linear.
+2025-10-10 14:14:39,706 - TradingStrategy - ERROR - Exception getting positions: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 18:14:39).
+Request → GET https://api.bybit.com/v5/position/list: category=linear&settleCoin=USDT.
+2025-10-10 14:14:39,706 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4363.21, MA=$4347.56
+2025-10-10 14:14:39,711 - TradingStrategy - ERROR - Exception getting volume for ETHUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 18:14:39).
+Request → GET https://api.bybit.com/v5/market/tickers: category=linear.
+2025-10-10 14:14:39,711 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 14:14:39,711 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 14:14:39,711 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 14:14:39,711 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 14:14:39,711 - TradingStrategy - INFO -     Price: $121891.30
+2025-10-10 14:14:39,711 - TradingStrategy - INFO -     Position: 0
+2025-10-10 14:14:39,711 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 14:14:39,711 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 14:14:39,711 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 14:14:39,711 - TradingStrategy - INFO -     Price: $4363.21
+2025-10-10 14:14:39,712 - TradingStrategy - INFO -     Position: 0
+2025-10-10 14:14:39,712 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 14:14:39,712 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 14:14:39,712 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 14:14:39,712 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 14:14:39,712 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 14:14:39,712 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 14:14:39,712 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 14:14:39,712 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 14:14:39,712 - TradingStrategy - INFO - ============================================================
+2025-10-10 14:29:39,828 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 14:29:40,205 - TradingStrategy - ERROR - Exception getting prices for BTCUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 18:29:40).
+Request → GET https://api.bybit.com/v5/market/kline: category=linear&interval=60&limit=30&symbol=BTCUSDT.
+2025-10-10 14:29:40,205 - TradingStrategy - WARNING - Could not fetch price data for BTCUSDT. Skipping this symbol for now.
+2025-10-10 14:29:40,212 - TradingStrategy - ERROR - Exception getting prices for ETHUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 18:29:40).
+Request → GET https://api.bybit.com/v5/market/kline: category=linear&interval=60&limit=30&symbol=ETHUSDT.
+2025-10-10 14:29:40,212 - TradingStrategy - WARNING - Could not fetch price data for ETHUSDT. Skipping this symbol for now.
+2025-10-10 14:29:40,270 - TradingStrategy - ERROR - Exception getting positions: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 18:29:40).
+Request → GET https://api.bybit.com/v5/position/list: category=linear&settleCoin=USDT.
+2025-10-10 14:29:40,270 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121891.30, MA=$121340.11
+2025-10-10 14:29:40,276 - TradingStrategy - ERROR - Exception getting volume for BTCUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 18:29:40).
+Request → GET https://api.bybit.com/v5/market/tickers: category=linear.
+2025-10-10 14:29:40,283 - TradingStrategy - ERROR - Exception getting positions: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 18:29:40).
+Request → GET https://api.bybit.com/v5/position/list: category=linear&settleCoin=USDT.
+2025-10-10 14:29:40,283 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4363.21, MA=$4347.56
+2025-10-10 14:29:40,289 - TradingStrategy - ERROR - Exception getting volume for ETHUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 18:29:40).
+Request → GET https://api.bybit.com/v5/market/tickers: category=linear.
+2025-10-10 14:29:40,290 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 14:29:40,290 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 14:29:40,290 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 14:29:40,290 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 14:29:40,290 - TradingStrategy - INFO -     Price: $121891.30
+2025-10-10 14:29:40,290 - TradingStrategy - INFO -     Position: 0
+2025-10-10 14:29:40,290 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 14:29:40,290 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 14:29:40,290 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 14:29:40,290 - TradingStrategy - INFO -     Price: $4363.21
+2025-10-10 14:29:40,290 - TradingStrategy - INFO -     Position: 0
+2025-10-10 14:29:40,290 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 14:29:40,290 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 14:29:40,290 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 14:29:40,290 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 14:29:40,290 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 14:29:40,290 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 14:29:40,290 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 14:29:40,290 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 14:29:40,290 - TradingStrategy - INFO - ============================================================
+2025-10-10 14:44:40,318 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 14:44:40,605 - TradingStrategy - ERROR - Exception getting prices for BTCUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 18:44:40).
+Request → GET https://api.bybit.com/v5/market/kline: category=linear&interval=60&limit=30&symbol=BTCUSDT.
+2025-10-10 14:44:40,605 - TradingStrategy - WARNING - Could not fetch price data for BTCUSDT. Skipping this symbol for now.
+2025-10-10 14:44:40,612 - TradingStrategy - ERROR - Exception getting prices for ETHUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 18:44:40).
+Request → GET https://api.bybit.com/v5/market/kline: category=linear&interval=60&limit=30&symbol=ETHUSDT.
+2025-10-10 14:44:40,612 - TradingStrategy - WARNING - Could not fetch price data for ETHUSDT. Skipping this symbol for now.
+2025-10-10 14:44:40,693 - TradingStrategy - ERROR - Exception getting positions: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 18:44:40).
+Request → GET https://api.bybit.com/v5/position/list: category=linear&settleCoin=USDT.
+2025-10-10 14:44:40,693 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121891.30, MA=$121340.11
+2025-10-10 14:44:40,709 - TradingStrategy - ERROR - Exception getting volume for BTCUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 18:44:40).
+Request → GET https://api.bybit.com/v5/market/tickers: category=linear.
+2025-10-10 14:44:40,720 - TradingStrategy - ERROR - Exception getting positions: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 18:44:40).
+Request → GET https://api.bybit.com/v5/position/list: category=linear&settleCoin=USDT.
+2025-10-10 14:44:40,720 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4363.21, MA=$4347.56
+2025-10-10 14:44:40,727 - TradingStrategy - ERROR - Exception getting volume for ETHUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 18:44:40).
+Request → GET https://api.bybit.com/v5/market/tickers: category=linear.
+2025-10-10 14:44:40,727 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 14:44:40,727 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 14:44:40,727 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 14:44:40,727 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 14:44:40,727 - TradingStrategy - INFO -     Price: $121891.30
+2025-10-10 14:44:40,727 - TradingStrategy - INFO -     Position: 0
+2025-10-10 14:44:40,727 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 14:44:40,727 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 14:44:40,727 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 14:44:40,727 - TradingStrategy - INFO -     Price: $4363.21
+2025-10-10 14:44:40,727 - TradingStrategy - INFO -     Position: 0
+2025-10-10 14:44:40,727 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 14:44:40,727 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 14:44:40,727 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 14:44:40,727 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 14:44:40,727 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 14:44:40,727 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 14:44:40,727 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 14:44:40,727 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 14:44:40,727 - TradingStrategy - INFO - ============================================================
+2025-10-10 16:38:09,071 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 16:38:09,182 - TradingStrategy - ERROR - Exception getting prices for BTCUSDT: HTTPSConnectionPool(host='api.bybit.com', port=443): Max retries exceeded with url: /v5/market/kline?category=linear&interval=60&limit=30&symbol=BTCUSDT (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x16057ebd0>: Failed to establish a new connection: [Errno 8] nodename nor servname provided, or not known'))
+2025-10-10 16:38:09,185 - TradingStrategy - WARNING - Could not fetch price data for BTCUSDT. Skipping this symbol for now.
+2025-10-10 16:38:09,193 - TradingStrategy - ERROR - Exception getting prices for ETHUSDT: HTTPSConnectionPool(host='api.bybit.com', port=443): Max retries exceeded with url: /v5/market/kline?category=linear&interval=60&limit=30&symbol=ETHUSDT (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x16254ac30>: Failed to establish a new connection: [Errno 8] nodename nor servname provided, or not known'))
+2025-10-10 16:38:09,195 - TradingStrategy - WARNING - Could not fetch price data for ETHUSDT. Skipping this symbol for now.
+2025-10-10 16:38:09,330 - TradingStrategy - ERROR - Exception getting positions: HTTPSConnectionPool(host='api.bybit.com', port=443): Max retries exceeded with url: /v5/position/list?category=linear&settleCoin=USDT (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x162549fd0>: Failed to establish a new connection: [Errno 8] nodename nor servname provided, or not known'))
+2025-10-10 16:38:09,330 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121891.30, MA=$121340.11
+2025-10-10 16:38:09,332 - TradingStrategy - ERROR - Exception getting volume for BTCUSDT: HTTPSConnectionPool(host='api.bybit.com', port=443): Max retries exceeded with url: /v5/market/tickers?category=linear (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x1625490a0>: Failed to establish a new connection: [Errno 8] nodename nor servname provided, or not known'))
+2025-10-10 16:38:09,335 - TradingStrategy - ERROR - Exception getting positions: HTTPSConnectionPool(host='api.bybit.com', port=443): Max retries exceeded with url: /v5/position/list?category=linear&settleCoin=USDT (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x16254a000>: Failed to establish a new connection: [Errno 8] nodename nor servname provided, or not known'))
+2025-10-10 16:38:09,335 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4363.21, MA=$4347.56
+2025-10-10 16:38:09,337 - TradingStrategy - ERROR - Exception getting volume for ETHUSDT: HTTPSConnectionPool(host='api.bybit.com', port=443): Max retries exceeded with url: /v5/market/tickers?category=linear (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x162549760>: Failed to establish a new connection: [Errno 8] nodename nor servname provided, or not known'))
+2025-10-10 16:38:09,337 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 16:38:09,337 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 16:38:09,337 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 16:38:09,337 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 16:38:09,337 - TradingStrategy - INFO -     Price: $121891.30
+2025-10-10 16:38:09,337 - TradingStrategy - INFO -     Position: 0
+2025-10-10 16:38:09,337 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 16:38:09,337 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 16:38:09,337 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 16:38:09,337 - TradingStrategy - INFO -     Price: $4363.21
+2025-10-10 16:38:09,337 - TradingStrategy - INFO -     Position: 0
+2025-10-10 16:38:09,337 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 16:38:09,337 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 16:38:09,338 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 16:38:09,338 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 16:38:09,338 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 16:38:09,338 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 16:38:09,338 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 16:38:09,338 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 16:38:09,338 - TradingStrategy - INFO - ============================================================
+2025-10-10 17:07:11,248 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 17:07:11,563 - TradingStrategy - ERROR - Exception getting prices for BTCUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 21:07:11).
+Request → GET https://api.bybit.com/v5/market/kline: category=linear&interval=60&limit=30&symbol=BTCUSDT.
+2025-10-10 17:07:11,563 - TradingStrategy - WARNING - Could not fetch price data for BTCUSDT. Skipping this symbol for now.
+2025-10-10 17:07:11,569 - TradingStrategy - ERROR - Exception getting prices for ETHUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 21:07:11).
+Request → GET https://api.bybit.com/v5/market/kline: category=linear&interval=60&limit=30&symbol=ETHUSDT.
+2025-10-10 17:07:11,569 - TradingStrategy - WARNING - Could not fetch price data for ETHUSDT. Skipping this symbol for now.
+2025-10-10 17:07:11,624 - TradingStrategy - ERROR - Exception getting positions: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 21:07:11).
+Request → GET https://api.bybit.com/v5/position/list: category=linear&settleCoin=USDT.
+2025-10-10 17:07:11,625 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121891.30, MA=$121340.11
+2025-10-10 17:07:11,630 - TradingStrategy - ERROR - Exception getting volume for BTCUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 21:07:11).
+Request → GET https://api.bybit.com/v5/market/tickers: category=linear.
+2025-10-10 17:07:11,638 - TradingStrategy - ERROR - Exception getting positions: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 21:07:11).
+Request → GET https://api.bybit.com/v5/position/list: category=linear&settleCoin=USDT.
+2025-10-10 17:07:11,638 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4363.21, MA=$4347.56
+2025-10-10 17:07:11,643 - TradingStrategy - ERROR - Exception getting volume for ETHUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 21:07:11).
+Request → GET https://api.bybit.com/v5/market/tickers: category=linear.
+2025-10-10 17:07:11,643 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 17:07:11,643 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 17:07:11,643 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 17:07:11,643 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 17:07:11,643 - TradingStrategy - INFO -     Price: $121891.30
+2025-10-10 17:07:11,643 - TradingStrategy - INFO -     Position: 0
+2025-10-10 17:07:11,643 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 17:07:11,643 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 17:07:11,643 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 17:07:11,643 - TradingStrategy - INFO -     Price: $4363.21
+2025-10-10 17:07:11,643 - TradingStrategy - INFO -     Position: 0
+2025-10-10 17:07:11,643 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 17:07:11,644 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 17:07:11,644 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 17:07:11,644 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 17:07:11,644 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 17:07:11,644 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 17:07:11,644 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 17:07:11,644 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 17:07:11,644 - TradingStrategy - INFO - ============================================================
+2025-10-10 17:22:11,662 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 17:22:11,754 - TradingStrategy - ERROR - Exception getting prices for BTCUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 21:22:11).
+Request → GET https://api.bybit.com/v5/market/kline: category=linear&interval=60&limit=30&symbol=BTCUSDT.
+2025-10-10 17:22:11,754 - TradingStrategy - WARNING - Could not fetch price data for BTCUSDT. Skipping this symbol for now.
+2025-10-10 17:22:11,759 - TradingStrategy - ERROR - Exception getting prices for ETHUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 21:22:11).
+Request → GET https://api.bybit.com/v5/market/kline: category=linear&interval=60&limit=30&symbol=ETHUSDT.
+2025-10-10 17:22:11,759 - TradingStrategy - WARNING - Could not fetch price data for ETHUSDT. Skipping this symbol for now.
+2025-10-10 17:22:11,808 - TradingStrategy - ERROR - Exception getting positions: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 21:22:11).
+Request → GET https://api.bybit.com/v5/position/list: category=linear&settleCoin=USDT.
+2025-10-10 17:22:11,808 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121891.30, MA=$121340.11
+2025-10-10 17:22:11,813 - TradingStrategy - ERROR - Exception getting volume for BTCUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 21:22:11).
+Request → GET https://api.bybit.com/v5/market/tickers: category=linear.
+2025-10-10 17:22:11,819 - TradingStrategy - ERROR - Exception getting positions: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 21:22:11).
+Request → GET https://api.bybit.com/v5/position/list: category=linear&settleCoin=USDT.
+2025-10-10 17:22:11,819 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4363.21, MA=$4347.56
+2025-10-10 17:22:11,824 - TradingStrategy - ERROR - Exception getting volume for ETHUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 21:22:11).
+Request → GET https://api.bybit.com/v5/market/tickers: category=linear.
+2025-10-10 17:22:11,824 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 17:22:11,824 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 17:22:11,824 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 17:22:11,824 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 17:22:11,824 - TradingStrategy - INFO -     Price: $121891.30
+2025-10-10 17:22:11,824 - TradingStrategy - INFO -     Position: 0
+2025-10-10 17:22:11,824 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 17:22:11,824 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 17:22:11,824 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 17:22:11,824 - TradingStrategy - INFO -     Price: $4363.21
+2025-10-10 17:22:11,824 - TradingStrategy - INFO -     Position: 0
+2025-10-10 17:22:11,824 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 17:22:11,824 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 17:22:11,824 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 17:22:11,824 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 17:22:11,824 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 17:22:11,824 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 17:22:11,824 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 17:22:11,824 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 17:22:11,824 - TradingStrategy - INFO - ============================================================
+2025-10-10 17:37:11,861 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 17:37:11,939 - TradingStrategy - ERROR - Exception getting prices for BTCUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 21:37:11).
+Request → GET https://api.bybit.com/v5/market/kline: category=linear&interval=60&limit=30&symbol=BTCUSDT.
+2025-10-10 17:37:11,939 - TradingStrategy - WARNING - Could not fetch price data for BTCUSDT. Skipping this symbol for now.
+2025-10-10 17:37:11,943 - TradingStrategy - ERROR - Exception getting prices for ETHUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 21:37:11).
+Request → GET https://api.bybit.com/v5/market/kline: category=linear&interval=60&limit=30&symbol=ETHUSDT.
+2025-10-10 17:37:11,943 - TradingStrategy - WARNING - Could not fetch price data for ETHUSDT. Skipping this symbol for now.
+2025-10-10 17:37:11,982 - TradingStrategy - ERROR - Exception getting positions: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 21:37:11).
+Request → GET https://api.bybit.com/v5/position/list: category=linear&settleCoin=USDT.
+2025-10-10 17:37:11,982 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121891.30, MA=$121340.11
+2025-10-10 17:37:11,987 - TradingStrategy - ERROR - Exception getting volume for BTCUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 21:37:11).
+Request → GET https://api.bybit.com/v5/market/tickers: category=linear.
+2025-10-10 17:37:11,994 - TradingStrategy - ERROR - Exception getting positions: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 21:37:11).
+Request → GET https://api.bybit.com/v5/position/list: category=linear&settleCoin=USDT.
+2025-10-10 17:37:11,994 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4363.21, MA=$4347.56
+2025-10-10 17:37:11,999 - TradingStrategy - ERROR - Exception getting volume for ETHUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 21:37:11).
+Request → GET https://api.bybit.com/v5/market/tickers: category=linear.
+2025-10-10 17:37:11,999 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 17:37:11,999 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 17:37:11,999 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 17:37:11,999 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 17:37:11,999 - TradingStrategy - INFO -     Price: $121891.30
+2025-10-10 17:37:11,999 - TradingStrategy - INFO -     Position: 0
+2025-10-10 17:37:11,999 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 17:37:11,999 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 17:37:11,999 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 17:37:11,999 - TradingStrategy - INFO -     Price: $4363.21
+2025-10-10 17:37:11,999 - TradingStrategy - INFO -     Position: 0
+2025-10-10 17:37:11,999 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 17:37:11,999 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 17:37:11,999 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 17:37:11,999 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 17:37:11,999 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 17:37:11,999 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 17:37:11,999 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 17:37:11,999 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 17:37:11,999 - TradingStrategy - INFO - ============================================================
+2025-10-10 17:52:12,052 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 17:52:12,195 - TradingStrategy - ERROR - Exception getting prices for BTCUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 21:52:12).
+Request → GET https://api.bybit.com/v5/market/kline: category=linear&interval=60&limit=30&symbol=BTCUSDT.
+2025-10-10 17:52:12,196 - TradingStrategy - WARNING - Could not fetch price data for BTCUSDT. Skipping this symbol for now.
+2025-10-10 17:52:12,201 - TradingStrategy - ERROR - Exception getting prices for ETHUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 21:52:12).
+Request → GET https://api.bybit.com/v5/market/kline: category=linear&interval=60&limit=30&symbol=ETHUSDT.
+2025-10-10 17:52:12,201 - TradingStrategy - WARNING - Could not fetch price data for ETHUSDT. Skipping this symbol for now.
+2025-10-10 17:52:12,347 - TradingStrategy - ERROR - Exception getting positions: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 21:52:12).
+Request → GET https://api.bybit.com/v5/position/list: category=linear&settleCoin=USDT.
+2025-10-10 17:52:12,348 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$121891.30, MA=$121340.11
+2025-10-10 17:52:12,352 - TradingStrategy - ERROR - Exception getting volume for BTCUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 21:52:12).
+Request → GET https://api.bybit.com/v5/market/tickers: category=linear.
+2025-10-10 17:52:12,359 - TradingStrategy - ERROR - Exception getting positions: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 21:52:12).
+Request → GET https://api.bybit.com/v5/position/list: category=linear&settleCoin=USDT.
+2025-10-10 17:52:12,359 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$4363.21, MA=$4347.56
+2025-10-10 17:52:12,363 - TradingStrategy - ERROR - Exception getting volume for ETHUSDT: You have breached the ip rate limit. (ErrCode: 403) (ErrTime: 21:52:12).
+Request → GET https://api.bybit.com/v5/market/tickers: category=linear.
+2025-10-10 17:52:12,364 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 17:52:12,364 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 17:52:12,364 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 17:52:12,364 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 17:52:12,364 - TradingStrategy - INFO -     Price: $121891.30
+2025-10-10 17:52:12,364 - TradingStrategy - INFO -     Position: 0
+2025-10-10 17:52:12,364 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 17:52:12,364 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 17:52:12,364 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 17:52:12,364 - TradingStrategy - INFO -     Price: $4363.21
+2025-10-10 17:52:12,364 - TradingStrategy - INFO -     Position: 0
+2025-10-10 17:52:12,364 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 17:52:12,364 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 17:52:12,364 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 17:52:12,364 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 17:52:12,364 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 17:52:12,364 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 17:52:12,364 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 17:52:12,364 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 17:52:12,364 - TradingStrategy - INFO - ============================================================
+2025-10-10 18:07:12,459 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 18:07:13,982 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$111912.40, MA=$119156.17
+2025-10-10 18:07:15,173 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$3825.01, MA=$4198.66
+2025-10-10 18:07:16,173 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 18:07:16,173 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 18:07:16,173 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 18:07:16,173 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 18:07:16,173 - TradingStrategy - INFO -     Price: $111912.40
+2025-10-10 18:07:16,173 - TradingStrategy - INFO -     Position: 0
+2025-10-10 18:07:16,174 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 18:07:16,174 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 18:07:16,174 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 18:07:16,174 - TradingStrategy - INFO -     Price: $3825.01
+2025-10-10 18:07:16,174 - TradingStrategy - INFO -     Position: 0
+2025-10-10 18:07:16,174 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 18:07:16,174 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 18:07:16,174 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 18:07:16,174 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 18:07:16,174 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 18:07:16,174 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 18:07:16,174 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 18:07:16,175 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 18:07:16,175 - TradingStrategy - INFO - ============================================================
+2025-10-10 18:22:16,263 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 18:22:17,792 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$112598.30, MA=$119190.46
+2025-10-10 18:22:20,225 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$3864.95, MA=$4200.66
+2025-10-10 18:22:21,217 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 18:22:21,218 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 18:22:21,218 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 18:22:21,218 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 18:22:21,218 - TradingStrategy - INFO -     Price: $112598.30
+2025-10-10 18:22:21,218 - TradingStrategy - INFO -     Position: 0
+2025-10-10 18:22:21,218 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 18:22:21,219 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 18:22:21,219 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 18:22:21,237 - TradingStrategy - INFO -     Price: $3864.95
+2025-10-10 18:22:21,238 - TradingStrategy - INFO -     Position: 0
+2025-10-10 18:22:21,238 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 18:22:21,238 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 18:22:21,238 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 18:22:21,238 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 18:22:21,238 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 18:22:21,238 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 18:22:21,238 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 18:22:21,239 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 18:22:21,239 - TradingStrategy - INFO - ============================================================
+2025-10-10 18:37:21,342 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 18:37:25,222 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$112676.70, MA=$119194.39
+2025-10-10 18:37:26,439 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$3868.50, MA=$4200.83
+2025-10-10 18:37:27,264 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 18:37:27,266 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 18:37:27,266 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 18:37:27,266 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 18:37:27,266 - TradingStrategy - INFO -     Price: $112676.70
+2025-10-10 18:37:27,266 - TradingStrategy - INFO -     Position: 0
+2025-10-10 18:37:27,266 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 18:37:27,266 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 18:37:27,266 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 18:37:27,266 - TradingStrategy - INFO -     Price: $3868.50
+2025-10-10 18:37:27,267 - TradingStrategy - INFO -     Position: 0
+2025-10-10 18:37:27,267 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 18:37:27,267 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 18:37:27,267 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 18:37:27,267 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 18:37:27,267 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 18:37:27,267 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 18:37:27,267 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 18:37:27,268 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 18:37:27,268 - TradingStrategy - INFO - ============================================================
+2025-10-10 19:35:44,964 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 19:35:46,817 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$113925.10, MA=$118882.39
+2025-10-10 19:35:47,617 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$3883.08, MA=$4176.83
+2025-10-10 19:35:48,124 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 19:35:48,124 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 19:35:48,124 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 19:35:48,124 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 19:35:48,124 - TradingStrategy - INFO -     Price: $113925.10
+2025-10-10 19:35:48,124 - TradingStrategy - INFO -     Position: 0
+2025-10-10 19:35:48,124 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 19:35:48,124 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 19:35:48,124 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 19:35:48,124 - TradingStrategy - INFO -     Price: $3883.08
+2025-10-10 19:35:48,124 - TradingStrategy - INFO -     Position: 0
+2025-10-10 19:35:48,124 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 19:35:48,124 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 19:35:48,124 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 19:35:48,124 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 19:35:48,124 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 19:35:48,124 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 19:35:48,124 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 19:35:48,124 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 19:35:48,124 - TradingStrategy - INFO - ============================================================
+2025-10-10 19:50:48,207 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 19:50:49,779 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$113364.30, MA=$118854.35
+2025-10-10 19:50:50,428 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$3850.27, MA=$4175.19
+2025-10-10 19:50:51,754 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 19:50:51,755 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 19:50:51,755 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 19:50:51,755 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 19:50:51,755 - TradingStrategy - INFO -     Price: $113364.30
+2025-10-10 19:50:51,755 - TradingStrategy - INFO -     Position: 0
+2025-10-10 19:50:51,755 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 19:50:51,755 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 19:50:51,756 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 19:50:51,756 - TradingStrategy - INFO -     Price: $3850.27
+2025-10-10 19:50:51,756 - TradingStrategy - INFO -     Position: 0
+2025-10-10 19:50:51,756 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 19:50:51,756 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 19:50:51,756 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 19:50:51,756 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 19:50:51,756 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 19:50:51,757 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 19:50:51,757 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 19:50:51,757 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 19:50:51,757 - TradingStrategy - INFO - ============================================================
+2025-10-10 20:05:51,771 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 20:05:53,057 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$112661.20, MA=$118395.30
+2025-10-10 20:05:53,878 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$3852.19, MA=$4149.31
+2025-10-10 20:05:54,408 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 20:05:54,408 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 20:05:54,409 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 20:05:54,409 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 20:05:54,409 - TradingStrategy - INFO -     Price: $112661.20
+2025-10-10 20:05:54,409 - TradingStrategy - INFO -     Position: 0
+2025-10-10 20:05:54,409 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 20:05:54,409 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 20:05:54,409 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 20:05:54,409 - TradingStrategy - INFO -     Price: $3852.19
+2025-10-10 20:05:54,409 - TradingStrategy - INFO -     Position: 0
+2025-10-10 20:05:54,409 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 20:05:54,409 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 20:05:54,409 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 20:05:54,409 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 20:05:54,410 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 20:05:54,410 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 20:05:54,410 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 20:05:54,410 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 20:05:54,410 - TradingStrategy - INFO - ============================================================
+2025-10-10 20:20:54,447 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 20:20:55,838 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$111803.30, MA=$118352.40
+2025-10-10 20:20:56,552 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$3808.81, MA=$4147.14
+2025-10-10 20:20:57,296 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 20:20:57,296 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 20:20:57,296 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 20:20:57,297 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 20:20:57,297 - TradingStrategy - INFO -     Price: $111803.30
+2025-10-10 20:20:57,297 - TradingStrategy - INFO -     Position: 0
+2025-10-10 20:20:57,297 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 20:20:57,297 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 20:20:57,297 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 20:20:57,297 - TradingStrategy - INFO -     Price: $3808.81
+2025-10-10 20:20:57,297 - TradingStrategy - INFO -     Position: 0
+2025-10-10 20:20:57,297 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 20:20:57,297 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 20:20:57,297 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 20:20:57,298 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 20:20:57,298 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 20:20:57,298 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 20:20:57,298 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 20:20:57,298 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 20:20:57,298 - TradingStrategy - INFO - ============================================================
+2025-10-10 20:35:57,330 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 20:35:58,718 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$112055.00, MA=$118364.99
+2025-10-10 20:36:00,512 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$3824.13, MA=$4147.91
+2025-10-10 20:36:01,708 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 20:36:01,708 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 20:36:01,708 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 20:36:01,708 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 20:36:01,709 - TradingStrategy - INFO -     Price: $112055.00
+2025-10-10 20:36:01,709 - TradingStrategy - INFO -     Position: 0
+2025-10-10 20:36:01,709 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 20:36:01,709 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 20:36:01,709 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 20:36:01,709 - TradingStrategy - INFO -     Price: $3824.13
+2025-10-10 20:36:01,710 - TradingStrategy - INFO -     Position: 0
+2025-10-10 20:36:01,710 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 20:36:01,710 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 20:36:01,710 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 20:36:01,710 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 20:36:01,710 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 20:36:01,710 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 20:36:01,710 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 20:36:01,710 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 20:36:01,710 - TradingStrategy - INFO - ============================================================
+2025-10-10 20:51:01,737 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 20:51:03,082 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$113041.30, MA=$118414.31
+2025-10-10 20:51:03,744 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$3865.20, MA=$4149.96
+2025-10-10 20:51:04,232 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 20:51:04,232 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 20:51:04,233 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 20:51:04,233 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 20:51:04,233 - TradingStrategy - INFO -     Price: $113041.30
+2025-10-10 20:51:04,233 - TradingStrategy - INFO -     Position: 0
+2025-10-10 20:51:04,233 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 20:51:04,233 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 20:51:04,234 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 20:51:04,234 - TradingStrategy - INFO -     Price: $3865.20
+2025-10-10 20:51:04,234 - TradingStrategy - INFO -     Position: 0
+2025-10-10 20:51:04,234 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 20:51:04,234 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 20:51:04,234 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 20:51:04,235 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 20:51:04,235 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 20:51:04,235 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 20:51:04,235 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 20:51:04,235 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 20:51:04,235 - TradingStrategy - INFO - ============================================================
+2025-10-10 21:06:04,255 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 21:06:05,530 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$112130.00, MA=$117913.63
+2025-10-10 21:06:06,243 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$3814.24, MA=$4120.74
+2025-10-10 21:06:06,665 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 21:06:06,665 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 21:06:06,665 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 21:06:06,665 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 21:06:06,665 - TradingStrategy - INFO -     Price: $112130.00
+2025-10-10 21:06:06,665 - TradingStrategy - INFO -     Position: 0
+2025-10-10 21:06:06,666 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 21:06:06,666 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 21:06:06,666 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 21:06:06,666 - TradingStrategy - INFO -     Price: $3814.24
+2025-10-10 21:06:06,666 - TradingStrategy - INFO -     Position: 0
+2025-10-10 21:06:06,666 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 21:06:06,666 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 21:06:06,666 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 21:06:06,666 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 21:06:06,666 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 21:06:06,666 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 21:06:06,666 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 21:06:06,667 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 21:06:06,667 - TradingStrategy - INFO - ============================================================
+2025-10-10 21:21:06,680 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 21:21:08,394 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$111564.00, MA=$117885.33
+2025-10-10 21:21:09,772 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$3776.80, MA=$4118.87
+2025-10-10 21:21:10,384 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 21:21:10,384 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 21:21:10,384 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 21:21:10,384 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 21:21:10,384 - TradingStrategy - INFO -     Price: $111564.00
+2025-10-10 21:21:10,384 - TradingStrategy - INFO -     Position: 0
+2025-10-10 21:21:10,384 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 21:21:10,385 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 21:21:10,385 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 21:21:10,385 - TradingStrategy - INFO -     Price: $3776.80
+2025-10-10 21:21:10,385 - TradingStrategy - INFO -     Position: 0
+2025-10-10 21:21:10,385 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 21:21:10,385 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 21:21:10,385 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 21:21:10,385 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 21:21:10,385 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 21:21:10,385 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 21:21:10,385 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 21:21:10,385 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 21:21:10,385 - TradingStrategy - INFO - ============================================================
+2025-10-10 21:36:10,351 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 21:36:11,598 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$111699.10, MA=$117892.09
+2025-10-10 21:36:12,543 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$3782.53, MA=$4119.16
+2025-10-10 21:36:13,141 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 21:36:13,141 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 21:36:13,141 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 21:36:13,141 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 21:36:13,141 - TradingStrategy - INFO -     Price: $111699.10
+2025-10-10 21:36:13,142 - TradingStrategy - INFO -     Position: 0
+2025-10-10 21:36:13,142 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 21:36:13,142 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 21:36:13,142 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 21:36:13,142 - TradingStrategy - INFO -     Price: $3782.53
+2025-10-10 21:36:13,142 - TradingStrategy - INFO -     Position: 0
+2025-10-10 21:36:13,142 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 21:36:13,142 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 21:36:13,142 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 21:36:13,142 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 21:36:13,142 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 21:36:13,142 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 21:36:13,142 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 21:36:13,142 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 21:36:13,142 - TradingStrategy - INFO - ============================================================
+2025-10-10 21:51:13,158 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 21:51:14,439 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$111100.00, MA=$117862.13
+2025-10-10 21:51:15,397 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$3744.00, MA=$4117.23
+2025-10-10 21:51:16,715 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 21:51:16,716 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 21:51:16,716 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 21:51:16,716 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 21:51:16,716 - TradingStrategy - INFO -     Price: $111100.00
+2025-10-10 21:51:16,716 - TradingStrategy - INFO -     Position: 0
+2025-10-10 21:51:16,716 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 21:51:16,716 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 21:51:16,716 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 21:51:16,716 - TradingStrategy - INFO -     Price: $3744.00
+2025-10-10 21:51:16,717 - TradingStrategy - INFO -     Position: 0
+2025-10-10 21:51:16,717 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 21:51:16,717 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 21:51:16,717 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 21:51:16,717 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 21:51:16,717 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 21:51:16,717 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 21:51:16,717 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 21:51:16,717 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 21:51:16,718 - TradingStrategy - INFO - ============================================================
+2025-10-10 22:06:16,765 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 22:06:18,025 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$111541.60, MA=$117369.28
+2025-10-10 22:06:18,675 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$3746.98, MA=$4087.63
+2025-10-10 22:06:19,168 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 22:06:19,169 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 22:06:19,169 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 22:06:19,169 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 22:06:19,169 - TradingStrategy - INFO -     Price: $111541.60
+2025-10-10 22:06:19,169 - TradingStrategy - INFO -     Position: 0
+2025-10-10 22:06:19,169 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 22:06:19,169 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 22:06:19,170 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 22:06:19,170 - TradingStrategy - INFO -     Price: $3746.98
+2025-10-10 22:06:19,170 - TradingStrategy - INFO -     Position: 0
+2025-10-10 22:06:19,170 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 22:06:19,170 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 22:06:19,170 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 22:06:19,170 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 22:06:19,170 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 22:06:19,170 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 22:06:19,170 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 22:06:19,170 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 22:06:19,171 - TradingStrategy - INFO - ============================================================
+2025-10-10 22:21:19,157 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 22:21:20,447 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$112072.60, MA=$117395.83
+2025-10-10 22:21:21,154 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$3781.39, MA=$4089.35
+2025-10-10 22:21:21,571 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 22:21:21,571 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 22:21:21,571 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 22:21:21,571 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 22:21:21,571 - TradingStrategy - INFO -     Price: $112072.60
+2025-10-10 22:21:21,571 - TradingStrategy - INFO -     Position: 0
+2025-10-10 22:21:21,571 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 22:21:21,572 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 22:21:21,572 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 22:21:21,572 - TradingStrategy - INFO -     Price: $3781.39
+2025-10-10 22:21:21,572 - TradingStrategy - INFO -     Position: 0
+2025-10-10 22:21:21,572 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 22:21:21,572 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 22:21:21,572 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 22:21:21,572 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 22:21:21,572 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 22:21:21,572 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 22:21:21,573 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 22:21:21,573 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 22:21:21,573 - TradingStrategy - INFO - ============================================================
+2025-10-10 22:36:21,579 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 22:36:23,829 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$112340.30, MA=$117409.21
+2025-10-10 22:36:26,994 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$3819.86, MA=$4091.27
+2025-10-10 22:36:29,048 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 22:36:29,049 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 22:36:29,049 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 22:36:29,049 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 22:36:29,049 - TradingStrategy - INFO -     Price: $112340.30
+2025-10-10 22:36:29,049 - TradingStrategy - INFO -     Position: 0
+2025-10-10 22:36:29,049 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 22:36:29,050 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 22:36:29,050 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 22:36:29,050 - TradingStrategy - INFO -     Price: $3819.86
+2025-10-10 22:36:29,050 - TradingStrategy - INFO -     Position: 0
+2025-10-10 22:36:29,050 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 22:36:29,050 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 22:36:29,050 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 22:36:29,050 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 22:36:29,051 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 22:36:29,051 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 22:36:29,051 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 22:36:29,051 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 22:36:29,051 - TradingStrategy - INFO - ============================================================
+2025-10-10 23:30:06,632 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 23:30:08,328 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$111826.00, MA=$116996.17
+2025-10-10 23:30:09,054 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$3771.80, MA=$4064.78
+2025-10-10 23:30:09,388 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 23:30:09,388 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 23:30:09,388 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 23:30:09,388 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 23:30:09,389 - TradingStrategy - INFO -     Price: $111826.00
+2025-10-10 23:30:09,389 - TradingStrategy - INFO -     Position: 0
+2025-10-10 23:30:09,389 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 23:30:09,389 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 23:30:09,389 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 23:30:09,389 - TradingStrategy - INFO -     Price: $3771.80
+2025-10-10 23:30:09,389 - TradingStrategy - INFO -     Position: 0
+2025-10-10 23:30:09,389 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 23:30:09,389 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 23:30:09,389 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 23:30:09,389 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 23:30:09,389 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 23:30:09,389 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 23:30:09,389 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 23:30:09,389 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 23:30:09,389 - TradingStrategy - INFO - ============================================================
+2025-10-10 23:45:09,432 - TradingStrategy - INFO - Running trading strategy...
+2025-10-10 23:45:12,623 - TradingStrategy - INFO - 📊 BTCUSDT: Signal=0, Price=$111840.70, MA=$116996.90
+2025-10-10 23:45:13,910 - TradingStrategy - INFO - 📊 ETHUSDT: Signal=0, Price=$3771.95, MA=$4064.79
+2025-10-10 23:45:14,440 - TradingStrategy - INFO - 📈 TRADING STATE SUMMARY
+2025-10-10 23:45:14,440 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 23:45:14,440 - TradingStrategy - INFO -   BTCUSDT:
+2025-10-10 23:45:14,440 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 23:45:14,440 - TradingStrategy - INFO -     Price: $111840.70
+2025-10-10 23:45:14,441 - TradingStrategy - INFO -     Position: 0
+2025-10-10 23:45:14,441 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 23:45:14,441 - TradingStrategy - INFO -   ETHUSDT:
+2025-10-10 23:45:14,441 - TradingStrategy - INFO -     Signal: 0
+2025-10-10 23:45:14,441 - TradingStrategy - INFO -     Price: $3771.95
+2025-10-10 23:45:14,441 - TradingStrategy - INFO -     Position: 0
+2025-10-10 23:45:14,442 - TradingStrategy - INFO -     PnL: $0.0000
+2025-10-10 23:45:14,442 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 23:45:14,443 - TradingStrategy - INFO - 🛡️ RISK STATUS
+2025-10-10 23:45:14,443 - TradingStrategy - INFO -   Daily Loss: $0.0000/$1.00
+2025-10-10 23:45:14,443 - TradingStrategy - INFO -   Total Loss: $0.0000/$2.00
+2025-10-10 23:45:14,443 - TradingStrategy - INFO -   Active Positions: 0/1
+2025-10-10 23:45:14,443 - TradingStrategy - INFO -   Emergency Stopped: False
+2025-10-10 23:45:14,443 - TradingStrategy - INFO - ----------------------------------------
+2025-10-10 23:45:14,443 - TradingStrategy - INFO - ============================================================

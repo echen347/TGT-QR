@@ -351,54 +351,15 @@ def api_set_parameter():
 
 @app.route('/backtest')
 def backtest_dashboard():
-    """Backtest results and visualization dashboard"""
-    trading_dashboard = TradingDashboard(strategy_instance, risk_manager_instance)
-
-    # Get recent backtest results
-    backtest_results = db_manager.get_backtest_results(20)
-
-    # Get market data for charts
-    market_data = trading_dashboard.get_market_data()
-
-    return render_template('backtest_dashboard.html',
-                         backtest_results=backtest_results,
-                         market_data=market_data,
-                         last_updated=datetime.now())
+    return ("Backtest dashboard disabled. Use CLI backtesting.", 404)
 
 @app.route('/api/backtest_results')
 def api_backtest_results():
-    """
-    API endpoint for backtest results.
-    Now includes a calculated summary for the overview panel.
-    """
-    run_id = request.args.get('run_id', type=int)
-    if not run_id:
-        return jsonify({'error': 'run_id is required'}), 400
-
-    results = db_manager.get_backtest_results(run_id=run_id, limit=500)
-
-    # The summary is now pre-calculated and fetched with the run list.
-    # This endpoint now only needs to return the detailed results.
-
-    return jsonify({
-        'results': results,
-        'timestamp': datetime.now().isoformat()
-    })
+    return jsonify({'error': 'Backtest API disabled. Use CLI backtesting.'}), 404
 
 @app.route('/api/backtest_chart_data')
 def api_backtest_chart_data():
-    """API endpoint for optimized backtest chart data"""
-    run_id = request.args.get('run_id', type=int)
-    if not run_id:
-        return jsonify({'error': 'run_id is required'}), 400
-
-    # This query will be much faster as it only pulls the necessary columns
-    trade_data = db_manager.get_trades_for_run(run_id)
-    
-    return jsonify({
-        'chart_data': trade_data,
-        'timestamp': datetime.now().isoformat()
-    })
+    return jsonify({'error': 'Backtest API disabled. Use CLI backtesting.'}), 404
 
 @app.route('/api/clear_backtests', methods=['POST'])
 def api_clear_backtests():
@@ -427,78 +388,11 @@ def api_delete_backtest(run_id):
 
 @app.route('/api/backtest_runs')
 def api_backtest_runs():
-    """API endpoint for backtest runs"""
-    dashboard = TradingDashboard(strategy_instance, risk_manager_instance)
-    runs = db_manager.get_backtest_runs(20)
-
-    return jsonify({
-        'runs': runs,
-        'timestamp': datetime.now().isoformat()
-    })
+    return jsonify({'error': 'Backtest API disabled. Use CLI backtesting.'}), 404
 
 @app.route('/api/run_backtest', methods=['POST'])
 def api_run_backtest():
-    """API endpoint to run backtests from web interface"""
-    try:
-        data = request.get_json()
-        symbols = data.get('symbols', ['BTCUSDT', 'ETHUSDT'])
-        days = data.get('days', 30)
-
-        # Import and run backtester
-        from tools.backtester import Backtester
-        from datetime import datetime, timedelta
-
-        start_date = datetime.now() - timedelta(days=days)
-        end_date = datetime.now()
-
-        run_name = f"Web Backtest - {', '.join(symbols)} - {days} days"
-        run_description = f"Backtest run from web dashboard: {len(symbols)} symbols, {days} days of data"
-
-        backtester = Backtester(
-            symbols=symbols,
-            start_date=start_date,
-            end_date=end_date,
-            run_name=run_name,
-            run_description=run_description
-        )
-
-        try:
-            # The backtester's run method will handle creating the run record,
-            # fetching, simulation, and saving results.
-            backtester.run()
-
-            # After a successful run, return the run_id
-            if backtester.run_id:
-                return jsonify({'success': True, 'run_id': backtester.run_id, 'message': f'Backtest completed for run ID {backtester.run_id}.'})
-            else:
-                # This case should ideally not be hit if run() completes without error
-                return jsonify({'success': False, 'error': 'Backtest ran but failed to return a run ID.'}), 500
-
-        except Exception as e:
-            # If any part of the backtest run fails, update the status to 'failed'
-            if backtester.run_id:
-                db_manager.update_backtest_run_status(backtester.run_id, 'failed')
-            
-            import traceback
-            tb_str = traceback.format_exc()
-            app.logger.error(f"!!!!!!!! An error occurred during backtest execution !!!!!!!!")
-            app.logger.error(f"Error Type: {type(e).__name__}")
-            app.logger.error(f"Error Message: {e}")
-            app.logger.error(f"Traceback:\n{tb_str}")
-            app.logger.error(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-            return jsonify({'success': False, 'error': str(e), 'traceback': tb_str}), 500
-
-    except Exception as e:
-        import traceback
-        tb_str = traceback.format_exc()
-        app.logger.error(f"!!!!!!!! An error occurred in api_run_backtest setup !!!!!!!!")
-        app.logger.error(f"Error: {e}\n{tb_str}")
-        app.logger.error(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        return jsonify({
-            'success': False,
-            'error': str(e),
-            'traceback': tb_str
-        }), 500
+    return jsonify({'error': 'Backtest API disabled. Use CLI backtesting.'}), 404
 
 @app.route('/api/market_data')
 def api_market_data():
