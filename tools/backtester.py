@@ -526,13 +526,14 @@ class Backtester:
         for symbol, trades_df in all_results.items():
             if trades_df.empty or 'pnl' not in trades_df.columns or trades_df.dropna(subset=['pnl']).empty:
                 logging.warning(f"\nSymbol: {symbol}\nNo trades executed or no PnL data. Saving zeroed results.")
-                # Save zeroed-out metrics so the frontend has a record for every symbol
-                self.db_manager.save_backtest_result(self.run_id, symbol, self.start_date, self.end_date, {
-                    'total_return_pct': 0, 'total_trades': 0, 'win_rate_pct': 0,
-                    'avg_win_pct': 0, 'avg_loss_pct': 0, 'max_drawdown_pct': 0,
-                    'sharpe_ratio': 0, 'alpha': 0, 'beta': 1.0, 'volatility': 0,
-                    'calmar_ratio': 0, 'sortino_ratio': 0
-                })
+                # Save zeroed-out metrics only if DB writes are enabled
+                if not self.no_db:
+                    self.db_manager.save_backtest_result(self.run_id, symbol, self.start_date, self.end_date, {
+                        'total_return_pct': 0, 'total_trades': 0, 'win_rate_pct': 0,
+                        'avg_win_pct': 0, 'avg_loss_pct': 0, 'max_drawdown_pct': 0,
+                        'sharpe_ratio': 0, 'alpha': 0, 'beta': 1.0, 'volatility': 0,
+                        'calmar_ratio': 0, 'sortino_ratio': 0
+                    })
                 continue
 
             # Drop trades that were not closed
@@ -624,10 +625,12 @@ class Backtester:
                 'sortino_ratio': sortino_ratio
             }
 
-            self.db_manager.save_backtest_result(self.run_id, symbol, self.start_date, self.end_date, metrics)
+            if not self.no_db:
+                self.db_manager.save_backtest_result(self.run_id, symbol, self.start_date, self.end_date, metrics)
 
             # Save detailed trades for visualization
-            self.db_manager.save_backtest_trades(self.run_id, symbol, trades_df)
+            if not self.no_db:
+                self.db_manager.save_backtest_trades(self.run_id, symbol, trades_df)
 
         # Mark run as completed
         if self.run_id:
