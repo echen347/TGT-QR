@@ -418,19 +418,40 @@ class MovingAverageStrategy:
         try:
             current_price = self.price_history[symbol][-1]['close']
             # Use leveraged notional to ensure min $5 notional is met
-            notional_usdt = qty_usdt * leverage
+            # Clamp margin to available balance and config
+            available_balance = 0
+            try:
+                balance_resp = self.session.get_wallet_balance(accountType="UNIFIED", coin="USDT")
+                if balance_resp.get('retCode') == 0:
+                    available_balance = float(balance_resp['result']['list'][0]['coin'][0]['availableToWithdraw'])
+            except Exception:
+                pass
+
+            # Clamp to 90% of available to avoid 110007 and to MAX_POSITION_USDT
+            from config.config import MAX_POSITION_USDT
+            clamped_margin = min(float(qty_usdt), max(0.0, available_balance * 0.90), float(MAX_POSITION_USDT))
+            if clamped_margin <= 0:
+                self.logger.warning(f"Insufficient balance to place order for {symbol}. Avail={available_balance:.2f} USDT")
+                return False
+
+            notional_usdt = clamped_margin * leverage
             qty_contracts = notional_usdt / current_price
             # Comprehensive risk check before placing order
             current_volume = self.get_symbol_volume(symbol)
-            if not self.risk_manager.can_open_position(symbol, qty_usdt, current_volume):
+            if not self.risk_manager.can_open_position(symbol, clamped_margin, current_volume):
                 self.logger.error(f"Risk management blocked order for {symbol}")
                 return False
             # Additional safety checks
-            if qty_usdt > MAX_POSITION_USDT:
-                self.logger.error(f"Order size ${qty_usdt} exceeds maximum ${MAX_POSITION_USDT}")
+            if clamped_margin > MAX_POSITION_USDT:
+                self.logger.error(f"Order size ${clamped_margin} exceeds maximum ${MAX_POSITION_USDT}")
                 return False
             if leverage != LEVERAGE:
                 self.logger.error(f"Leverage mismatch: requested {leverage}, configured {LEVERAGE}")
+                return False
+
+            # Enforce exchange min notional ($5) guard
+            if notional_usdt < 5.0:
+                self.logger.warning(f"Notional ${notional_usdt:.2f} below exchange minimum $5. Skipping {symbol} order.")
                 return False
             # Build optional attached TP/SL and risk limit
             order_kwargs = {
@@ -464,7 +485,7 @@ class MovingAverageStrategy:
                 **order_kwargs
             )
             if response['retCode'] == 0:
-                self.logger.info(f"✅ Order placed: {side} notional {notional_usdt} USDT ({qty_usdt} margin, {leverage}x) of {symbol} at ${current_price:.2f}")
+                self.logger.info(f"✅ Order placed: {side} notional {notional_usdt:.2f} USDT ({clamped_margin:.2f} margin, {leverage}x) of {symbol} at ${current_price:.2f}")
                 self.risk_manager.positions_count += 1
                 # Save trade record to database
                 db_manager.save_trade_record(
