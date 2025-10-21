@@ -70,7 +70,7 @@ class Backtester:
     def __init__(self, symbols, start_date, end_date, run_name=None, run_description=None,
                  timeframe: str = None, ma_period: int = None, fee_bps: float = 5.0,
                  slippage_bps: float = 2.0, cache_ttl_sec: int = 3600, max_workers: int = 3,
-                 no_db: bool = False):
+                 no_db: bool = False, atr_mult: float = 2.0, min_stop_pct: float = 0.01):
         self.db_manager = db_manager # Initialize db_manager
         self.symbols = symbols
         self.start_date = start_date
@@ -86,6 +86,8 @@ class Backtester:
         self.cache_ttl_sec = int(cache_ttl_sec)
         self.max_workers = int(max_workers)
         self.no_db = bool(no_db)
+        self.atr_mult = float(atr_mult)
+        self.min_stop_pct = float(min_stop_pct)
         # Force mainnet and provide keys for historical data fetching
         self.session = HTTP(
                 testnet=False,
@@ -133,53 +135,53 @@ class Backtester:
             return symbol, cached_data
 
         # Fetch fresh data
-        all_klines = []
+            all_klines = []
         # Pull in chunks of up to 1000 candles for the selected timeframe
         try:
             tf_minutes = int(self.timeframe)
         except Exception:
             tf_minutes = 60
         chunk_duration_ms = tf_minutes * 60 * 1000 * 1000  # 1000 candles per chunk
+            
+            current_start_ms = int(self.start_date.timestamp() * 1000)
+            end_limit_ms = int(self.end_date.timestamp() * 1000)
 
-        current_start_ms = int(self.start_date.timestamp() * 1000)
-        end_limit_ms = int(self.end_date.timestamp() * 1000)
-
-        while current_start_ms < end_limit_ms:
-            current_end_ms = current_start_ms + chunk_duration_ms
-            try:
-                response = self.session.get_kline(
+            while current_start_ms < end_limit_ms:
+                current_end_ms = current_start_ms + chunk_duration_ms
+                try:
+                    response = self.session.get_kline(
                     category="linear",
-                    symbol=symbol,
+                        symbol=symbol,
                     interval=self.timeframe,
-                    start=current_start_ms,
-                    end=current_end_ms,
-                    limit=1000
-                )
+                        start=current_start_ms,
+                        end=current_end_ms,
+                        limit=1000
+                    )
 
-                if response['retCode'] == 0 and response['result']['list']:
-                    klines = response['result']['list']
-                    all_klines.extend(klines)
-                    current_start_ms = current_end_ms
-                else:
+                    if response['retCode'] == 0 and response['result']['list']:
+                        klines = response['result']['list']
+                        all_klines.extend(klines)
+                        current_start_ms = current_end_ms
+                    else:
                     # Respect rate limits / empty window
                     time.sleep(0.2)
-                    break
-
+                        break
+                    
                 time.sleep(0.1)  # basic rate limiting
 
-            except Exception as e:
+                except Exception as e:
                 print(f"❌ Error fetching {symbol}: {e}")
-                break
-
-        if not all_klines:
+                    break
+            
+            if not all_klines:
             print(f"❌ No data for {symbol}")
             return symbol, None
 
-        df = pd.DataFrame(all_klines, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume', 'turnover'])
-        df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
-        df.set_index('timestamp', inplace=True)
-        df = df.astype(float).drop_duplicates()
-        df = df[(df.index >= self.start_date) & (df.index <= self.end_date)]
+            df = pd.DataFrame(all_klines, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume', 'turnover'])
+            df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
+            df.set_index('timestamp', inplace=True)
+            df = df.astype(float).drop_duplicates()
+            df = df[(df.index >= self.start_date) & (df.index <= self.end_date)]
         df = df.sort_index()
 
         # Cache the data
@@ -345,9 +347,9 @@ class Backtester:
                     atr = self._calculate_atr(atr_prices)
 
                     if atr > 0:
-                        stop_distance = max(atr * 1.5, entry_price * 0.01)  # At least 1%
+                        stop_distance = max(atr * self.atr_mult, entry_price * self.min_stop_pct)
                     else:
-                        stop_distance = entry_price * 0.02  # 2% fallback
+                        stop_distance = entry_price * max(self.min_stop_pct * 2, 0.02)  # fallback
 
                     take_profit_distance = stop_distance * 2
 
@@ -372,9 +374,9 @@ class Backtester:
                     atr_prices = current_market_slice.iloc[-20:] if len(current_market_slice) >= 20 else current_market_slice
                     atr = self._calculate_atr(atr_prices)
                     if atr > 0:
-                        stop_distance = max(atr * 1.5, entry_price * 0.01)
+                        stop_distance = max(atr * self.atr_mult, entry_price * self.min_stop_pct)
                     else:
-                        stop_distance = entry_price * 0.02
+                        stop_distance = entry_price * max(self.min_stop_pct * 2, 0.02)
                     take_profit_distance = stop_distance * 2
 
                     stop_loss = entry_price + stop_distance
@@ -394,9 +396,9 @@ class Backtester:
                     atr_prices = current_market_slice.iloc[-20:] if len(current_market_slice) >= 20 else current_market_slice
                     atr = self._calculate_atr(atr_prices)
                     if atr > 0:
-                        stop_distance = max(atr * 1.5, entry_price * 0.01)
+                        stop_distance = max(atr * self.atr_mult, entry_price * self.min_stop_pct)
                     else:
-                        stop_distance = entry_price * 0.02
+                        stop_distance = entry_price * max(self.min_stop_pct * 2, 0.02)
                     take_profit_distance = stop_distance * 2
 
                     stop_loss = entry_price - stop_distance
@@ -716,6 +718,8 @@ if __name__ == "__main__":
     parser.add_argument('--max-workers', type=int, default=3, help='Parallel fetch workers')
     parser.add_argument('--no-db', action='store_true', help='Disable DB writes for quick ad-hoc runs')
     parser.add_argument('--no-plot', action='store_true', help='Skip matplotlib plots')
+    parser.add_argument('--atr-mult', type=float, default=2.0, help='ATR multiplier for stop distance')
+    parser.add_argument('--min-stop-pct', type=float, default=0.01, help='Minimum stop distance as fraction of price')
 
     args = parser.parse_args()
 
@@ -724,7 +728,7 @@ if __name__ == "__main__":
         BACKTEST_END_DATE = datetime.strptime(args.end, '%Y-%m-%d')
     else:
         BACKTEST_START_DATE = datetime.now() - timedelta(days=args.days)
-        BACKTEST_END_DATE = datetime.now()
+    BACKTEST_END_DATE = datetime.now()
 
     symbols_list = [s.strip().upper() for s in args.symbols.split(',') if s.strip()]
 
@@ -744,8 +748,10 @@ if __name__ == "__main__":
         cache_ttl_sec=args.cache_ttl,
         max_workers=args.max_workers,
         no_db=args.no_db
+        , atr_mult=args.atr_mult
+        , min_stop_pct=args.min_stop_pct
     )
-
+    
     backtester.run()
 
     if not args.no_plot:
