@@ -7,6 +7,7 @@ Tests the strategy on historical data without placing real orders
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
+import argparse
 
 # Try to import matplotlib for visualizations, but handle gracefully if not available
 try:
@@ -66,7 +67,10 @@ class Backtester:
     Simulates trading on historical data to evaluate performance.
     """
 
-    def __init__(self, symbols, start_date, end_date, run_name=None, run_description=None):
+    def __init__(self, symbols, start_date, end_date, run_name=None, run_description=None,
+                 timeframe: str = None, ma_period: int = None, fee_bps: float = 5.0,
+                 slippage_bps: float = 2.0, cache_ttl_sec: int = 3600, max_workers: int = 3,
+                 no_db: bool = False):
         self.db_manager = db_manager # Initialize db_manager
         self.symbols = symbols
         self.start_date = start_date
@@ -74,6 +78,14 @@ class Backtester:
         self.run_name = run_name or f"Backtest {datetime.now().strftime('%Y-%m-%d %H:%M')}"
         self.run_description = run_description
         self.run_id = None
+        # Overrides / simulation params
+        self.timeframe = str(timeframe or TIMEFRAME)
+        self.ma_period = int(ma_period or MA_PERIOD)
+        self.fee_bps = float(fee_bps)
+        self.slippage_bps = float(slippage_bps)
+        self.cache_ttl_sec = int(cache_ttl_sec)
+        self.max_workers = int(max_workers)
+        self.no_db = bool(no_db)
         # Force mainnet and provide keys for historical data fetching
         self.session = HTTP(
                 testnet=False,
@@ -91,8 +103,8 @@ class Backtester:
             try:
                 with open(cache_file, 'rb') as f:
                     cached_data = pickle.load(f)
-                    # Use cache if less than 1 hour old
-                    if time.time() - cached_data['timestamp'] < 3600:
+                    # Use cache if within TTL
+                    if time.time() - cached_data['timestamp'] < self.cache_ttl_sec:
                         print(f"📦 Using cached data for {symbol}")
                         return cached_data['data']
             except Exception as e:
@@ -121,46 +133,53 @@ class Backtester:
             return symbol, cached_data
 
         # Fetch fresh data
-        all_klines = []
-        chunk_duration_ms = 1000 * 60 * 1000
+            all_klines = []
+        # Pull in chunks of up to 1000 candles for the selected timeframe
+        try:
+            tf_minutes = int(self.timeframe)
+        except Exception:
+            tf_minutes = 60
+        chunk_duration_ms = tf_minutes * 60 * 1000 * 1000  # 1000 candles per chunk
+            
+            current_start_ms = int(self.start_date.timestamp() * 1000)
+            end_limit_ms = int(self.end_date.timestamp() * 1000)
 
-        current_start_ms = int(self.start_date.timestamp() * 1000)
-        end_limit_ms = int(self.end_date.timestamp() * 1000)
-
-        while current_start_ms < end_limit_ms:
-            current_end_ms = current_start_ms + chunk_duration_ms
-            try:
-                response = self.session.get_kline(
+            while current_start_ms < end_limit_ms:
+                current_end_ms = current_start_ms + chunk_duration_ms
+                try:
+                    response = self.session.get_kline(
                     category="linear",
-                    symbol=symbol,
-                    interval=TIMEFRAME,
-                    start=current_start_ms,
-                    end=current_end_ms,
-                    limit=1000
-                )
+                        symbol=symbol,
+                    interval=self.timeframe,
+                        start=current_start_ms,
+                        end=current_end_ms,
+                        limit=1000
+                    )
 
-                if response['retCode'] == 0 and response['result']['list']:
-                    klines = response['result']['list']
-                    all_klines.extend(klines)
-                    current_start_ms = current_end_ms
-                else:
-                    break
+                    if response['retCode'] == 0 and response['result']['list']:
+                        klines = response['result']['list']
+                        all_klines.extend(klines)
+                        current_start_ms = current_end_ms
+                    else:
+                    # Respect rate limits / empty window
+                    time.sleep(0.2)
+                        break
+                    
+                time.sleep(0.1)  # basic rate limiting
 
-                time.sleep(0.1)  # Rate limiting
-
-            except Exception as e:
+                except Exception as e:
                 print(f"❌ Error fetching {symbol}: {e}")
-                break
-
-        if not all_klines:
+                    break
+            
+            if not all_klines:
             print(f"❌ No data for {symbol}")
             return symbol, None
 
-        df = pd.DataFrame(all_klines, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume', 'turnover'])
-        df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
-        df.set_index('timestamp', inplace=True)
-        df = df.astype(float).drop_duplicates()
-        df = df[(df.index >= self.start_date) & (df.index <= self.end_date)]
+            df = pd.DataFrame(all_klines, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume', 'turnover'])
+            df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
+            df.set_index('timestamp', inplace=True)
+            df = df.astype(float).drop_duplicates()
+            df = df[(df.index >= self.start_date) & (df.index <= self.end_date)]
         df = df.sort_index()
 
         # Cache the data
@@ -193,14 +212,14 @@ class Backtester:
 
     def _get_signal(self, historical_prices):
         """Calculates the MA signal with improved filtering. MUST MATCH strategy.py exactly."""
-        if len(historical_prices) < MA_PERIOD + 10:
+        if len(historical_prices) < self.ma_period + 10:
             return 0
 
-        ma = historical_prices['close'].rolling(window=MA_PERIOD).mean().iloc[-1]
+        ma = historical_prices['close'].rolling(window=self.ma_period).mean().iloc[-1]
         current_price = historical_prices['close'].iloc[-1]
 
         # Calculate trend strength using MA slope
-        ma_slope = (ma - historical_prices['close'].rolling(window=MA_PERIOD).mean().iloc[-5]) / MA_PERIOD
+        ma_slope = (ma - historical_prices['close'].rolling(window=self.ma_period).mean().iloc[-5]) / self.ma_period
         trend_strength = abs(ma_slope) / current_price
 
         # Use config values - MUST match strategy.py
@@ -231,7 +250,7 @@ class Backtester:
             if ma_slope < 0:
                 return -1
 
-        return 0  # Neutral
+            return 0  # Neutral
 
     def _calculate_atr(self, prices, period=14):
         """Calculate Average True Range for backtester"""
@@ -254,21 +273,22 @@ class Backtester:
     def run(self):
         """Runs the backtest and prints the results."""
         # Create backtest run record
-        self.run_id = self.db_manager.create_backtest_run(
+        if not self.no_db:
+            self.run_id = self.db_manager.create_backtest_run(
             name=self.run_name,
             description=self.run_description,
             symbols=self.symbols,
             start_date=self.start_date,
             end_date=self.end_date,
-            parameters={'ma_period': MA_PERIOD, 'leverage': LEVERAGE, 'timeframe': TIMEFRAME}
+            parameters={'ma_period': self.ma_period, 'leverage': LEVERAGE, 'timeframe': self.timeframe}
         )
 
-        if not self.run_id:
+        if not self.no_db and not self.run_id:
             print("❌ Failed to create backtest run record")
             return
 
         self.fetch_historical_data()
-
+        
         all_results = {}
         for symbol in self.symbols:
             if symbol not in self.historical_data or self.historical_data[symbol].empty:
@@ -282,13 +302,15 @@ class Backtester:
             entry_price = 0
             stop_loss = 0
             take_profit = 0
-
+            
             # Iterate through the historical data, simulating the strategy
-            for i in range(MA_PERIOD + 10, len(df)):  # Need more data for ATR calculation
+            for i in range(self.ma_period + 10, len(df)):  # Need more data for ATR calculation
                 # This ensures no lookahead bias. The strategy only sees data up to the current point in time.
-                current_market_slice = df.iloc[i-MA_PERIOD-10:i]
+                current_market_slice = df.iloc[i-self.ma_period-10:i]
                 signal = self._get_signal(current_market_slice)
                 current_price = current_market_slice['close'].iloc[-1]
+                fee_pct = self.fee_bps / 10000.0
+                slip_pct = self.slippage_bps / 10000.0
 
                 # Check for exit conditions (stop loss/take profit)
                 if position != 0:
@@ -296,11 +318,15 @@ class Backtester:
                     if position == 1:  # Long position
                         if current_price <= stop_loss or current_price >= take_profit:
                             should_exit = True
-                            pnl = (current_price - entry_price) / entry_price
+                            # execute sell with negative slippage
+                            exit_exec = current_price * (1 - slip_pct)
+                            pnl = (exit_exec - entry_price) / entry_price - (2 * fee_pct)
                     else:  # Short position
                         if current_price >= stop_loss or current_price <= take_profit:
                             should_exit = True
-                            pnl = (entry_price - current_price) / entry_price
+                            # execute buy with positive slippage
+                            exit_exec = current_price * (1 + slip_pct)
+                            pnl = (entry_price - exit_exec) / entry_price - (2 * fee_pct)
 
                     if should_exit:
                         trades[-1].update({'exit_date': df.index[i], 'exit_price': current_price, 'pnl': pnl})
@@ -311,7 +337,8 @@ class Backtester:
                 # --- Execute Trades ---
                 if position == 0 and signal != 0: # Open a new position
                     position = signal
-                    entry_price = current_price
+                    # execute entry with adverse slippage
+                    entry_price = current_price * (1 + slip_pct) if signal == 1 else current_price * (1 - slip_pct)
 
                     # Calculate stop loss and take profit using ATR
                     atr_prices = current_market_slice.iloc[-20:] if len(current_market_slice) >= 20 else current_market_slice
@@ -331,13 +358,15 @@ class Backtester:
                         stop_loss = entry_price + stop_distance
                         take_profit = entry_price - take_profit_distance
 
-                    trades.append({'entry_date': df.index[i], 'entry_price': entry_price, 'type': 'long' if signal == 1 else 'short'})
-
+                    trades.append({'entry_date': df.index[i], 'entry_price': entry_price, 'type': 'long' if signal == 1 else 'short',
+                                   'fee_bps': self.fee_bps, 'slippage_bps': self.slippage_bps})
+                
                 elif position == 1 and signal == -1: # Close long, open short
-                    pnl = (current_price - entry_price) / entry_price
+                    exit_exec = current_price * (1 - slip_pct)
+                    pnl = (exit_exec - entry_price) / entry_price - (2 * fee_pct)
                     trades[-1].update({'exit_date': df.index[i], 'exit_price': current_price, 'pnl': pnl})
                     position = -1
-                    entry_price = current_price
+                    entry_price = current_price * (1 - slip_pct)
 
                     # Set new stop loss and take profit for short
                     atr_prices = current_market_slice.iloc[-20:] if len(current_market_slice) >= 20 else current_market_slice
@@ -351,13 +380,15 @@ class Backtester:
                     stop_loss = entry_price + stop_distance
                     take_profit = entry_price - take_profit_distance
 
-                    trades.append({'entry_date': df.index[i], 'entry_price': entry_price, 'type': 'short'})
+                    trades.append({'entry_date': df.index[i], 'entry_price': entry_price, 'type': 'short',
+                                   'fee_bps': self.fee_bps, 'slippage_bps': self.slippage_bps})
 
                 elif position == -1 and signal == 1: # Close short, open long
-                    pnl = (entry_price - current_price) / entry_price
+                    exit_exec = current_price * (1 + slip_pct)
+                    pnl = (entry_price - exit_exec) / entry_price - (2 * fee_pct)
                     trades[-1].update({'exit_date': df.index[i], 'exit_price': current_price, 'pnl': pnl})
                     position = 1
-                    entry_price = current_price
+                    entry_price = current_price * (1 + slip_pct)
 
                     # Set new stop loss and take profit for long
                     atr_prices = current_market_slice.iloc[-20:] if len(current_market_slice) >= 20 else current_market_slice
@@ -371,7 +402,8 @@ class Backtester:
                     stop_loss = entry_price - stop_distance
                     take_profit = entry_price + take_profit_distance
 
-                    trades.append({'entry_date': df.index[i], 'entry_price': entry_price, 'type': 'long'})
+                    trades.append({'entry_date': df.index[i], 'entry_price': entry_price, 'type': 'long',
+                                   'fee_bps': self.fee_bps, 'slippage_bps': self.slippage_bps})
 
             # Only include completed trades (those with exit information)
             completed_trades = [trade for trade in trades if 'exit_date' in trade and 'pnl' in trade]
@@ -384,9 +416,10 @@ class Backtester:
         
         # Collect signal data for visualization
         self.signal_data = self._collect_signal_data()
-
+        
         self.calculate_metrics(all_results)
-        self.calculate_and_save_run_summary(all_results)
+        if not self.no_db:
+            self.calculate_and_save_run_summary(all_results)
 
     def _collect_signal_data(self):
         """Collect signal data for visualization"""
@@ -402,11 +435,11 @@ class Backtester:
             mas = []
 
             # Calculate signals throughout the dataset
-            for i in range(MA_PERIOD + 10, len(df)):
-                current_slice = df.iloc[i-MA_PERIOD-10:i]
+            for i in range(self.ma_period + 10, len(df)):
+                current_slice = df.iloc[i-self.ma_period-10:i]
                 signal = self._get_signal(current_slice)
                 current_price = current_slice['close'].iloc[-1]
-                ma = current_slice['close'].rolling(window=MA_PERIOD).mean().iloc[-1]
+                ma = current_slice['close'].rolling(window=self.ma_period).mean().iloc[-1]
 
                 signals.append({'date': df.index[i], 'signal': signal, 'price': current_price, 'ma': ma})
 
@@ -438,7 +471,7 @@ class Backtester:
             plt.subplot(3, 1, 1)
             data = self.signal_data[sym]
             plt.plot(data['date'], data['price'], label='Price', alpha=0.7)
-            plt.plot(data['date'], data['ma'], label=f'MA({MA_PERIOD})', linewidth=2)
+            plt.plot(data['date'], data['ma'], label=f'MA({self.ma_period})', linewidth=2)
             plt.title(f'{sym} - Price & Moving Average')
             plt.legend()
             plt.grid(True, alpha=0.3)
@@ -466,11 +499,11 @@ class Backtester:
             plt.subplot(3, 1, 3)
             ma_slopes = []
             symbol_df = self.historical_data[sym]
-            for i in range(MA_PERIOD + 10, len(symbol_df)):
-                current_slice = symbol_df.iloc[i-MA_PERIOD-10:i]
-                ma = current_slice['close'].rolling(window=MA_PERIOD).mean().iloc[-1]
-                prev_ma = current_slice['close'].rolling(window=MA_PERIOD).mean().iloc[-5]
-                slope = (ma - prev_ma) / MA_PERIOD
+            for i in range(self.ma_period + 10, len(symbol_df)):
+                current_slice = symbol_df.iloc[i-self.ma_period-10:i]
+                ma = current_slice['close'].rolling(window=self.ma_period).mean().iloc[-1]
+                prev_ma = current_slice['close'].rolling(window=self.ma_period).mean().iloc[-5]
+                slope = (ma - prev_ma) / self.ma_period
                 ma_slopes.append(slope)
 
             plt.plot(data['date'], ma_slopes, label='MA Slope', color='purple')
@@ -485,7 +518,7 @@ class Backtester:
             plt.show()
 
             print(f"📊 Visualization saved for {sym}")
-
+        
     def calculate_metrics(self, all_results):
         """Calculates and prints key performance metrics for the backtest."""
         logging.info("\n--- Backtest Performance Results ---")
@@ -667,25 +700,52 @@ class Backtester:
 
 
 if __name__ == "__main__":
-    # Configuration for the backtest run - shorter period to avoid API issues
-    BACKTEST_START_DATE = datetime.now() - timedelta(days=30) # 1 month of data
-    BACKTEST_END_DATE = datetime.now()
+    parser = argparse.ArgumentParser(description="Robust MA backtester (CLI)")
+    parser.add_argument('--symbols', type=str, default=','.join(SYMBOLS), help='Comma-separated symbols, e.g. BTCUSDT,ETHUSDT')
+    parser.add_argument('--days', type=int, default=30, help='Days of history to fetch')
+    parser.add_argument('--start', type=str, help='Start date (YYYY-MM-DD)')
+    parser.add_argument('--end', type=str, help='End date (YYYY-MM-DD)')
+    parser.add_argument('--timeframe', type=str, default=str(TIMEFRAME), help='Bybit kline interval (e.g., 60)')
+    parser.add_argument('--ma', type=int, default=int(MA_PERIOD), help='MA period')
+    parser.add_argument('--fee-bps', type=float, default=5.0, help='Round-trip fee in basis points (per side ~2.5bps)')
+    parser.add_argument('--slippage-bps', type=float, default=2.0, help='Adverse slippage in basis points per trade leg')
+    parser.add_argument('--cache-ttl', type=int, default=3600, help='Cache TTL seconds')
+    parser.add_argument('--max-workers', type=int, default=3, help='Parallel fetch workers')
+    parser.add_argument('--no-db', action='store_true', help='Disable DB writes for quick ad-hoc runs')
+    parser.add_argument('--no-plot', action='store_true', help='Skip matplotlib plots')
 
-    run_name = f"Terminal Backtest - {', '.join(SYMBOLS)} - {BACKTEST_START_DATE.strftime('%Y-%m-%d')} to {BACKTEST_END_DATE.strftime('%Y-%m-%d')}"
-    run_description = f"Backtest run from terminal: {len(SYMBOLS)} symbols, {(BACKTEST_END_DATE - BACKTEST_START_DATE).days} days"
+    args = parser.parse_args()
+
+    if args.start and args.end:
+        BACKTEST_START_DATE = datetime.strptime(args.start, '%Y-%m-%d')
+        BACKTEST_END_DATE = datetime.strptime(args.end, '%Y-%m-%d')
+    else:
+        BACKTEST_START_DATE = datetime.now() - timedelta(days=args.days)
+        BACKTEST_END_DATE = datetime.now()
+
+    symbols_list = [s.strip().upper() for s in args.symbols.split(',') if s.strip()]
+
+    run_name = f"CLI Backtest - {', '.join(symbols_list)} - {BACKTEST_START_DATE.strftime('%Y-%m-%d')} to {BACKTEST_END_DATE.strftime('%Y-%m-%d')}"
+    run_description = f"Backtest: {len(symbols_list)} symbols, {(BACKTEST_END_DATE - BACKTEST_START_DATE).days} days, TF={args.timeframe}, MA={args.ma}"
 
     backtester = Backtester(
-        symbols=SYMBOLS,
+        symbols=symbols_list,
         start_date=BACKTEST_START_DATE,
         end_date=BACKTEST_END_DATE,
         run_name=run_name,
-        run_description=run_description
+        run_description=run_description,
+        timeframe=args.timeframe,
+        ma_period=args.ma,
+        fee_bps=args.fee_bps,
+        slippage_bps=args.slippage_bps,
+        cache_ttl_sec=args.cache_ttl,
+        max_workers=args.max_workers,
+        no_db=args.no_db
     )
 
     backtester.run()
 
-    # Show visualizations
-    print("\n🎨 Generating visualizations...")
-    backtester.visualize_results()
-
-    print("✅ Backtest complete! Check results/ directory for charts.")
+    if not args.no_plot:
+        print("\n🎨 Generating visualizations...")
+        backtester.visualize_results()
+        print("✅ Backtest complete! Check results/ directory for charts.")
