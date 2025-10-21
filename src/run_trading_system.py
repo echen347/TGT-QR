@@ -43,6 +43,17 @@ def main():
     # --- Create the single, shared instances ---
     risk_manager = RiskManager()
     strategy = MovingAverageStrategy()
+    # Apply exchange risk limits once at startup if supported
+    try:
+        from config.config import RISK_LIMIT_ENABLED, RISK_LIMIT_VALUE, SYMBOLS
+        if RISK_LIMIT_ENABLED and hasattr(strategy.session, 'set_risk_limit'):
+            for sym in SYMBOLS:
+                try:
+                    strategy.session.set_risk_limit(category="linear", symbol=sym, riskId=str(RISK_LIMIT_VALUE))
+                except Exception:
+                    continue
+    except Exception:
+        pass
     # Give risk_manager a reference to the strategy for emergency stops
     risk_manager.set_strategy(strategy)
     # Give strategy a reference to the risk_manager
