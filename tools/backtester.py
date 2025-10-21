@@ -70,7 +70,8 @@ class Backtester:
     def __init__(self, symbols, start_date, end_date, run_name=None, run_description=None,
                  timeframe: str = None, ma_period: int = None, fee_bps: float = 5.0,
                  slippage_bps: float = 2.0, cache_ttl_sec: int = 3600, max_workers: int = 3,
-                 no_db: bool = False, atr_mult: float = 2.0, min_stop_pct: float = 0.01):
+                 no_db: bool = False, atr_mult: float = 2.0, min_stop_pct: float = 0.01,
+                 enable_atr_gate: bool = False, atr_gate_mult: float = 0.5, cooldown_bars: int = 0):
         self.db_manager = db_manager # Initialize db_manager
         self.symbols = symbols
         self.start_date = start_date
@@ -88,6 +89,9 @@ class Backtester:
         self.no_db = bool(no_db)
         self.atr_mult = float(atr_mult)
         self.min_stop_pct = float(min_stop_pct)
+        self.enable_atr_gate = bool(enable_atr_gate)
+        self.atr_gate_mult = float(atr_gate_mult)
+        self.cooldown_bars = int(cooldown_bars)
         # Force mainnet and provide keys for historical data fetching
         self.session = HTTP(
                 testnet=False,
@@ -241,6 +245,13 @@ class Backtester:
         else:  # Low volatility
             threshold = 0.0005  # 0.05% threshold for very calm markets
 
+        # ATR distance gate (optional): avoid trading too close to MA (chop)
+        if self.enable_atr_gate:
+            atr_local = self._calculate_atr(historical_prices.tail(20), period=14)
+            if atr_local > 0:
+                if abs(current_price - ma) < self.atr_gate_mult * atr_local:
+                    return 0
+
         # Improved signal logic with trend confirmation
         if current_price > ma * (1 + threshold):
             # Additional confirmation: price above MA and MA is rising
@@ -305,6 +316,7 @@ class Backtester:
             take_profit = 0
             
             # Iterate through the historical data, simulating the strategy
+            cooldown = 0
             for i in range(self.ma_period + 10, len(df)):  # Need more data for ATR calculation
                 # This ensures no lookahead bias. The strategy only sees data up to the current point in time.
                 current_market_slice = df.iloc[i-self.ma_period-10:i]
@@ -312,6 +324,11 @@ class Backtester:
                 current_price = current_market_slice['close'].iloc[-1]
                 fee_pct = self.fee_bps / 10000.0
                 slip_pct = self.slippage_bps / 10000.0
+
+                # Apply cooldown after a closed losing trade
+                if cooldown > 0:
+                    cooldown -= 1
+                    signal = 0
 
                 # Check for exit conditions (stop loss/take profit)
                 if position != 0:
@@ -333,6 +350,9 @@ class Backtester:
                         trades[-1].update({'exit_date': df.index[i], 'exit_price': current_price, 'pnl': pnl})
                         position = 0
                         entry_price = 0
+                        # set cooldown after loss
+                        if pnl < 0 and self.cooldown_bars > 0:
+                            cooldown = self.cooldown_bars
                         continue
 
                 # --- Execute Trades ---
@@ -719,6 +739,9 @@ if __name__ == "__main__":
     parser.add_argument('--no-plot', action='store_true', help='Skip matplotlib plots')
     parser.add_argument('--atr-mult', type=float, default=2.0, help='ATR multiplier for stop distance')
     parser.add_argument('--min-stop-pct', type=float, default=0.01, help='Minimum stop distance as fraction of price')
+    parser.add_argument('--atr-gate', action='store_true', help='Enable ATR distance gate from MA to avoid chop')
+    parser.add_argument('--atr-gate-mult', type=float, default=0.5, help='ATR gate multiple for MA distance')
+    parser.add_argument('--cooldown-bars', type=int, default=0, help='Bars to skip after a losing trade (per symbol)')
 
     args = parser.parse_args()
 
@@ -749,6 +772,9 @@ if __name__ == "__main__":
         no_db=args.no_db
         , atr_mult=args.atr_mult
         , min_stop_pct=args.min_stop_pct
+        , enable_atr_gate=args.atr_gate
+        , atr_gate_mult=args.atr_gate_mult
+        , cooldown_bars=args.cooldown_bars
     )
     
     backtester.run()
