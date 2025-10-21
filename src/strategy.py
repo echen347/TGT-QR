@@ -417,7 +417,9 @@ class MovingAverageStrategy:
         """Place a market order with comprehensive risk checks"""
         try:
             current_price = self.price_history[symbol][-1]['close']
-            qty_contracts = qty_usdt * leverage / current_price
+            # Use leveraged notional to ensure min $5 notional is met
+            notional_usdt = qty_usdt * leverage
+            qty_contracts = notional_usdt / current_price
             # Comprehensive risk check before placing order
             current_volume = self.get_symbol_volume(symbol)
             if not self.risk_manager.can_open_position(symbol, qty_usdt, current_volume):
@@ -430,19 +432,39 @@ class MovingAverageStrategy:
             if leverage != LEVERAGE:
                 self.logger.error(f"Leverage mismatch: requested {leverage}, configured {LEVERAGE}")
                 return False
-            # Use the working order placement from day1_test.py
-            # For quote currency orders, qty should be the margin amount, not leveraged amount
+            # Build optional attached TP/SL and risk limit
+            order_kwargs = {
+                "category": "linear",
+                "symbol": symbol,
+                "side": side,
+                "orderType": "Market",
+                # For quote currency orders: qty is notional in quote currency (USDT)
+                "qty": str(notional_usdt),
+                "leverage": str(leverage),
+                "marketUnit": "quoteCurrency"
+            }
+
+            try:
+                from config.config import USE_TP_SL_ON_ORDER, RISK_LIMIT_ENABLED, RISK_LIMIT_VALUE
+                if USE_TP_SL_ON_ORDER:
+                    # Attach TP/SL based on current market_state if available
+                    stop_loss = self.market_state[symbol].get('stop_loss')
+                    take_profit = self.market_state[symbol].get('take_profit')
+                    if stop_loss and take_profit:
+                        order_kwargs.update({
+                            "takeProfit": str(take_profit),
+                            "stopLoss": str(stop_loss)
+                        })
+                if RISK_LIMIT_ENABLED and RISK_LIMIT_VALUE:
+                    order_kwargs.update({"riskLimitValue": str(RISK_LIMIT_VALUE)})
+            except Exception:
+                pass
+
             response = self.session.place_order(
-                category="linear",
-                symbol=symbol,
-                side=side,
-                orderType="Market",
-                qty=str(qty_usdt),  # Margin amount for quote currency orders
-                leverage=str(leverage),
-                marketUnit="quoteCurrency"
+                **order_kwargs
             )
             if response['retCode'] == 0:
-                self.logger.info(f"✅ Order placed: {side} {qty_usdt} USDT margin of {symbol} at ${current_price:.2f}")
+                self.logger.info(f"✅ Order placed: {side} notional {notional_usdt} USDT ({qty_usdt} margin, {leverage}x) of {symbol} at ${current_price:.2f}")
                 self.risk_manager.positions_count += 1
                 # Save trade record to database
                 db_manager.save_trade_record(
@@ -450,7 +472,7 @@ class MovingAverageStrategy:
                     side=side,
                     quantity=qty_contracts,
                     price=current_price,
-                    value_usdt=qty_usdt
+                    value_usdt=notional_usdt
                 )
                 return True
             else:

@@ -22,18 +22,18 @@ SYMBOLS = [
 ]
 
 # --- Position Sizing & Leverage ---
-MAX_POSITION_USDT = 2.00 # Margin per position (with 2.5x leverage = $5.00 exposure - meets Bybit minimum)
-LEVERAGE = 2.5  # Minimal leverage: risk $2.00, control $5.00 per position
-MAX_POSITIONS = 1  # Ultra conservative - max 1 position at once
+MAX_POSITION_USDT = 2.00 # Margin per position
+LEVERAGE = 5.0  # Higher leverage to reduce required margin per order
+MAX_POSITIONS = 2  # Slightly more tolerant: allow up to 2 concurrent positions
 MIN_VOLUME_USDT = 200000  # Only trade reasonably liquid pairs (500K+ USD volume)
 TIMEFRAME = '60'  # 1-hour candles for less noise
 MA_PERIOD = 20  # A shorter MA period will be more sensitive to price changes
 ATR_PERIOD = 14
 
-# Strategy Configuration - ULTRA CONSERVATIVE RISK
+# Strategy Configuration - CONSERVATIVE RISK
 STRATEGY_INTERVAL_MINUTES = 5  # Run strategy every 5 minutes
-MAX_DAILY_LOSS_USDT = 0.20 # Max aggregate loss per day in USDT before pausing trading (10% of $2)
-MAX_TOTAL_LOSS_USDT = 0.20 # Max total loss from starting capital before stopping the bot (10% of $2)
+MAX_DAILY_LOSS_USDT = 0.30 # Slightly higher daily loss cap
+MAX_TOTAL_LOSS_USDT = 0.40 # Slightly higher total loss cap
 
 # Signal Filtering - More lenient for live trading vs backtesting
 MIN_TREND_STRENGTH = 0.0005  # Reduced from 0.001 for more trading opportunities
@@ -55,6 +55,12 @@ LOG_RETENTION_DAYS = 30  # Keep 30 days of logs
 STOP_LOSS_PCT = 0.01  # 1% stop loss (very tight)
 TAKE_PROFIT_PCT = 0.02  # 2% take profit (2:1 reward:risk ratio)
 MAX_POSITION_HOLD_HOURS = 24  # Maximum time to hold a position (24 hours)
+
+# Exchange Risk Limits & Order Attachments
+RISK_LIMIT_ENABLED = True
+# Note: Bybit v5 uses tier-based risk; value may be interpreted per account tier.
+RISK_LIMIT_VALUE = 10000  # Target notional risk limit (exchange-tier specific)
+USE_TP_SL_ON_ORDER = True  # Attach TP/SL to orders when possible
 
 # Dashboard Configuration
 DASHBOARD_PORT = 5000
