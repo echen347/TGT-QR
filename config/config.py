@@ -24,7 +24,7 @@ SYMBOLS = [
 # --- Position Sizing & Leverage ---
 MAX_POSITION_USDT = 2.00 # Margin per position
 LEVERAGE = 5.0  # Higher leverage to reduce required margin per order
-MAX_POSITIONS = 2  # Slightly more tolerant: allow up to 2 concurrent positions
+MAX_POSITIONS = 4  # Allow up to 4 concurrent positions with $16 balance
 MIN_VOLUME_USDT = 200000  # Only trade reasonably liquid pairs (500K+ USD volume)
 TIMEFRAME = '60'  # 1-hour candles for less noise
 MA_PERIOD = 20  # A shorter MA period will be more sensitive to price changes
@@ -32,8 +32,8 @@ ATR_PERIOD = 14
 
 # Strategy Configuration - CONSERVATIVE RISK
 STRATEGY_INTERVAL_MINUTES = 5  # Run strategy every 5 minutes
-MAX_DAILY_LOSS_USDT = 0.30 # Slightly higher daily loss cap
-MAX_TOTAL_LOSS_USDT = 0.40 # Slightly higher total loss cap
+MAX_DAILY_LOSS_USDT = 0.80 # Slightly higher daily loss cap with $16 balance
+MAX_TOTAL_LOSS_USDT = 2.00 # Allow modest drawdown while remaining conservative
 
 # Signal Filtering - More lenient for live trading vs backtesting
 MIN_TREND_STRENGTH = 0.0005  # Reduced from 0.001 for more trading opportunities

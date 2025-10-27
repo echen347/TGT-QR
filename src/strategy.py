@@ -466,16 +466,32 @@ class MovingAverageStrategy:
             }
 
             try:
-                from config.config import USE_TP_SL_ON_ORDER, RISK_LIMIT_ENABLED, RISK_LIMIT_VALUE
+                from config.config import USE_TP_SL_ON_ORDER, RISK_LIMIT_ENABLED, RISK_LIMIT_VALUE, STOP_LOSS_PCT, TAKE_PROFIT_PCT
                 if USE_TP_SL_ON_ORDER:
-                    # Attach TP/SL based on current market_state if available
+                    # Prefer existing precomputed TP/SL from market_state; otherwise compute a conservative fallback
                     stop_loss = self.market_state[symbol].get('stop_loss')
                     take_profit = self.market_state[symbol].get('take_profit')
-                    if stop_loss and take_profit:
-                        order_kwargs.update({
-                            "takeProfit": str(take_profit),
-                            "stopLoss": str(stop_loss)
-                        })
+                    if not stop_loss or not take_profit:
+                        try:
+                            # Compute ATR-based distances on the fly
+                            import pandas as pd
+                            recent_prices = pd.DataFrame(self.price_history[symbol][-20:]) if len(self.price_history[symbol]) > 0 else None
+                            atr_val = self.calculate_atr(recent_prices, 14) if recent_prices is not None else 0
+                        except Exception:
+                            atr_val = 0
+                        # Fallback to config percentages if ATR not available
+                        stop_distance = max(atr_val * 1.5, current_price * float(STOP_LOSS_PCT)) if atr_val and atr_val > 0 else current_price * float(STOP_LOSS_PCT)
+                        take_profit_distance = max(stop_distance * 2, current_price * float(TAKE_PROFIT_PCT))
+                        if side == "Buy":
+                            stop_loss = current_price - stop_distance
+                            take_profit = current_price + take_profit_distance
+                        else:
+                            stop_loss = current_price + stop_distance
+                            take_profit = current_price - take_profit_distance
+                    order_kwargs.update({
+                        "takeProfit": str(take_profit),
+                        "stopLoss": str(stop_loss)
+                    })
                 if RISK_LIMIT_ENABLED and RISK_LIMIT_VALUE:
                     order_kwargs.update({"riskLimitValue": str(RISK_LIMIT_VALUE)})
             except Exception:
