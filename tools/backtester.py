@@ -394,9 +394,11 @@ class Backtester:
             
             # Iterate through the historical data, simulating the strategy
             cooldown = 0
-            for i in range(self.ma_period + 10, len(df)):  # Need more data for ATR calculation
-                # This ensures no lookahead bias. The strategy only sees data up to the current point in time.
-                current_market_slice = df.iloc[i-self.ma_period-10:i]
+            # Determine required lookback for all supported strategies
+            required_lookback = max(self.ma_period, self.slow_ma, self.donchian_period, self.rsi_period, self.macd_slow, 20) + 10
+            for i in range(required_lookback, len(df)):
+                # No lookahead: use all data up to current index
+                current_market_slice = df.iloc[:i]
                 signal = self._get_signal(current_market_slice)
                 current_price = current_market_slice['close'].iloc[-1]
                 fee_pct = self.fee_bps / 10000.0
