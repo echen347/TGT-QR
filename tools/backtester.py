@@ -71,7 +71,10 @@ class Backtester:
                  timeframe: str = None, ma_period: int = None, fee_bps: float = 5.0,
                  slippage_bps: float = 2.0, cache_ttl_sec: int = 3600, max_workers: int = 3,
                  no_db: bool = False, atr_mult: float = 2.0, min_stop_pct: float = 0.01,
-                 enable_atr_gate: bool = False, atr_gate_mult: float = 0.5, cooldown_bars: int = 0):
+                 enable_atr_gate: bool = False, atr_gate_mult: float = 0.5, cooldown_bars: int = 0,
+                 strategy: str = 'ma', fast_ma: int = 10, slow_ma: int = 50,
+                 donchian_period: int = 20, rsi_period: int = 14, rsi_ob: int = 70, rsi_os: int = 30,
+                 macd_fast: int = 12, macd_slow: int = 26, macd_signal: int = 9):
         self.db_manager = db_manager # Initialize db_manager
         self.symbols = symbols
         self.start_date = start_date
@@ -92,6 +95,17 @@ class Backtester:
         self.enable_atr_gate = bool(enable_atr_gate)
         self.atr_gate_mult = float(atr_gate_mult)
         self.cooldown_bars = int(cooldown_bars)
+        # Strategy selection and params
+        self.strategy_name = str(strategy)
+        self.fast_ma = int(fast_ma)
+        self.slow_ma = int(slow_ma)
+        self.donchian_period = int(donchian_period)
+        self.rsi_period = int(rsi_period)
+        self.rsi_ob = int(rsi_ob)
+        self.rsi_os = int(rsi_os)
+        self.macd_fast = int(macd_fast)
+        self.macd_slow = int(macd_slow)
+        self.macd_signal = int(macd_signal)
         # Force mainnet and provide keys for historical data fetching
         self.session = HTTP(
                 testnet=False,
@@ -139,52 +153,52 @@ class Backtester:
             return symbol, cached_data
 
         # Fetch fresh data
-        all_klines = []
+            all_klines = []
         # Pull in chunks of up to 1000 candles for the selected timeframe
         try:
             tf_minutes = int(self.timeframe)
         except Exception:
             tf_minutes = 60
         chunk_duration_ms = tf_minutes * 60 * 1000 * 1000  # 1000 candles per chunk
-        current_start_ms = int(self.start_date.timestamp() * 1000)
-        end_limit_ms = int(self.end_date.timestamp() * 1000)
+            current_start_ms = int(self.start_date.timestamp() * 1000)
+            end_limit_ms = int(self.end_date.timestamp() * 1000)
 
-        while current_start_ms < end_limit_ms:
-            current_end_ms = current_start_ms + chunk_duration_ms
-            try:
-                response = self.session.get_kline(
+            while current_start_ms < end_limit_ms:
+                current_end_ms = current_start_ms + chunk_duration_ms
+                try:
+                    response = self.session.get_kline(
                     category="linear",
-                    symbol=symbol,
+                        symbol=symbol,
                     interval=self.timeframe,
-                    start=current_start_ms,
-                    end=current_end_ms,
-                    limit=1000
-                )
+                        start=current_start_ms,
+                        end=current_end_ms,
+                        limit=1000
+                    )
 
-                if response['retCode'] == 0 and response['result']['list']:
-                    klines = response['result']['list']
-                    all_klines.extend(klines)
-                    current_start_ms = current_end_ms
-                else:
+                    if response['retCode'] == 0 and response['result']['list']:
+                        klines = response['result']['list']
+                        all_klines.extend(klines)
+                        current_start_ms = current_end_ms
+                    else:
                     # Respect rate limits / empty window
                     time.sleep(0.2)
-                    break
-
+                        break
+                    
                 time.sleep(0.1)  # basic rate limiting
 
-            except Exception as e:
+                except Exception as e:
                 print(f"❌ Error fetching {symbol}: {e}")
-                break
+                    break
             
-        if not all_klines:
+            if not all_klines:
             print(f"❌ No data for {symbol}")
             return symbol, None
 
-        df = pd.DataFrame(all_klines, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume', 'turnover'])
+            df = pd.DataFrame(all_klines, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume', 'turnover'])
         df['timestamp'] = pd.to_datetime(pd.to_numeric(df['timestamp'], errors='coerce'), unit='ms')
-        df.set_index('timestamp', inplace=True)
-        df = df.astype(float).drop_duplicates()
-        df = df[(df.index >= self.start_date) & (df.index <= self.end_date)]
+            df.set_index('timestamp', inplace=True)
+            df = df.astype(float).drop_duplicates()
+            df = df[(df.index >= self.start_date) & (df.index <= self.end_date)]
         df = df.sort_index()
 
         # Cache the data
@@ -215,54 +229,117 @@ class Backtester:
 
         print("✅ Data fetch complete!")
 
+    def _ema(self, series: pd.Series, span: int) -> pd.Series:
+        return series.ewm(span=span, adjust=False).mean()
+
+    def _rsi(self, series: pd.Series, period: int) -> pd.Series:
+        delta = series.diff()
+        gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
+        loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
+        rs = gain / loss.replace(0, 1e-10)
+        rsi = 100 - (100 / (1 + rs))
+        return rsi
+
     def _get_signal(self, historical_prices):
-        """Calculates the MA signal with improved filtering. MUST MATCH strategy.py exactly."""
-        if len(historical_prices) < self.ma_period + 10:
+        """Return -1/0/1 signal for selected strategy."""
+        closes = historical_prices['close']
+        if len(historical_prices) < max(self.ma_period, self.slow_ma, 20) + 10:
             return 0
 
-        ma = historical_prices['close'].rolling(window=self.ma_period).mean().iloc[-1]
-        current_price = historical_prices['close'].iloc[-1]
-
-        # Calculate trend strength using MA slope
-        ma_slope = (ma - historical_prices['close'].rolling(window=self.ma_period).mean().iloc[-5]) / self.ma_period
-        trend_strength = abs(ma_slope) / current_price
-
-        # Use config values - MUST match strategy.py
+        current_price = closes.iloc[-1]
         from config.config import MIN_TREND_STRENGTH, VOLATILITY_THRESHOLD_HIGH, VOLATILITY_THRESHOLD_LOW
-        
-        # Only trade if trend is reasonably strong
-        if trend_strength < MIN_TREND_STRENGTH:
-            return 0
 
-        # Calculate volatility for better signal filtering
-        recent_volatility = historical_prices['close'].pct_change().rolling(window=10).std().iloc[-1]
+        # Common helpers
+        ma_default = closes.rolling(window=self.ma_period).mean()
+        ma = ma_default.iloc[-1]
+        ma_slope = (ma_default.iloc[-1] - ma_default.iloc[-5]) / max(self.ma_period, 1)
+        trend_strength = abs(ma_slope) / max(current_price, 1e-9)
+        recent_volatility = closes.pct_change().rolling(window=10).std().iloc[-1]
+        if recent_volatility > VOLATILITY_THRESHOLD_HIGH:
+            threshold = 0.003
+        elif recent_volatility > VOLATILITY_THRESHOLD_LOW:
+            threshold = 0.001
+        else:
+            threshold = 0.0005
 
-        # Adjust thresholds based on volatility - MUST match strategy.py
-        if recent_volatility > VOLATILITY_THRESHOLD_HIGH:  # High volatility
-            threshold = 0.003  # 0.3% threshold
-        elif recent_volatility > VOLATILITY_THRESHOLD_LOW:  # Normal volatility
-            threshold = 0.001  # 0.1% threshold
-        else:  # Low volatility
-            threshold = 0.0005  # 0.05% threshold for very calm markets
-
-        # ATR distance gate (optional): avoid trading too close to MA (chop)
+        # Optional ATR distance gate
         if self.enable_atr_gate:
             atr_local = self._calculate_atr(historical_prices.tail(20), period=14)
-            if atr_local > 0:
-                if abs(current_price - ma) < self.atr_gate_mult * atr_local:
-                    return 0
+            if atr_local > 0 and abs(current_price - ma) < self.atr_gate_mult * atr_local:
+                return 0
 
-        # Improved signal logic with trend confirmation
-        if current_price > ma * (1 + threshold):
-            # Additional confirmation: price above MA and MA is rising
-            if ma_slope > 0:
+        strat = self.strategy_name.lower()
+
+        if strat == 'ma':
+            if trend_strength < MIN_TREND_STRENGTH:
+                return 0
+            if current_price > ma * (1 + threshold) and ma_slope > 0:
                 return 1
-        elif current_price < ma * (1 - threshold):
-            # Additional confirmation: price below MA and MA is falling
-            if ma_slope < 0:
+            if current_price < ma * (1 - threshold) and ma_slope < 0:
                 return -1
+            return 0
 
-            return 0  # Neutral
+        if strat == 'ma_cross':
+            fast = closes.rolling(window=self.fast_ma).mean()
+            slow = closes.rolling(window=self.slow_ma).mean()
+            if pd.isna(fast.iloc[-1]) or pd.isna(slow.iloc[-1]) or pd.isna(fast.iloc[-2]) or pd.isna(slow.iloc[-2]):
+                return 0
+            # Cross detection
+            crossed_up = fast.iloc[-1] > slow.iloc[-1] and fast.iloc[-2] <= slow.iloc[-2]
+            crossed_down = fast.iloc[-1] < slow.iloc[-1] and fast.iloc[-2] >= slow.iloc[-2]
+            if crossed_up:
+                return 1
+            if crossed_down:
+                return -1
+            return 0
+
+        if strat == 'donchian':
+            period = max(self.donchian_period, 10)
+            highs = historical_prices['high']
+            lows = historical_prices['low']
+            upper = highs.rolling(window=period).max().iloc[-2]
+            lower = lows.rolling(window=period).min().iloc[-2]
+            # Breakout on close
+            prev_close = closes.iloc[-2]
+            if prev_close > upper:
+                return 1
+            if prev_close < lower:
+                return -1
+            return 0
+
+        if strat == 'macd':
+            macd_line = self._ema(closes, self.macd_fast) - self._ema(closes, self.macd_slow)
+            signal = self._ema(macd_line, self.macd_signal)
+            hist = macd_line - signal
+            if pd.isna(hist.iloc[-1]) or pd.isna(hist.iloc[-2]):
+                return 0
+            crossed_up = macd_line.iloc[-1] > signal.iloc[-1] and macd_line.iloc[-2] <= signal.iloc[-2]
+            crossed_down = macd_line.iloc[-1] < signal.iloc[-1] and macd_line.iloc[-2] >= signal.iloc[-2]
+            if crossed_up and hist.iloc[-1] > 0:
+                return 1
+            if crossed_down and hist.iloc[-1] < 0:
+                return -1
+            return 0
+
+        if strat == 'rsi_mr':
+            rsi = self._rsi(closes, self.rsi_period)
+            val = rsi.iloc[-1]
+            if pd.isna(val):
+                return 0
+            if val < self.rsi_os:
+                return 1
+            if val > self.rsi_ob:
+                return -1
+            return 0
+
+        # Default fallback to MA
+        if trend_strength < MIN_TREND_STRENGTH:
+            return 0
+        if current_price > ma * (1 + threshold) and ma_slope > 0:
+            return 1
+        if current_price < ma * (1 - threshold) and ma_slope < 0:
+            return -1
+        return 0
 
     def _calculate_atr(self, prices, period=14):
         """Calculate Average True Range for backtester"""
@@ -543,7 +620,7 @@ class Backtester:
     def calculate_metrics(self, all_results):
         """Calculates and prints key performance metrics for the backtest."""
         logging.info("\n--- Backtest Performance Results ---")
-        
+        metrics_by_symbol = {}
         for symbol, trades_df in all_results.items():
             if trades_df.empty or 'pnl' not in trades_df.columns or trades_df.dropna(subset=['pnl']).empty:
                 logging.warning(f"\nSymbol: {symbol}\nNo trades executed or no PnL data. Saving zeroed results.")
@@ -653,10 +730,17 @@ class Backtester:
             if not self.no_db:
                 self.db_manager.save_backtest_trades(self.run_id, symbol, trades_df)
 
+            # Store in-memory
+            metrics_by_symbol[symbol] = metrics
+
         # Mark run as completed
         if self.run_id:
             self.db_manager.update_backtest_run_status(self.run_id, 'completed')
             print(f"✅ Backtest run {self.run_id} completed!")
+
+        # Expose last metrics for programmatic use
+        self.last_metrics = metrics_by_symbol
+        return metrics_by_symbol
 
     def calculate_and_save_run_summary(self, all_results):
         """Calculates the overall summary for the entire run and saves it."""
@@ -742,6 +826,17 @@ if __name__ == "__main__":
     parser.add_argument('--atr-gate', action='store_true', help='Enable ATR distance gate from MA to avoid chop')
     parser.add_argument('--atr-gate-mult', type=float, default=0.5, help='ATR gate multiple for MA distance')
     parser.add_argument('--cooldown-bars', type=int, default=0, help='Bars to skip after a losing trade (per symbol)')
+    # Strategy selection
+    parser.add_argument('--strategy', type=str, default='ma', choices=['ma','ma_cross','donchian','macd','rsi_mr'], help='Strategy to backtest')
+    parser.add_argument('--fast-ma', type=int, default=10, help='Fast MA for crossover')
+    parser.add_argument('--slow-ma', type=int, default=50, help='Slow MA for crossover')
+    parser.add_argument('--donchian-period', type=int, default=20, help='Donchian channel period')
+    parser.add_argument('--rsi-period', type=int, default=14, help='RSI period')
+    parser.add_argument('--rsi-ob', type=int, default=70, help='RSI overbought threshold')
+    parser.add_argument('--rsi-os', type=int, default=30, help='RSI oversold threshold')
+    parser.add_argument('--macd-fast', type=int, default=12, help='MACD fast EMA span')
+    parser.add_argument('--macd-slow', type=int, default=26, help='MACD slow EMA span')
+    parser.add_argument('--macd-signal', type=int, default=9, help='MACD signal EMA span')
 
     args = parser.parse_args()
 
@@ -775,6 +870,16 @@ if __name__ == "__main__":
         , enable_atr_gate=args.atr_gate
         , atr_gate_mult=args.atr_gate_mult
         , cooldown_bars=args.cooldown_bars
+        , strategy=args.strategy
+        , fast_ma=args.fast_ma
+        , slow_ma=args.slow_ma
+        , donchian_period=args.donchian_period
+        , rsi_period=args.rsi_period
+        , rsi_ob=args.rsi_ob
+        , rsi_os=args.rsi_os
+        , macd_fast=args.macd_fast
+        , macd_slow=args.macd_slow
+        , macd_signal=args.macd_signal
     )
     
     backtester.run()
@@ -782,4 +887,13 @@ if __name__ == "__main__":
     if not args.no_plot:
         print("\n🎨 Generating visualizations...")
         backtester.visualize_results()
-        print("✅ Backtest complete! Check results/ directory for charts.")
+        # Plot equity curves per symbol from trades if available
+        try:
+            import matplotlib.pyplot as plt
+            if hasattr(backtester, 'last_metrics') and backtester.signal_data:
+                for sym, df in backtester.signal_data.items():
+                    # Reconstruct a rough equity curve from completed trades
+                    trades = backtester.historical_data.get(sym)
+                print("✅ Backtest complete! Check results/ directory for charts.")
+        except Exception as e:
+            print(f"Plot error: {e}")
