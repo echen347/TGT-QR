@@ -74,7 +74,8 @@ class Backtester:
                  enable_atr_gate: bool = False, atr_gate_mult: float = 0.5, cooldown_bars: int = 0,
                  strategy: str = 'ma', fast_ma: int = 10, slow_ma: int = 50,
                  donchian_period: int = 20, rsi_period: int = 14, rsi_ob: int = 70, rsi_os: int = 30,
-                 macd_fast: int = 12, macd_slow: int = 26, macd_signal: int = 9):
+                 macd_fast: int = 12, macd_slow: int = 26, macd_signal: int = 9,
+                 htf_ma_1h: int = 50, pullback_ob: int = 65, pullback_os: int = 35):
         self.db_manager = db_manager # Initialize db_manager
         self.symbols = symbols
         self.start_date = start_date
@@ -106,6 +107,9 @@ class Backtester:
         self.macd_fast = int(macd_fast)
         self.macd_slow = int(macd_slow)
         self.macd_signal = int(macd_signal)
+        self.htf_ma_1h = int(htf_ma_1h)
+        self.pullback_ob = int(pullback_ob)
+        self.pullback_os = int(pullback_os)
         # Force mainnet and provide keys for historical data fetching
         self.session = HTTP(
                 testnet=False,
@@ -153,52 +157,52 @@ class Backtester:
             return symbol, cached_data
 
         # Fetch fresh data
-        all_klines = []
+            all_klines = []
         # Pull in chunks of up to 1000 candles for the selected timeframe
         try:
             tf_minutes = int(self.timeframe)
         except Exception:
             tf_minutes = 60
         chunk_duration_ms = tf_minutes * 60 * 1000 * 1000  # 1000 candles per chunk
-        current_start_ms = int(self.start_date.timestamp() * 1000)
-        end_limit_ms = int(self.end_date.timestamp() * 1000)
+            current_start_ms = int(self.start_date.timestamp() * 1000)
+            end_limit_ms = int(self.end_date.timestamp() * 1000)
 
-        while current_start_ms < end_limit_ms:
-            current_end_ms = current_start_ms + chunk_duration_ms
-            try:
-                response = self.session.get_kline(
+            while current_start_ms < end_limit_ms:
+                current_end_ms = current_start_ms + chunk_duration_ms
+                try:
+                    response = self.session.get_kline(
                     category="linear",
-                    symbol=symbol,
+                        symbol=symbol,
                     interval=self.timeframe,
-                    start=current_start_ms,
-                    end=current_end_ms,
-                    limit=1000
-                )
+                        start=current_start_ms,
+                        end=current_end_ms,
+                        limit=1000
+                    )
 
-                if response['retCode'] == 0 and response['result']['list']:
-                    klines = response['result']['list']
-                    all_klines.extend(klines)
-                    current_start_ms = current_end_ms
-                else:
+                    if response['retCode'] == 0 and response['result']['list']:
+                        klines = response['result']['list']
+                        all_klines.extend(klines)
+                        current_start_ms = current_end_ms
+                    else:
                     # Respect rate limits / empty window
                     time.sleep(0.2)
-                    break
-
+                        break
+                    
                 time.sleep(0.1)  # basic rate limiting
 
-            except Exception as e:
+                except Exception as e:
                 print(f"❌ Error fetching {symbol}: {e}")
-                break
-        
-        if not all_klines:
+                    break
+            
+            if not all_klines:
             print(f"❌ No data for {symbol}")
             return symbol, None
 
-        df = pd.DataFrame(all_klines, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume', 'turnover'])
+            df = pd.DataFrame(all_klines, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume', 'turnover'])
         df['timestamp'] = pd.to_datetime(pd.to_numeric(df['timestamp'], errors='coerce'), unit='ms')
-        df.set_index('timestamp', inplace=True)
-        df = df.astype(float).drop_duplicates()
-        df = df[(df.index >= self.start_date) & (df.index <= self.end_date)]
+            df.set_index('timestamp', inplace=True)
+            df = df.astype(float).drop_duplicates()
+            df = df[(df.index >= self.start_date) & (df.index <= self.end_date)]
         df = df.sort_index()
 
         # Cache the data
@@ -322,6 +326,7 @@ class Backtester:
             return 0
 
         if strat == 'rsi_mr':
+            # Simple RSI mean reversion on single TF
             rsi = self._rsi(closes, self.rsi_period)
             val = rsi.iloc[-1]
             if pd.isna(val):
@@ -329,6 +334,46 @@ class Backtester:
             if val < self.rsi_os:
                 return 1
             if val > self.rsi_ob:
+                return -1
+            return 0
+
+        if strat == 'htf_pullback':
+            # Higher-timeframe confirmation (1h MA) + 15m pullback entry
+            # Assumes current timeframe is 15m or 5m; we’ll synthesize an HTF MA from the 1h-equivalent window
+            # Compute synthetic 1h MA by using period scaled by (60 / timeframe)
+            try:
+                tf_minutes = int(self.timeframe)
+            except Exception:
+                tf_minutes = 60
+            scale = max(int(60 / max(tf_minutes, 1)), 1)
+            htf_window = max(self.htf_ma_1h * scale, self.htf_ma_1h)
+            htf_ma_series = closes.rolling(window=htf_window).mean()
+            htf_ma = htf_ma_series.iloc[-1]
+            if pd.isna(htf_ma):
+                return 0
+
+            # Direction from HTF
+            direction = 1 if closes.iloc[-1] > htf_ma else -1 if closes.iloc[-1] < htf_ma else 0
+            if direction == 0:
+                return 0
+
+            # Pullback filter via RSI toward mean
+            rsi = self._rsi(closes, self.rsi_period)
+            rsi_val = rsi.iloc[-1]
+            if pd.isna(rsi_val):
+                return 0
+
+            # ATR gate to avoid chop
+            if self.enable_atr_gate:
+                atr_local = self._calculate_atr(historical_prices.tail(20), period=14)
+                if atr_local > 0 and abs(closes.iloc[-1] - htf_ma) < self.atr_gate_mult * atr_local:
+                    return 0
+
+            # Long trend: buy pullbacks (RSI below pullback_os)
+            if direction == 1 and rsi_val <= self.pullback_os:
+                return 1
+            # Short trend: sell rallies (RSI above pullback_ob)
+            if direction == -1 and rsi_val >= self.pullback_ob:
                 return -1
             return 0
 
@@ -829,7 +874,7 @@ if __name__ == "__main__":
     parser.add_argument('--atr-gate-mult', type=float, default=0.5, help='ATR gate multiple for MA distance')
     parser.add_argument('--cooldown-bars', type=int, default=0, help='Bars to skip after a losing trade (per symbol)')
     # Strategy selection
-    parser.add_argument('--strategy', type=str, default='ma', choices=['ma','ma_cross','donchian','macd','rsi_mr'], help='Strategy to backtest')
+    parser.add_argument('--strategy', type=str, default='ma', choices=['ma','ma_cross','donchian','macd','rsi_mr','htf_pullback'], help='Strategy to backtest')
     parser.add_argument('--fast-ma', type=int, default=10, help='Fast MA for crossover')
     parser.add_argument('--slow-ma', type=int, default=50, help='Slow MA for crossover')
     parser.add_argument('--donchian-period', type=int, default=20, help='Donchian channel period')
@@ -839,6 +884,10 @@ if __name__ == "__main__":
     parser.add_argument('--macd-fast', type=int, default=12, help='MACD fast EMA span')
     parser.add_argument('--macd-slow', type=int, default=26, help='MACD slow EMA span')
     parser.add_argument('--macd-signal', type=int, default=9, help='MACD signal EMA span')
+    # HTF pullback
+    parser.add_argument('--htf-ma-1h', type=int, default=50, help='1h MA length for HTF confirmation')
+    parser.add_argument('--pullback-ob', type=int, default=65, help='RSI threshold for short-side pullback (overbought)')
+    parser.add_argument('--pullback-os', type=int, default=35, help='RSI threshold for long-side pullback (oversold)')
 
     args = parser.parse_args()
 
@@ -882,6 +931,9 @@ if __name__ == "__main__":
         , macd_fast=args.macd_fast
         , macd_slow=args.macd_slow
         , macd_signal=args.macd_signal
+        , htf_ma_1h=args.htf_ma_1h
+        , pullback_ob=args.pullback_ob
+        , pullback_os=args.pullback_os
     )
     
     backtester.run()
