@@ -116,7 +116,11 @@ class PerformanceTracker:
         
         # ANTI-OVERFITTING: Require minimum trades before adapting
         # This ensures we have enough data to make meaningful decisions
-        min_trades = ADAPTIVE_MIN_TRADES if 'ADAPTIVE_MIN_TRADES' in globals() else 10
+        try:
+            min_trades = ADAPTIVE_MIN_TRADES
+        except NameError:
+            min_trades = 10  # Default fallback
+        
         if metrics['total_trades'] < min_trades:
             recommendations['reason'] = f'insufficient_data (need {min_trades} trades, have {metrics["total_trades"]})'
             return recommendations
