@@ -152,8 +152,15 @@ class TradingDashboard:
         except Exception as e:
             import traceback
             traceback.print_exc()
-            logging.error(f"PnL chart error: {e}")
-            return {'error': 'Unable to load PnL data'}
+            logging.error(f"PnL chart error: {e}", exc_info=True)
+            # Return empty data structure instead of error to prevent frontend crashes
+            return {
+                'error': 'Unable to load PnL data',
+                'timestamps': [],
+                'cumulative_pnl': [],
+                'current_pnl': 0,
+                'account_balance': 0
+            }
 
     def get_positions_data(self):
         """Get current positions data from Bybit API"""
@@ -213,7 +220,35 @@ class TradingDashboard:
 
     def get_risk_status(self):
         """Get current risk status"""
-        return self.risk_manager.get_risk_status()
+        try:
+            if not self.risk_manager:
+                return {
+                    'daily_loss': 0,
+                    'total_loss': 0,
+                    'positions_count': 0,
+                    'max_position_usdt': 10.0,
+                    'max_daily_loss_usdt': 10.0,
+                    'max_total_loss_usdt': 15.0,
+                    'max_positions': 4,
+                    'leverage': 5,
+                    'is_stopped': False,
+                    'can_trade': True
+                }
+            return self.risk_manager.get_risk_status()
+        except Exception as e:
+            logging.error(f"Error getting risk status: {e}")
+            return {
+                'daily_loss': 0,
+                'total_loss': 0,
+                'positions_count': 0,
+                'max_position_usdt': 10.0,
+                'max_daily_loss_usdt': 10.0,
+                'max_total_loss_usdt': 15.0,
+                'max_positions': 4,
+                'leverage': 5,
+                'is_stopped': False,
+                'can_trade': True
+            }
 
     def create_pnl_chart(self):
         """Create PnL chart using Plotly"""
@@ -283,46 +318,81 @@ def dashboard():
 @app.route('/api/status')
 def api_status():
     """API endpoint for real-time status"""
-    dashboard = TradingDashboard(strategy_instance, risk_manager_instance)
+    try:
+        if not strategy_instance or not risk_manager_instance:
+            return jsonify({'error': 'Strategy not initialized'}), 503
+        
+        dashboard = TradingDashboard(strategy_instance, risk_manager_instance)
 
-    return jsonify({
-        'risk_status': dashboard.get_risk_status(),
-        'positions': dashboard.get_positions_data(),
-        'recent_signals': dashboard.get_signals_data()[:5],  # Last 5 signals
-        'pnl_summary': dashboard.get_pnl_chart_data(),
-        'market_context': dashboard.get_market_data(),
-        'alerts': dashboard.get_alerts()
-    })
+        return jsonify({
+            'risk_status': dashboard.get_risk_status(),
+            'positions': dashboard.get_positions_data(),
+            'recent_signals': dashboard.get_signals_data()[:5],  # Last 5 signals
+            'pnl_summary': dashboard.get_pnl_chart_data(),
+            'market_context': dashboard.get_market_data(),
+            'alerts': dashboard.get_alerts()
+        })
+    except Exception as e:
+        logging.error(f"Error in /api/status: {e}", exc_info=True)
+        return jsonify({'error': 'Failed to fetch status', 'message': str(e)}), 500
 
 @app.route('/api/pnl_chart')
 def api_pnl_chart():
     """API endpoint for PnL chart data"""
-    dashboard = TradingDashboard(strategy_instance, risk_manager_instance)
-    return jsonify(dashboard.get_pnl_chart_data())
+    try:
+        if not strategy_instance or not risk_manager_instance:
+            return jsonify({'error': 'Strategy not initialized'}), 503
+        
+        dashboard = TradingDashboard(strategy_instance, risk_manager_instance)
+        return jsonify(dashboard.get_pnl_chart_data())
+    except Exception as e:
+        logging.error(f"Error in /api/pnl_chart: {e}", exc_info=True)
+        return jsonify({'error': 'Failed to fetch PnL data', 'message': str(e)}), 500
 
 @app.route('/api/alerts')
 def api_alerts():
     """API endpoint for alerts"""
-    dashboard = TradingDashboard(strategy_instance, risk_manager_instance)
-    return jsonify(dashboard.get_alerts())
+    try:
+        if not strategy_instance or not risk_manager_instance:
+            return jsonify([])  # Return empty array if not initialized
+        
+        dashboard = TradingDashboard(strategy_instance, risk_manager_instance)
+        return jsonify(dashboard.get_alerts())
+    except Exception as e:
+        logging.error(f"Error in /api/alerts: {e}", exc_info=True)
+        return jsonify([])  # Return empty array on error
 
 @app.route('/api/signals')
 def api_signals():
     """API endpoint for recent signals"""
-    dashboard = TradingDashboard(strategy_instance, risk_manager_instance)
-    return jsonify(dashboard.get_signals_data()[:10])
+    try:
+        if not strategy_instance or not risk_manager_instance:
+            return jsonify([])  # Return empty array if not initialized
+        
+        dashboard = TradingDashboard(strategy_instance, risk_manager_instance)
+        return jsonify(dashboard.get_signals_data()[:10])
+    except Exception as e:
+        logging.error(f"Error in /api/signals: {e}", exc_info=True)
+        return jsonify([])  # Return empty array on error
 
 @app.route('/api/market_context')
 def api_market_context():
     """API endpoint for market context - recalculates signals on-demand for freshness"""
-    dashboard = TradingDashboard(strategy_instance, risk_manager_instance)
-    # Force signal recalculation to ensure fresh data
-    if strategy_instance:
-        try:
-            strategy_instance.update_market_data()
-        except Exception as e:
-            logging.warning(f"Failed to update market data in API: {e}")
-    return jsonify(dashboard.get_market_data())
+    try:
+        if not strategy_instance or not risk_manager_instance:
+            return jsonify({})  # Return empty dict if not initialized
+        
+        dashboard = TradingDashboard(strategy_instance, risk_manager_instance)
+        # Force signal recalculation to ensure fresh data
+        if strategy_instance:
+            try:
+                strategy_instance.update_market_data()
+            except Exception as e:
+                logging.warning(f"Failed to update market data in API: {e}")
+        return jsonify(dashboard.get_market_data())
+    except Exception as e:
+        logging.error(f"Error in /api/market_context: {e}", exc_info=True)
+        return jsonify({'error': 'Failed to fetch market context', 'message': str(e)}), 500
 
 @app.route('/shutdown', methods=['POST'])
 def shutdown():
