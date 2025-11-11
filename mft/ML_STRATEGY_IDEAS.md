@@ -1,5 +1,27 @@
 # ML-Based Strategy Ideas
 
+## ⚠️ Overfitting Warning
+
+**You're absolutely right about bias-variance tradeoff!**
+
+More complex models = Higher risk of overfitting:
+- **Simple models** (Logistic Regression): Low variance, high bias → Less overfitting risk
+- **Complex models** (Deep Neural Networks): High variance, low bias → Higher overfitting risk
+
+**Recommendation**: Start with **simplest possible ML** (Phase 3A with Logistic Regression), only add complexity if needed.
+
+### Anti-Overfitting Principles:
+1. ✅ **Prefer simple models** - Logistic Regression > Random Forest > Neural Networks
+2. ✅ **Feature selection** - Use only statistically significant features
+3. ✅ **Regularization** - L1/L2 penalties to prevent overfitting
+4. ✅ **Out-of-sample testing** - Always validate on unseen data
+5. ✅ **Walk-forward validation** - Test on rolling windows
+6. ✅ **Live monitoring** - Compare live vs backtest performance
+
+**If ML doesn't improve performance, stick with simpler rule-based systems!**
+
+---
+
 ## Current Status
 
 **Active System**: Phase 1 (Original) + Phase 2B (Adaptive Parameters)
