@@ -24,7 +24,7 @@ SYMBOLS = [
 # --- Position Sizing & Leverage ---
 MAX_POSITION_USDT = 10.00 # Margin per position (restored for $26 bankroll - meets 0.1 SOL min order with 5x leverage)
 LEVERAGE = 5.0  # Higher leverage to reduce required margin per order
-MAX_POSITIONS = 2  # ETH + SOL
+MAX_POSITIONS = 4  # Allow positions in all symbols (ETH, SOL, BTC, AVAX)
 MIN_VOLUME_USDT = 200000  # Only trade reasonably liquid pairs (500K+ USD volume)
 TIMEFRAME = '15'  # 15-minute candles per deployment decision
 MA_PERIOD = 20  # A shorter MA period will be more sensitive to price changes
