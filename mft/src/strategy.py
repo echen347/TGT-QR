@@ -484,9 +484,16 @@ class MovingAverageStrategy:
                 self.logger.warning(f"Error getting balance: {e}")
                 pass
 
-            # Clamp to 80% of available to avoid 110007 and to MAX_POSITION_USDT (restored for $26 bankroll)
+            # Apply adaptive position sizing (Phase 2B)
             from config.config import MAX_POSITION_USDT
-            clamped_margin = min(float(qty_usdt), max(0.0, available_balance * 0.80), float(MAX_POSITION_USDT))
+            adaptive_position_mult = 1.0
+            if ENABLE_ADAPTIVE_PARAMS and self.adaptive_params:
+                adaptive_position_mult = self.adaptive_params['adjust_position_size']
+            
+            max_position_usdt_adaptive = MAX_POSITION_USDT * adaptive_position_mult
+            
+            # Clamp to 80% of available to avoid 110007 and to adaptive MAX_POSITION_USDT
+            clamped_margin = min(float(qty_usdt), max(0.0, available_balance * 0.80), float(max_position_usdt_adaptive))
             
             # Calculate notional with leverage
             notional_usdt = clamped_margin * leverage
@@ -499,11 +506,11 @@ class MovingAverageStrategy:
             
             if notional_usdt < min_notional_usdt:
                 # We need to increase margin to meet minimum order size
-                # Try to use full MAX_POSITION_USDT if balance allows
-                required_margin = max(min_margin_for_order, MAX_POSITION_USDT)
+                # Try to use full adaptive MAX_POSITION_USDT if balance allows
+                required_margin = max(min_margin_for_order, max_position_usdt_adaptive)
                 if available_balance * 0.80 >= required_margin:
-                    # Use full MAX_POSITION_USDT (optimal sizing)
-                    clamped_margin = MAX_POSITION_USDT
+                    # Use full adaptive MAX_POSITION_USDT (optimal sizing)
+                    clamped_margin = max_position_usdt_adaptive
                     notional_usdt = clamped_margin * leverage
                     qty_base = notional_usdt / current_price
                     # Round to meet exchange step size
