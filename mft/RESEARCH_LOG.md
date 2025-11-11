@@ -127,14 +127,15 @@
 ### Experiment 9: ML Random Forest (50% confidence) - ETHUSDT BREAKTHROUGH ⚠️ NEEDS INVESTIGATION
 **Hypothesis**: Lower confidence threshold (50% vs 60%) generates more trades while maintaining quality  
 **Test Period**: 60 days (2025-09-12 to 2025-11-11)  
-**Symbols**: ETHUSDT, DOGEUSDT, AVAXUSDT, BTCUSDT  
+**Symbols**: ETHUSDT, DOGEUSDT, AVAXUSDT, BTCUSDT, GALAUSDT  
 **Features**: Same as Experiment 8  
 **Overfitting Prevention**: Same as Experiment 8, but confidence >50%  
 **Results**:
 - ETHUSDT: 287.58% return, 73.68% win rate, 19 trades ⚠️ NEEDS VERIFICATION
 - DOGEUSDT: -100% return, 34.24% win rate, 1025 trades ❌
 - AVAXUSDT: -100% return, 35.91% win rate, 1047 trades ❌
-- BTCUSDT: -23.42% return, 40% win rate, 25 trades ❌  
+- BTCUSDT: -23.42% return, 40% win rate, 25 trades ❌
+- GALAUSDT: -100% return, 35.54% win rate, 1103 trades ❌  
 **OOD Validation**: 
 - Train (40 days): 287.58% return, 73.68% win rate, 19 trades
 - Test (20 days): 287.58% return, 73.68% win rate, 19 trades ⚠️ **BUG DETECTED** - Identical results suggest all trades in one period or date filtering not working  
@@ -143,6 +144,7 @@
 - ETHUSDT may be more predictable than other tickers
 - Lower confidence threshold helps generate more trades
 - **CRITICAL**: Need to verify why train/test results are identical - possible bug
+- ML RF only works on ETHUSDT, fails on all other tickers tested
 **Status**: 🔍 Investigating date filtering in backtester
 
 ---
@@ -188,7 +190,7 @@
 ## Summary of Findings
 
 ### ✅ Promising Strategies (Need Verification):
-1. **ML RF (50% conf) on ETHUSDT**: 287.58% return, 73.68% win rate ⚠️ NEEDS OOD VERIFICATION
+1. **ML RF (50% conf) on ETHUSDT**: 287.58% return, 73.68% win rate ⚠️ NEEDS OOD VERIFICATION (bug detected)
 2. **Order Flow on ETHUSDT**: 92.66% return, 50% win rate ⚠️ Too few trades (8)
 3. **Volatility Clustering on ETHUSDT**: 83.88% return ⚠️ Too few trades (11)
 
@@ -201,14 +203,23 @@
 - Volatility Breakout
 - Momentum + MR Hybrid
 - ML RF (60% conf) on AVAXUSDT/DOGEUSDT/SOLUSDT
+- ML RF (50% conf) on DOGEUSDT/AVAXUSDT/BTCUSDT/GALAUSDT
 - ML LR (all symbols)
 
 ### Key Observations:
 1. **ETHUSDT is special**: Multiple strategies work on ETHUSDT but not other tickers
-2. **Trade frequency matters**: Strategies with <20 trades need more signals
+   - ML RF: 287.58% return (19 trades)
+   - Order Flow: 92.66% return (8 trades)
+   - Volatility Clustering: 83.88% return (11 trades)
+2. **Trade frequency matters**: Strategies with <20 trades need more signals for statistical significance
 3. **Win rate alone insufficient**: Need good risk/reward ratio
-4. **ML shows promise**: But needs proper OOD validation
+4. **ML shows promise**: But needs proper OOD validation (bug detected)
 5. **Overfitting risk**: Train/test identical results suggest possible bug
+
+### Critical Issues:
+- ⚠️ **ML RF train/test identical**: Possible bug in date filtering or ML strategy retraining
+- ⚠️ **Low trade frequency**: Order Flow (8 trades) and Volatility Clustering (11 trades) need more signals
+- ⚠️ **ETHUSDT-specific**: Strategies don't generalize to other tickers
 
 ---
 
