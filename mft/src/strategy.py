@@ -504,13 +504,19 @@ class MovingAverageStrategy:
                 notional_usdt = qty_base * current_price
                 clamped_margin = notional_usdt / leverage
             
+            # Round to 0.1 step size (qtyStep from exchange)
+            qty_base = round(qty_base * 10) / 10  # Round to nearest 0.1
+            # Ensure we still meet minimum after rounding
+            if qty_base < min_order_qty:
+                qty_base = min_order_qty
+            
             order_kwargs = {
                 "category": "linear",
                 "symbol": symbol,
                 "side": side,
                 "orderType": "Market",
-                # Use base currency qty to meet minimum order requirements
-                "qty": str(round(qty_base, 3)),  # Round to 3 decimals for precision
+                # Use base currency qty to meet minimum order requirements (0.1 step size)
+                "qty": str(qty_base),  # Format as string, e.g. "0.1", "0.2", etc.
                 "leverage": str(leverage)
                 # Removed marketUnit - using base currency qty instead
             }
