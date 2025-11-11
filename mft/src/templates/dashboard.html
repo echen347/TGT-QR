@@ -29,10 +29,17 @@
             display: grid;
             grid-template-columns: repeat(12, 1fr);
             gap: 24px;
-            max-width: 1800px;
+            max-width: 100%;
             margin: auto;
             width: 100%;
             box-sizing: border-box;
+            padding: 0 24px;
+        }
+        
+        @media (min-width: 2000px) {
+            .container {
+                max-width: 95%;
+            }
         }
         
         @media (max-width: 767px) {
@@ -658,7 +665,7 @@
         
         // Function to update market context
         function updateMarketContext() {
-            fetch('/api/market_context')
+            fetch('/api/market_context?' + new Date().getTime()) // Add cache busting
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
@@ -680,13 +687,15 @@
                     let html = '';
                     for (const [symbol, data] of Object.entries(marketContext)) {
                         const signalClass = (data.signal || 'NEUTRAL').toLowerCase().replace('_', '-');
+                        const signalText = data.signal || 'NEUTRAL';
+                        console.log(`Updating ${symbol} signal to: ${signalText}`); // Debug log
                         html += `
                             <div class="card market-card">
                                 <h4>${symbol}</h4>
                                 <p>Price: $${(data.price || 0).toFixed(2)}</p>
                                 <p>MA (m): $${(data.ma_value || 0).toFixed(2)}</p>
                                 <p>24h Vol: $${(data.volume_24h || 0).toLocaleString()}</p>
-                                <p>Signal: <span class="signal-${signalClass}">${data.signal || 'NEUTRAL'}</span></p>
+                                <p>Signal: <span class="signal-${signalClass}">${signalText}</span></p>
                             </div>
                         `;
                     }
