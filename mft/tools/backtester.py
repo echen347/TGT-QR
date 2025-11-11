@@ -50,7 +50,7 @@ dotenv_path = os.path.join(os.path.dirname(__file__), '..', '.env')
 load_dotenv(dotenv_path=dotenv_path)
 
 from config.config import BYBIT_TESTNET, SYMBOLS, MA_PERIOD, TIMEFRAME, LEVERAGE
-from config.config import BYBIT_API_KEY, BYBIT_API_SECRET
+from config.config import BYBIT_API_KEY, BYBIT_API_SECRET, TRADING_FEE_BPS, SLIPPAGE_BPS
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 from database import db_manager
 
@@ -68,8 +68,8 @@ class Backtester:
     """
 
     def __init__(self, symbols, start_date, end_date, run_name=None, run_description=None,
-                 timeframe: str = None, ma_period: int = None, fee_bps: float = 5.0,
-                 slippage_bps: float = 2.0, cache_ttl_sec: int = 3600, max_workers: int = 3,
+                 timeframe: str = None, ma_period: int = None, fee_bps: float = None,
+                 slippage_bps: float = None, cache_ttl_sec: int = 3600, max_workers: int = 3,
                  no_db: bool = False, atr_mult: float = 2.0, min_stop_pct: float = 0.01,
                  enable_atr_gate: bool = False, atr_gate_mult: float = 0.5, cooldown_bars: int = 0,
                  strategy: str = 'ma', fast_ma: int = 10, slow_ma: int = 50,
@@ -87,8 +87,9 @@ class Backtester:
         # Use 1-minute candles by default to match live trading (more accurate signals)
         self.timeframe = str(timeframe or '1')  # Changed from TIMEFRAME to '1' for consistency
         self.ma_period = int(ma_period or MA_PERIOD)
-        self.fee_bps = float(fee_bps)
-        self.slippage_bps = float(slippage_bps)
+        # Use config defaults if not specified (realistic Bybit taker fees: 11 bps round-trip)
+        self.fee_bps = float(fee_bps if fee_bps is not None else TRADING_FEE_BPS)
+        self.slippage_bps = float(slippage_bps if slippage_bps is not None else SLIPPAGE_BPS)
         self.cache_ttl_sec = int(cache_ttl_sec)
         self.max_workers = int(max_workers)
         self.no_db = bool(no_db)
@@ -895,7 +896,7 @@ if __name__ == "__main__":
     parser.add_argument('--end', type=str, help='End date (YYYY-MM-DD)')
     parser.add_argument('--timeframe', type=str, default=str(TIMEFRAME), help='Bybit kline interval (e.g., 60)')
     parser.add_argument('--ma', type=int, default=int(MA_PERIOD), help='MA period')
-    parser.add_argument('--fee-bps', type=float, default=5.0, help='Round-trip fee in basis points (per side ~2.5bps)')
+    parser.add_argument('--fee-bps', type=float, default=None, help=f'Round-trip fee in basis points (default: {TRADING_FEE_BPS} bps = Bybit taker fees)')
     parser.add_argument('--slippage-bps', type=float, default=2.0, help='Adverse slippage in basis points per trade leg')
     parser.add_argument('--cache-ttl', type=int, default=3600, help='Cache TTL seconds')
     parser.add_argument('--max-workers', type=int, default=3, help='Parallel fetch workers')
