@@ -157,19 +157,19 @@ class Backtester:
             return symbol, cached_data
 
         # Fetch fresh data
-            all_klines = []
+        all_klines = []
         # Pull in chunks of up to 1000 candles for the selected timeframe
         try:
             tf_minutes = int(self.timeframe)
         except Exception:
             tf_minutes = 60
         chunk_duration_ms = tf_minutes * 60 * 1000 * 1000  # 1000 candles per chunk
-            current_start_ms = int(self.start_date.timestamp() * 1000)
-            end_limit_ms = int(self.end_date.timestamp() * 1000)
+        current_start_ms = int(self.start_date.timestamp() * 1000)
+        end_limit_ms = int(self.end_date.timestamp() * 1000)
 
-            while current_start_ms < end_limit_ms:
-                current_end_ms = current_start_ms + chunk_duration_ms
-                try:
+        while current_start_ms < end_limit_ms:
+            current_end_ms = current_start_ms + chunk_duration_ms
+            try:
                     response = self.session.get_kline(
                     category="linear",
                         symbol=symbol,
@@ -184,25 +184,25 @@ class Backtester:
                         all_klines.extend(klines)
                         current_start_ms = current_end_ms
                     else:
-                    # Respect rate limits / empty window
-                    time.sleep(0.2)
+                        # Respect rate limits / empty window
+                        time.sleep(0.2)
                         break
                     
-                time.sleep(0.1)  # basic rate limiting
+                    time.sleep(0.1)  # basic rate limiting
 
-                except Exception as e:
+            except Exception as e:
                 print(f"❌ Error fetching {symbol}: {e}")
-                    break
+                break
             
-            if not all_klines:
+        if not all_klines:
             print(f"❌ No data for {symbol}")
             return symbol, None
 
-            df = pd.DataFrame(all_klines, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume', 'turnover'])
+        df = pd.DataFrame(all_klines, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume', 'turnover'])
         df['timestamp'] = pd.to_datetime(pd.to_numeric(df['timestamp'], errors='coerce'), unit='ms')
-            df.set_index('timestamp', inplace=True)
-            df = df.astype(float).drop_duplicates()
-            df = df[(df.index >= self.start_date) & (df.index <= self.end_date)]
+        df.set_index('timestamp', inplace=True)
+        df = df.astype(float).drop_duplicates()
+        df = df[(df.index >= self.start_date) & (df.index <= self.end_date)]
         df = df.sort_index()
 
         # Cache the data

@@ -419,8 +419,9 @@ def api_market_data():
             return jsonify({'error': 'No market data available'}), 500
 
         # --- Prepare data for charts ---
-        # Labels (timestamps) - using BTC as the reference
-        labels = all_data['BTCUSDT'].index.strftime('%H:%M').tolist()
+        # Labels (timestamps) - use first available symbol as reference
+        reference_symbol = next(iter(all_data.keys()))
+        labels = all_data[reference_symbol].index.strftime('%H:%M').tolist()
         
         # 1. Price Data
         prices = {s.replace('USDT', '').lower(): df['close'].tolist() for s, df in all_data.items()}
@@ -468,8 +469,8 @@ def api_market_data():
                 }
 
         macd = {
-            'btc_macd': macd_data.get('BTCUSDT', {}).get('macd', [0]),
-            'btc_signal': macd_data.get('BTCUSDT', {}).get('signal', [0])
+            'btc_macd': macd_data.get('BTCUSDT', macd_data.get(reference_symbol, {})).get('macd', [0]),
+            'btc_signal': macd_data.get('BTCUSDT', macd_data.get(reference_symbol, {})).get('signal', [0])
         }
 
         # 5. Technical Indicators
