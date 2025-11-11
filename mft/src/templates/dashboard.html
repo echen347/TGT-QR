@@ -28,12 +28,19 @@
         .container {
             display: grid;
             grid-template-columns: repeat(12, 1fr);
-            gap: 24px;
+            gap: 20px;
             max-width: 100%;
             margin: auto;
             width: 100%;
             box-sizing: border-box;
             padding: 0 24px;
+        }
+        
+        @media (min-width: 1600px) {
+            .container {
+                gap: 24px;
+                max-width: 95%;
+            }
         }
         
         @media (min-width: 2000px) {
@@ -53,11 +60,17 @@
         .card {
             background-color: var(--card-background-color);
             border-radius: 12px;
-            padding: 24px;
+            padding: 20px;
             border: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        
+        @media (min-width: 1600px) {
+            .card {
+                padding: 24px;
+            }
         }
         h3 {
             margin-top: 0;
@@ -73,7 +86,7 @@
         h3 i {
             margin-right: 10px;
         }
-        /* Grid Layout - Dynamic sizing based on content */
+        /* Grid Layout - Optimized for wide screens with better spacing */
         #system-control { grid-column: span 12; min-height: 150px; }
         #risk-management { grid-column: span 12; min-height: 150px; }
         #market-context { grid-column: span 12; min-height: 200px; }
@@ -93,19 +106,21 @@
         }
 
         @media (min-width: 1200px) {
-            #system-control { grid-column: span 4; }
-            #risk-management { grid-column: span 8; }
-            #alerts { grid-column: span 6; }
-            #pnl-performance { grid-column: span 12; }
+            #system-control { grid-column: span 3; }
+            #risk-management { grid-column: span 9; }
+            #market-context { grid-column: span 12; }
+            #alerts { grid-column: span 4; }
+            #pnl-performance { grid-column: span 8; }
             #current-positions { grid-column: span 6; }
             #recent-signals { grid-column: span 6; }
         }
 
         @media (min-width: 1600px) {
-            #system-control { grid-column: span 3; }
-            #risk-management { grid-column: span 9; }
-            #alerts { grid-column: span 4; }
-            #pnl-performance { grid-column: span 12; }
+            #system-control { grid-column: span 2; }
+            #risk-management { grid-column: span 10; }
+            #market-context { grid-column: span 12; }
+            #alerts { grid-column: span 3; }
+            #pnl-performance { grid-column: span 9; }
             #current-positions { grid-column: span 6; }
             #recent-signals { grid-column: span 6; }
         }
@@ -113,10 +128,11 @@
         @media (min-width: 2000px) {
             #system-control { grid-column: span 2; }
             #risk-management { grid-column: span 10; }
+            #market-context { grid-column: span 12; }
             #alerts { grid-column: span 3; }
-            #pnl-performance { grid-column: span 12; }
-            #current-positions { grid-column: span 6; }
-            #recent-signals { grid-column: span 6; }
+            #pnl-performance { grid-column: span 9; }
+            #current-positions { grid-column: span 5; }
+            #recent-signals { grid-column: span 7; }
         }
 
         .status-grid, .risk-grid {
