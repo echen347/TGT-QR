@@ -566,15 +566,24 @@
             });
         });
         
-        // Function to update PnL chart dynamically
-        function updatePnLChart() {
-            fetch('/api/pnl_chart')
-                .then(response => response.json())
-                .then(pnlData => {
-                    if (pnlData.error) {
-                        document.getElementById('pnlChart').innerHTML = '<div class="empty-placeholder">' + pnlData.error + '</div>';
-                        return;
-                    }
+       // Function to update PnL chart dynamically
+       function updatePnLChart() {
+           fetch('/api/pnl_chart')
+               .then(response => {
+                   if (!response.ok) {
+                       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                   }
+                   return response.json();
+               })
+               .then(pnlData => {
+                   if (pnlData.error) {
+                       // Don't show error if we have empty data (graceful degradation)
+                       if (!pnlData.timestamps || pnlData.timestamps.length === 0) {
+                           return; // Skip update if no data
+                       }
+                       document.getElementById('pnlChart').innerHTML = '<div class="empty-placeholder">' + pnlData.error + '</div>';
+                       return;
+                   }
                     
                     // Update balance and PnL displays
                     if (pnlData.account_balance !== undefined) {
@@ -633,15 +642,24 @@
                             }
                         }], layout);
                     }
-                })
-                .catch(error => console.error('Error updating PnL chart:', error));
-        }
-        
-        // Function to update alerts
-        function updateAlerts() {
-            fetch('/api/alerts')
-                .then(response => response.json())
-                .then(alerts => {
+               })
+               .catch(error => {
+                   // Silently fail - don't spam console with network errors
+                   // Only log if it's not a network error
+                   if (!error.message.includes('Failed to fetch') && !error.message.includes('ERR_EMPTY_RESPONSE')) {
+                       console.error('Error updating PnL chart:', error);
+                   }
+               });
+       }
+       
+       // Function to update alerts
+       function updateAlerts() {
+           fetch('/api/alerts')
+               .then(response => {
+                   if (!response.ok) return [];
+                   return response.json();
+               })
+               .then(alerts => {
                     const alertsContainer = document.querySelector('#alerts .alerts-list');
                     if (!alertsContainer) return;
                     
@@ -652,17 +670,25 @@
                         });
                         alertsContainer.innerHTML = html;
                     } else {
-                        alertsContainer.innerHTML = '<p class="empty-placeholder">No issues</p>';
-                    }
-                })
-                .catch(error => console.error('Error updating alerts:', error));
-        }
-        
-        // Function to update signals
-        function updateSignals() {
-            fetch('/api/signals')
-                .then(response => response.json())
-                .then(signals => {
+                       alertsContainer.innerHTML = '<p class="empty-placeholder">No issues</p>';
+                   }
+               })
+               .catch(error => {
+                   // Silently fail for network errors
+                   if (!error.message.includes('Failed to fetch')) {
+                       console.error('Error updating alerts:', error);
+                   }
+               });
+       }
+       
+       // Function to update signals
+       function updateSignals() {
+           fetch('/api/signals')
+               .then(response => {
+                   if (!response.ok) return [];
+                   return response.json();
+               })
+               .then(signals => {
                     const tbody = document.querySelector('#recent-signals tbody');
                     if (!tbody) return;
                     
@@ -690,22 +716,27 @@
                         });
                         tbody.innerHTML = html;
                     } else {
-                        tbody.innerHTML = '<tr><td colspan="5" class="empty-placeholder">No recent signals</td></tr>';
-                    }
-                })
-                .catch(error => console.error('Error updating signals:', error));
-        }
-        
-        // Function to update market context
-        function updateMarketContext() {
-            fetch('/api/market_context?' + new Date().getTime()) // Add cache busting
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(marketContext => {
+                       tbody.innerHTML = '<tr><td colspan="5" class="empty-placeholder">No recent signals</td></tr>';
+                   }
+               })
+               .catch(error => {
+                   // Silently fail for network errors
+                   if (!error.message.includes('Failed to fetch')) {
+                       console.error('Error updating signals:', error);
+                   }
+               });
+       }
+       
+       // Function to update market context
+       function updateMarketContext() {
+           fetch('/api/market_context?' + new Date().getTime()) // Add cache busting
+               .then(response => {
+                   if (!response.ok) {
+                       return {}; // Return empty object instead of throwing
+                   }
+                   return response.json();
+               })
+               .then(marketContext => {
                     const marketGrid = document.querySelector('#market-context .card-grid');
                     if (!marketGrid || !marketContext || Object.keys(marketContext).length === 0) {
                         return;
@@ -725,18 +756,26 @@
                             </div>
                         `;
                     }
-                    marketGrid.innerHTML = html;
-                })
-                .catch(error => {
-                    console.error('Error updating market context:', error);
-                });
-        }
-        
-        // Function to update emergency status and positions
-        function updateSystemStatus() {
-            fetch('/api/status')
-                .then(response => response.json())
-                .then(data => {
+                   marketGrid.innerHTML = html;
+               })
+               .catch(error => {
+                   // Silently fail for network errors
+                   if (!error.message.includes('Failed to fetch') && !error.message.includes('ERR_EMPTY_RESPONSE')) {
+                       console.error('Error updating market context:', error);
+                   }
+               });
+       }
+       
+       // Function to update emergency status and positions
+       function updateSystemStatus() {
+           fetch('/api/status')
+               .then(response => {
+                   if (!response.ok) {
+                       return {}; // Return empty object instead of throwing
+                   }
+                   return response.json();
+               })
+               .then(data => {
                     // Update emergency stop status
                     const emergencyStatus = document.getElementById('emergency-status');
                     if (emergencyStatus) {
@@ -773,11 +812,16 @@
                                 });
                                 tbody.innerHTML = html;
                             }
-                        }
-                    }
-                })
-                .catch(error => console.error('Error updating status:', error));
-        }
+                       }
+                   }
+               })
+               .catch(error => {
+                   // Silently fail for network errors
+                   if (!error.message.includes('Failed to fetch') && !error.message.includes('ERR_EMPTY_RESPONSE')) {
+                       console.error('Error updating status:', error);
+                   }
+               });
+       }
         
         // Update everything
         function updateAll() {
