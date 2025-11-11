@@ -451,17 +451,25 @@ class MovingAverageStrategy:
             # Calculate notional with leverage
             notional_usdt = clamped_margin * leverage
             
-            # CRITICAL: Ensure we meet exchange minimum notional ($5) by increasing margin if needed
-            # If notional is below $5, we need at least $1 margin (with 5x leverage = $5 notional)
-            min_margin_for_notional = 5.0 / leverage  # Minimum margin to meet $5 notional requirement
-            if clamped_margin < min_margin_for_notional:
-                if available_balance >= min_margin_for_notional:
+            # CRITICAL: Ensure we meet exchange minimum order size (0.1 SOL for SOLUSDT, etc.)
+            # Calculate minimum notional based on min order qty (0.1 base currency)
+            min_order_qty = 0.1  # Bybit minimum for most perpetuals
+            min_notional_usdt = min_order_qty * current_price
+            min_margin_for_order = min_notional_usdt / leverage
+            
+            if notional_usdt < min_notional_usdt:
+                if available_balance >= min_margin_for_order:
                     # Use minimum margin needed to meet exchange requirement
-                    clamped_margin = min(min_margin_for_notional, available_balance * 0.90)
+                    clamped_margin = min(min_margin_for_order, available_balance * 0.50)
                     notional_usdt = clamped_margin * leverage
-                    self.logger.info(f"📈 Adjusted margin to ${clamped_margin:.2f} to meet $5 notional minimum (${notional_usdt:.2f} notional)")
+                    # Ensure we still meet min order qty
+                    qty_base = notional_usdt / current_price
+                    if qty_base < min_order_qty:
+                        notional_usdt = min_order_qty * current_price
+                        clamped_margin = notional_usdt / leverage
+                    self.logger.info(f"📈 Adjusted to meet min order: ${clamped_margin:.2f} margin (${notional_usdt:.2f} notional, {notional_usdt/current_price:.3f} {symbol.replace('USDT', '')})")
                 else:
-                    self.logger.warning(f"Insufficient balance to meet exchange minimum. Need ${min_margin_for_notional:.2f} margin (${5.0:.2f} notional), have ${available_balance:.2f} USDT")
+                    self.logger.warning(f"Insufficient balance for min order. Need ${min_margin_for_order:.2f} margin (${min_notional_usdt:.2f} notional, {min_order_qty} {symbol.replace('USDT', '')}), have ${available_balance:.2f} USDT")
                     return False
             
             if clamped_margin <= 0:
@@ -487,15 +495,24 @@ class MovingAverageStrategy:
                 self.logger.warning(f"Notional ${notional_usdt:.2f} below exchange minimum $5. Skipping {symbol} order.")
                 return False
             # Build optional attached TP/SL and risk limit
+            # Calculate order quantity in base currency to meet minimum order size
+            qty_base = notional_usdt / current_price
+            # Ensure we meet minimum order qty (0.1 for most perpetuals)
+            min_order_qty = 0.1
+            if qty_base < min_order_qty:
+                qty_base = min_order_qty
+                notional_usdt = qty_base * current_price
+                clamped_margin = notional_usdt / leverage
+            
             order_kwargs = {
                 "category": "linear",
                 "symbol": symbol,
                 "side": side,
                 "orderType": "Market",
-                # For quote currency orders: qty is notional in quote currency (USDT)
-                "qty": str(notional_usdt),
-                "leverage": str(leverage),
-                "marketUnit": "quoteCurrency"
+                # Use base currency qty to meet minimum order requirements
+                "qty": str(round(qty_base, 3)),  # Round to 3 decimals for precision
+                "leverage": str(leverage)
+                # Removed marketUnit - using base currency qty instead
             }
 
             try:

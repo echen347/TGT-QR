@@ -21,7 +21,7 @@ SYMBOLS = [
 ]
 
 # --- Position Sizing & Leverage ---
-MAX_POSITION_USDT = 2.00 # Margin per position (reduced to $2 for $16 bankroll - $10 notional with 5x leverage, above $5 minimum)
+MAX_POSITION_USDT = 4.00 # Margin per position (increased to meet 0.1 SOL min order - ~$16.5 notional/$3.3 margin with 5x leverage)
 LEVERAGE = 5.0  # Higher leverage to reduce required margin per order
 MAX_POSITIONS = 2  # ETH + SOL
 MIN_VOLUME_USDT = 200000  # Only trade reasonably liquid pairs (500K+ USD volume)
