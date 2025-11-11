@@ -16,7 +16,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 from tools.backtester import Backtester
-from config.config import SYMBOLS, TIMEFRAME, LEVERAGE
+from config.config import SYMBOLS, TIMEFRAME, LEVERAGE, TRADING_FEE_BPS, SLIPPAGE_BPS
 
 class AlphaBacktester:
     """
@@ -273,8 +273,9 @@ class AlphaBacktester:
                     current_slice = df.iloc[:i]
                     signal = patched_get_signal(current_slice)
                     current_price = current_slice['close'].iloc[-1]
-                    fee_pct = 5.0 / 10000.0
-                    slip_pct = 2.0 / 10000.0
+                    # Use realistic Bybit taker fees: 11 bps round-trip (5.5 bps per side)
+                    fee_pct = TRADING_FEE_BPS / 10000.0
+                    slip_pct = SLIPPAGE_BPS / 10000.0
                     
                     # Check exit conditions
                     if position != 0:

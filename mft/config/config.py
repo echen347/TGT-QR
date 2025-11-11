@@ -56,6 +56,12 @@ STOP_LOSS_PCT = 0.01  # 1% stop loss (very tight)
 TAKE_PROFIT_PCT = 0.02  # 2% take profit (2:1 reward:risk ratio)
 MAX_POSITION_HOLD_HOURS = 24  # Maximum time to hold a position (24 hours)
 
+# Trading Fees (Bybit Perpetual Futures)
+# Taker fee: 0.055% (5.5 bps) per side, Maker fee: 0.02% (2 bps) per side
+# Since we use market orders (taker), round-trip fee = 11 bps (5.5 bps entry + 5.5 bps exit)
+TRADING_FEE_BPS = 11.0  # Round-trip trading fee in basis points (0.11% total)
+SLIPPAGE_BPS = 2.0  # Estimated slippage in basis points (0.02%)
+
 # Exchange Risk Limits & Order Attachments
 RISK_LIMIT_ENABLED = True
 # Note: Bybit v5 uses tier-based risk; value may be interpreted per account tier.
