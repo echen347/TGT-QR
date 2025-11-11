@@ -257,12 +257,12 @@ class MovingAverageStrategy:
         return atr
 
     def sync_positions_with_bybit(self):
-        """CRITICAL: Sync market_state with actual Bybit positions"""
+        """CRITICAL: Sync market_state with actual Bybit positions - INCLUDES ALL POSITIONS"""
         try:
             positions = self.get_current_positions()
             self.logger.info(f"🔄 Syncing positions with Bybit: Found {len(positions)} open positions")
             
-            # Reset all position tracking first
+            # Reset position tracking for SYMBOLS first
             for symbol in SYMBOLS:
                 self.market_state[symbol]['position_size'] = 0
                 self.market_state[symbol]['position_value'] = 0
@@ -271,8 +271,21 @@ class MovingAverageStrategy:
                 self.market_state[symbol]['stop_loss'] = 0
                 self.market_state[symbol]['take_profit'] = 0
             
-            # Update with actual positions
+            # Update with actual positions (including positions not in SYMBOLS list)
             for symbol, pos in positions.items():
+                # Initialize market_state for symbols not in SYMBOLS list
+                if symbol not in self.market_state:
+                    self.market_state[symbol] = {
+                        'price': 0,
+                        'ma_value': 0,
+                        'signal': "NEUTRAL",
+                        'volume_24h': 0,
+                        'position_size': 0,
+                        'entry_price': 0,
+                        'stop_loss': 0,
+                        'take_profit': 0
+                    }
+                
                 self.market_state[symbol]['position_size'] = pos['position_size']
                 self.market_state[symbol]['position_value'] = pos['position_value']
                 self.market_state[symbol]['side'] = pos['side']
@@ -282,7 +295,7 @@ class MovingAverageStrategy:
                 if 'entry_time' not in self.market_state[symbol] or self.market_state[symbol]['entry_time'] is None:
                     from datetime import datetime
                     self.market_state[symbol]['entry_time'] = datetime.utcnow()
-                self.logger.info(f"✅ Synced {symbol}: {pos['side']} {pos['position_size']} contracts")
+                self.logger.info(f"✅ Synced {symbol}: {pos['side']} {pos['position_size']} contracts, PnL: ${pos['unrealized_pnl']:.4f}")
                 
         except Exception as e:
             self.logger.error(f"❌ Failed to sync positions with Bybit: {e}")
@@ -332,7 +345,7 @@ class MovingAverageStrategy:
         return False, None
 
     def get_current_positions(self):
-        """Get current open positions for all symbols"""
+        """Get current open positions for all symbols - INCLUDES ALL POSITIONS, not just SYMBOLS list"""
         try:
             response = self.session.get_positions(
                 category="linear",
@@ -344,8 +357,9 @@ class MovingAverageStrategy:
                 for pos in positions:
                     symbol = pos['symbol']
                     position_size = float(pos['size'])
-                    # Include positions with any non-zero size (both LONG and SHORT)
-                    if symbol in SYMBOLS and position_size != 0:
+                    # Include ALL positions with any non-zero size (both LONG and SHORT)
+                    # Don't filter by SYMBOLS - user may have positions from old strategy
+                    if position_size != 0:
                         current_positions[symbol] = {
                             'symbol': symbol,
                             'position_size': position_size,
@@ -355,6 +369,9 @@ class MovingAverageStrategy:
                             'side': pos['side'],
                             'current_price': float(pos.get('markPrice', pos['avgPrice']))  # Use mark price if available
                         }
+                        # Log positions not in SYMBOLS list (old strategy positions)
+                        if symbol not in SYMBOLS:
+                            self.logger.warning(f"⚠️ Found position in {symbol} (not in current SYMBOLS list): {pos['side']} {position_size} contracts, PnL: ${float(pos['unrealisedPnl']):.4f}")
                 return current_positions
             else:
                 self.logger.error(f"Error getting positions: {response['retMsg']}")
