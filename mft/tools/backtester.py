@@ -271,20 +271,29 @@ class Backtester:
             return 0
 
         current_price = closes.iloc[-1]
-        from config.config import MIN_TREND_STRENGTH, VOLATILITY_THRESHOLD_HIGH, VOLATILITY_THRESHOLD_LOW
-
-        # Common helpers
-        ma_default = closes.rolling(window=self.ma_period).mean()
-        ma = ma_default.iloc[-1]
-        ma_slope = (ma_default.iloc[-1] - ma_default.iloc[-5]) / max(self.ma_period, 1)
-        trend_strength = abs(ma_slope) / max(current_price, 1e-9)
-        recent_volatility = closes.pct_change().rolling(window=10).std().iloc[-1]
-        if recent_volatility > VOLATILITY_THRESHOLD_HIGH:
-            threshold = 0.003
-        elif recent_volatility > VOLATILITY_THRESHOLD_LOW:
-            threshold = 0.001
-        else:
+        # Use unified signal calculator
+        import sys
+        import os
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+        from signal_calculator import calculate_signal
+        
+        # Use unified calculation
+        signal_value, signal_name, metadata = calculate_signal(
+            historical_prices, 
+            ma_period=self.ma_period
+        )
+        
+        # Extract values for compatibility
+        ma = metadata['ma']
+        current_price = metadata['price']
+        trend_strength = metadata['trend_strength']
+        recent_volatility = historical_prices['close'].pct_change().rolling(window=10).std().iloc[-1]
+        if recent_volatility > metadata.get('vol_threshold_high', 0.025):
+            threshold = 0.002
+        elif recent_volatility > metadata.get('vol_threshold_low', 0.015):
             threshold = 0.0005
+        else:
+            threshold = 0.0003
 
         # Optional ATR distance gate
         if self.enable_atr_gate:
@@ -295,22 +304,8 @@ class Backtester:
         strat = self.strategy_name.lower()
 
         if strat == 'ma':
-            if trend_strength < MIN_TREND_STRENGTH:
-                return 0
-            # Updated: Removed MA slope requirement for more trading opportunities (Phase 1)
-            # Use updated thresholds from config (reduced for more signals)
-            if recent_volatility > VOLATILITY_THRESHOLD_HIGH:
-                threshold = 0.002  # 0.2% (reduced from 0.3%)
-            elif recent_volatility > VOLATILITY_THRESHOLD_LOW:
-                threshold = 0.0005  # 0.05% (reduced from 0.1%)
-            else:
-                threshold = 0.0003  # 0.03% (reduced from 0.05%)
-            
-            if current_price > ma * (1 + threshold):
-                return 1
-            if current_price < ma * (1 - threshold):
-                return -1
-            return 0
+            # Use unified signal calculator (already calculated above)
+            return signal_value
 
         if strat == 'ma_cross':
             fast = closes.rolling(window=self.fast_ma).mean()

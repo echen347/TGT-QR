@@ -128,65 +128,31 @@ class MovingAverageStrategy:
             self.logger.error(f"Exception getting prices for {symbol}: {str(e)}")
             return []
     def calculate_ma_signal(self, symbol):
-        """Calculate moving average signal with Phase 1 improvements (no MA slope requirement)"""
+        """Calculate moving average signal using unified signal calculator"""
+        from signal_calculator import calculate_signal
+        
         if len(self.price_history[symbol]) < MA_PERIOD + 10:
-            return 0  # Need more data for reliable signals
-
-        prices = pd.DataFrame(self.price_history[symbol])
-        ma = prices['close'].rolling(window=MA_PERIOD).mean().iloc[-1]
-        current_price = prices['close'].iloc[-1]
-
-        # Store for dashboard state
-        self.market_state[symbol]['ma_value'] = ma
-        self.market_state[symbol]['price'] = current_price
-
-        # Calculate trend strength using MA slope (for filtering only, not signal requirement)
-        ma_slope = (ma - prices['close'].rolling(window=MA_PERIOD).mean().iloc[-5]) / MA_PERIOD
-        trend_strength = abs(ma_slope) / current_price
-
-        # Filter by trend strength (Phase 1: reduced from 0.0005 to 0.0002)
-        if trend_strength < MIN_TREND_STRENGTH:
             self.market_state[symbol]['signal'] = "NEUTRAL"
             return 0
-
-        # Calculate volatility for threshold selection
-        recent_volatility = prices['close'].pct_change().rolling(window=10).std().iloc[-1]
-
-        # Phase 1: Reduced thresholds for more trading opportunities
-        if recent_volatility > VOLATILITY_THRESHOLD_HIGH:  # High volatility
-            threshold = 0.002  # 0.2% (reduced from 0.3%)
-            vol_category = "HIGH"
-        elif recent_volatility > VOLATILITY_THRESHOLD_LOW:  # Normal volatility
-            threshold = 0.0005  # 0.05% (reduced from 0.1%)
-            vol_category = "NORMAL"
-        else:  # Low volatility
-            threshold = 0.0003  # 0.03% (reduced from 0.05%)
-            vol_category = "LOW"
-
-        # Phase 1: Removed MA slope requirement - price deviation is sufficient
-        price_deviation_pct = ((current_price - ma) / ma) * 100
         
-        if current_price > ma * (1 + threshold):
-            self.market_state[symbol]['signal'] = "STRONG_BUY"
-            # Enhanced logging for signal generation (INFO level for visibility)
+        prices_df = pd.DataFrame(self.price_history[symbol])
+        signal_value, signal_name, metadata = calculate_signal(prices_df)
+        
+        # Update market_state with results
+        self.market_state[symbol]['ma_value'] = metadata['ma']
+        self.market_state[symbol]['price'] = metadata['price']
+        self.market_state[symbol]['signal'] = signal_name
+        
+        # Enhanced logging for signal generation (INFO level for visibility)
+        if signal_name != "NEUTRAL":
             self.logger.info(
-                f"🔍 {symbol} BUY signal generated: Price=${current_price:.2f}, MA=${ma:.2f}, "
-                f"Deviation={price_deviation_pct:.3f}%, Threshold={threshold*100:.3f}%, "
-                f"Vol={vol_category}, TrendStrength={trend_strength:.6f}"
+                f"🔍 {symbol} {signal_name} signal generated: Price=${metadata['price']:.2f}, "
+                f"MA=${metadata['ma']:.2f}, Deviation={metadata['deviation_pct']:.3f}%, "
+                f"Threshold={metadata['threshold']:.3f}%, Vol={metadata['vol_category']}, "
+                f"TrendStrength={metadata['trend_strength']:.6f}"
             )
-            return 1
-        elif current_price < ma * (1 - threshold):
-            self.market_state[symbol]['signal'] = "STRONG_SELL"
-            # Enhanced logging for signal generation (INFO level for visibility)
-            self.logger.info(
-                f"🔍 {symbol} SELL signal generated: Price=${current_price:.2f}, MA=${ma:.2f}, "
-                f"Deviation={price_deviation_pct:.3f}%, Threshold={threshold*100:.3f}%, "
-                f"Vol={vol_category}, TrendStrength={trend_strength:.6f}"
-            )
-            return -1
-
-        self.market_state[symbol]['signal'] = "NEUTRAL"
-        return 0
+        
+        return signal_value
 
     def set_stop_loss_take_profit(self, symbol, entry_price, position_size, side):
         """Set stop loss and take profit levels"""
