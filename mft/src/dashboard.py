@@ -148,13 +148,14 @@ class TradingDashboard:
                     current_price = pos.get('current_price', 0)
                     side = pos.get('side', 'N/A')
                     
-                    # Calculate PnL
+                    # Use unrealized PnL from Bybit API (more accurate, includes funding fees)
+                    unrealized_pnl = pos.get('unrealized_pnl', 0)
+                    
+                    # Calculate PnL percentage for display
                     if entry_price > 0 and current_price > 0:
                         direction = 1 if side == 'Buy' else -1
-                        pnl = (current_price - entry_price) * abs(position_size) * direction
                         pnl_pct = ((current_price - entry_price) / entry_price) * 100 * direction
                     else:
-                        pnl = 0
                         pnl_pct = 0
                     
                     positions_list.append({
@@ -163,7 +164,7 @@ class TradingDashboard:
                         'side': side,
                         'entry_price': entry_price,
                         'current_price': current_price,
-                        'pnl': pnl,
+                        'pnl': unrealized_pnl,  # Use Bybit's unrealized PnL (includes funding)
                         'pnl_pct': pnl_pct
                     })
             

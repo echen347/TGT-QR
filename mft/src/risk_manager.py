@@ -165,7 +165,8 @@ class RiskManager:
         self.logger.warning("RISK MANAGER: Emergency stop has been reset. Trading is re-enabled.")
 
     def get_risk_status(self):
-        """Get current risk status"""
+        """Get current risk status including leverage"""
+        from config.config import LEVERAGE
         # Get actual position count from strategy
         actual_positions_count = 0
         if self.strategy:
@@ -183,6 +184,7 @@ class RiskManager:
             'max_daily_loss_usdt': MAX_DAILY_LOSS_USDT,
             'max_total_loss_usdt': MAX_TOTAL_LOSS_USDT,
             'max_positions': MAX_POSITIONS,
+            'leverage': int(LEVERAGE),  # Add leverage for dashboard display
             'is_stopped': self.is_stopped,
             'can_trade': not self.is_stopped and self.daily_loss < MAX_DAILY_LOSS_USDT and self.total_loss < MAX_TOTAL_LOSS_USDT
         }
