@@ -95,6 +95,29 @@ class RiskManager:
         """Comprehensive check before opening any position"""
         self.reset_daily_loss()
 
+        # SAFEGUARD: Prevent new positions if we have losing positions from old strategy
+        # Check if we have any open positions with negative unrealized PnL
+        from config.config import BLOCK_NEW_POSITIONS_IF_LOSING
+        if BLOCK_NEW_POSITIONS_IF_LOSING and self.strategy:
+            try:
+                current_positions = self.strategy.get_current_positions()
+                has_losing_position = False
+                for pos_symbol, pos_data in current_positions.items():
+                    if pos_data.get('position_size', 0) != 0:
+                        unrealized_pnl = pos_data.get('unrealized_pnl', 0)
+                        if unrealized_pnl < -0.01:  # Losing more than $0.01
+                            has_losing_position = True
+                            self.logger.warning(f"⚠️ Blocking new positions: {pos_symbol} has unrealized loss of ${unrealized_pnl:.4f}")
+                            break
+                
+                if has_losing_position:
+                    message = f"Risk Block: Existing losing position detected. No new positions allowed until losses are closed."
+                    self.logger.warning(message)
+                    self.add_alert('warning', message)
+                    return False
+            except Exception as e:
+                self.logger.error(f"Error checking existing positions: {e}")
+
         # Check all risk constraints
         checks = [
             ("Volume Filter", self.check_volume_filter(symbol, current_volume)),

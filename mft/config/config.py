@@ -61,6 +61,9 @@ MAX_POSITION_HOLD_HOURS = 24  # Maximum time to hold a position (24 hours)
 EXIT_ON_PROFIT = True  # If True, close positions as soon as they become profitable (defensive mode)
 EXIT_ON_PROFIT_MIN_PCT = 0.002  # Minimum profit % to exit (0.2% to cover fees)
 
+# Position Management - Prevent new positions if existing positions are losing (old strategy safeguard)
+BLOCK_NEW_POSITIONS_IF_LOSING = True  # If True, block new positions when existing positions have unrealized losses
+
 # Sliding Window Adaptation (Phase 2B)
 # ANTI-OVERFITTING: Conservative settings to prevent over-optimization
 ENABLE_ADAPTIVE_PARAMS = True  # Enable adaptive parameter adjustment based on recent performance
