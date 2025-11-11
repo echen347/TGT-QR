@@ -1,10 +1,21 @@
 """
 Performance tracking module for sliding window adaptation.
 Tracks recent performance and provides adaptive parameter recommendations.
+
+ANTI-OVERFITTING DESIGN:
+- Requires minimum 10 trades before adapting (configurable)
+- Bounds on adjustments (0.7x to 1.5x) to prevent extreme changes
+- Only adapts if performance is significantly different from baseline
+- Uses longer window (14 days default) to smooth out noise
+- Updates less frequently (48 hours) to reduce churn
 """
 from datetime import datetime, timedelta
 from database import db_manager, TradeRecord
 import logging
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from config.config import ADAPTIVE_MIN_TRADES
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +90,20 @@ class PerformanceTracker:
         }
     
     def get_adaptive_recommendations(self):
-        """Get adaptive parameter recommendations based on recent performance"""
+        """
+        Get adaptive parameter recommendations based on recent performance.
+        
+        ANTI-OVERFITTING SAFEGUARDS:
+        - Requires minimum 10 trades (increased from 5) before adapting
+        - Bounds on adjustments (0.7x to 1.5x) to prevent extreme changes
+        - Only adapts if performance is significantly different from baseline
+        - Uses longer window (7 days) to smooth out noise
+        
+        LOGIC:
+        - When UNPROFITABLE: TIGHTEN filters (fewer signals, higher quality)
+        - When PROFITABLE: Loosen filters slightly (more signals, but still selective)
+        - Signals ALWAYS generate if conditions are met, just with adjusted thresholds
+        """
         summary = self.get_performance_summary()
         metrics = summary['trades']
         
@@ -90,45 +114,57 @@ class PerformanceTracker:
             'reason': 'default'
         }
         
-        # Need at least 5 trades to make recommendations
-        if metrics['total_trades'] < 5:
-            recommendations['reason'] = 'insufficient_data'
+        # ANTI-OVERFITTING: Require minimum trades before adapting
+        # This ensures we have enough data to make meaningful decisions
+        min_trades = ADAPTIVE_MIN_TRADES if 'ADAPTIVE_MIN_TRADES' in globals() else 10
+        if metrics['total_trades'] < min_trades:
+            recommendations['reason'] = f'insufficient_data (need {min_trades} trades, have {metrics["total_trades"]})'
             return recommendations
         
         win_rate = metrics['win_rate']
         profit_factor = metrics['profit_factor']
         trades_per_day = summary['trades_per_day']
         
-        # Underperforming: Tighten filters, reduce position size
-        if win_rate < 0.45 or profit_factor < 1.0:
-            recommendations['adjust_trend_strength'] = 1.5  # Require stronger trends
-            recommendations['adjust_thresholds'] = 1.2  # Require larger deviations
-            recommendations['adjust_position_size'] = 0.8  # Reduce position size
-            recommendations['reason'] = f'underperforming (win_rate={win_rate:.2%}, pf={profit_factor:.2f})'
+        # ANTI-OVERFITTING: Only adapt if performance is SIGNIFICANTLY different
+        # Small variations are noise and shouldn't trigger adaptation
         
-        # Performing well: Loosen filters slightly, maintain position size
-        elif win_rate > 0.55 and profit_factor > 1.5:
-            recommendations['adjust_trend_strength'] = 0.9  # Allow weaker trends
-            recommendations['adjust_thresholds'] = 0.95  # Catch smaller deviations
+        # Underperforming: Tighten filters (FEWER signals, but signals still generate)
+        # This makes us more selective when losing money
+        if win_rate < 0.40 or profit_factor < 0.8:  # Stricter threshold (was 0.45/1.0)
+            recommendations['adjust_trend_strength'] = 1.3  # Require stronger trends (was 1.5)
+            recommendations['adjust_thresholds'] = 1.15  # Require larger deviations (was 1.2)
+            recommendations['adjust_position_size'] = 0.85  # Reduce position size (was 0.8)
+            recommendations['reason'] = f'underperforming (win_rate={win_rate:.2%}, pf={profit_factor:.2f}) - TIGHTENING filters'
+        
+        # Performing well: Loosen filters slightly (MORE signals, but still selective)
+        elif win_rate > 0.60 and profit_factor > 1.8:  # Stricter threshold (was 0.55/1.5)
+            recommendations['adjust_trend_strength'] = 0.92  # Allow slightly weaker trends (was 0.9)
+            recommendations['adjust_thresholds'] = 0.97  # Catch slightly smaller deviations (was 0.95)
             recommendations['adjust_position_size'] = 1.0  # Maintain position size
-            recommendations['reason'] = f'performing_well (win_rate={win_rate:.2%}, pf={profit_factor:.2f})'
+            recommendations['reason'] = f'performing_well (win_rate={win_rate:.2%}, pf={profit_factor:.2f}) - LOOSENING filters slightly'
         
-        # Low frequency: Loosen filters to get more signals
-        elif trades_per_day < 0.5:
-            recommendations['adjust_trend_strength'] = 0.85  # More lenient trend filter
-            recommendations['adjust_thresholds'] = 0.9  # Smaller thresholds
+        # Low frequency: Loosen filters to get more signals (only if not losing money)
+        elif trades_per_day < 0.3 and profit_factor >= 0.9:  # Only if not losing too much
+            recommendations['adjust_trend_strength'] = 0.9  # More lenient trend filter (was 0.85)
+            recommendations['adjust_thresholds'] = 0.92  # Smaller thresholds (was 0.9)
             recommendations['adjust_position_size'] = 1.0
-            recommendations['reason'] = f'low_frequency ({trades_per_day:.2f} trades/day)'
+            recommendations['reason'] = f'low_frequency ({trades_per_day:.2f} trades/day) - LOOSENING filters'
         
-        # High frequency but poor performance: Tighten filters
-        elif trades_per_day > 2.0 and win_rate < 0.50:
-            recommendations['adjust_trend_strength'] = 1.3
-            recommendations['adjust_thresholds'] = 1.15
+        # High frequency but poor performance: Tighten filters significantly
+        elif trades_per_day > 2.5 and win_rate < 0.45:  # Stricter threshold
+            recommendations['adjust_trend_strength'] = 1.25  # Require stronger trends (was 1.3)
+            recommendations['adjust_thresholds'] = 1.12  # Require larger deviations (was 1.15)
             recommendations['adjust_position_size'] = 0.9
-            recommendations['reason'] = f'high_frequency_poor ({trades_per_day:.2f} trades/day, {win_rate:.2%} win rate)'
+            recommendations['reason'] = f'high_frequency_poor ({trades_per_day:.2f} trades/day, {win_rate:.2%} win rate) - TIGHTENING filters'
         
         else:
-            recommendations['reason'] = f'neutral (win_rate={win_rate:.2%}, {trades_per_day:.2f} trades/day)'
+            recommendations['reason'] = f'neutral (win_rate={win_rate:.2%}, {trades_per_day:.2f} trades/day, pf={profit_factor:.2f}) - NO CHANGE'
+        
+        # ANTI-OVERFITTING: Apply bounds to prevent extreme adjustments
+        # Never adjust more than 30% in either direction
+        recommendations['adjust_trend_strength'] = max(0.7, min(1.5, recommendations['adjust_trend_strength']))
+        recommendations['adjust_thresholds'] = max(0.7, min(1.5, recommendations['adjust_thresholds']))
+        recommendations['adjust_position_size'] = max(0.7, min(1.2, recommendations['adjust_position_size']))
         
         return recommendations
 

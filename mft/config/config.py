@@ -62,9 +62,11 @@ EXIT_ON_PROFIT = True  # If True, close positions as soon as they become profita
 EXIT_ON_PROFIT_MIN_PCT = 0.002  # Minimum profit % to exit (0.2% to cover fees)
 
 # Sliding Window Adaptation (Phase 2B)
+# ANTI-OVERFITTING: Conservative settings to prevent over-optimization
 ENABLE_ADAPTIVE_PARAMS = True  # Enable adaptive parameter adjustment based on recent performance
-ADAPTIVE_WINDOW_DAYS = 7  # Track performance over last N days
-ADAPTIVE_UPDATE_INTERVAL_HOURS = 24  # Recalculate adaptive params every N hours
+ADAPTIVE_WINDOW_DAYS = 14  # Track performance over last N days (increased from 7 for more stability)
+ADAPTIVE_UPDATE_INTERVAL_HOURS = 48  # Recalculate adaptive params every N hours (increased from 24 to reduce churn)
+ADAPTIVE_MIN_TRADES = 10  # Minimum trades required before adapting (prevents overfitting on small samples)
 
 # Trading Fees (Bybit Perpetual Futures)
 # Taker fee: 0.055% (5.5 bps) per side, Maker fee: 0.02% (2 bps) per side
