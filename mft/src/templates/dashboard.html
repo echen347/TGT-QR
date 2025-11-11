@@ -326,7 +326,7 @@
                         {% for position in positions %}
                         <tr>
                             <td>{{ position.symbol }}</td>
-                            <td>{{ "%.4f"|format(position.size) }} ({{ position.side }})</td>
+                            <td>{{ "%.4f"|format(position.size|abs) }} ({{ position.side }})</td>
                             <td>${{ "%.2f"|format(position.entry_price) }}</td>
                             <td>${{ "%.2f"|format(position.current_price) }}</td>
                             <td class="{{ 'signal-buy' if position.pnl >= 0 else 'signal-sell' }}">${{ "%.4f"|format(position.pnl) }} ({{ "%.2f"|format(position.pnl_pct) }}%)</td>
