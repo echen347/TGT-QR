@@ -59,9 +59,10 @@ STOP_LOSS_PCT = 0.01  # 1% stop loss (very tight)
 TAKE_PROFIT_PCT = 0.02  # 2% take profit (2:1 reward:risk ratio)
 MAX_POSITION_HOLD_HOURS = 24  # Maximum time to hold a position (24 hours)
 
-# Exit Strategy - If strategy underperforms, exit positions when they go positive
-EXIT_ON_PROFIT = True  # If True, close positions as soon as they become profitable (defensive mode)
-EXIT_ON_PROFIT_MIN_PCT = 0.002  # Minimum profit % to exit (0.2% to cover fees)
+# Exit Strategy - Exit old strategy positions when they become profitable (defensive mode)
+EXIT_ON_PROFIT = True  # If True, close OLD STRATEGY positions as soon as they become profitable
+EXIT_ON_PROFIT_MIN_PCT = 0.01  # Minimum profit % to exit (1% - enough to exit unprofitable strategy positions)
+# Note: Only applies to positions in symbols NOT in SYMBOLS list (old strategy positions)
 
 # Position Management - Prevent new positions if existing positions are losing (old strategy safeguard)
 BLOCK_NEW_POSITIONS_IF_LOSING = True  # If True, block new positions when existing positions have unrealized losses

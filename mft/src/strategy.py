@@ -321,17 +321,18 @@ class MovingAverageStrategy:
                 side = "Sell" if position_size > 0 else "Buy"
                 return True, side
 
-        # Check exit on profit (defensive mode - exit as soon as profitable)
-        if EXIT_ON_PROFIT:
+        # Check exit on profit (defensive mode - ONLY for old strategy positions)
+        # Exit old strategy positions (not in SYMBOLS list) at 1% profit to cut losses
+        if EXIT_ON_PROFIT and symbol not in SYMBOLS:
             if position_size > 0:  # Long position
                 profit_pct = (current_price - entry_price) / entry_price
                 if profit_pct >= EXIT_ON_PROFIT_MIN_PCT:
-                    self.logger.info(f"💰 Exit on profit: {symbol} long position +{profit_pct*100:.2f}%")
+                    self.logger.info(f"💰 Exit old strategy position on profit: {symbol} long +{profit_pct*100:.2f}% (old strategy, exit at 1%)")
                     return True, "Sell"
             else:  # Short position
                 profit_pct = (entry_price - current_price) / entry_price
                 if profit_pct >= EXIT_ON_PROFIT_MIN_PCT:
-                    self.logger.info(f"💰 Exit on profit: {symbol} short position +{profit_pct*100:.2f}%")
+                    self.logger.info(f"💰 Exit old strategy position on profit: {symbol} short +{profit_pct*100:.2f}% (old strategy, exit at 1%)")
                     return True, "Buy"
 
         # Check stop loss and take profit
