@@ -23,7 +23,7 @@ sudo usermod -aG sudo trading
 
 # Clone repository
 git clone https://github.com/echen347/TGT-QR.git /home/trading/tgt-qr
-cd /home/trading/tgt-qr
+cd /home/trading/tgt-qr/mft
 
 # Setup virtual environment
 python3 -m venv venv
@@ -58,13 +58,13 @@ After=network.target
 [Service]
 Type=simple
 User=trading
-WorkingDirectory=/home/trading/tgt-qr
-ExecStart=/home/trading/tgt-qr/venv/bin/python3 src/run_trading_system.py
+WorkingDirectory=/home/trading/tgt-qr/mft
+ExecStart=/home/trading/tgt-qr/mft/venv/bin/python3 src/run_trading_system.py
 Restart=always
 RestartSec=10
 StandardOutput=journal
 StandardError=journal
-Environment=PATH=/home/trading/tgt-qr/venv/bin
+Environment=PATH=/home/trading/tgt-qr/mft/venv/bin
 
 [Install]
 WantedBy=multi-user.target
@@ -77,7 +77,7 @@ sudo systemctl start tgt-trading.service
 
 # Setup log rotation
 sudo tee /etc/logrotate.d/tgt-trading > /dev/null <<EOF
-/home/trading/tgt-qr/logs/*.log {
+/home/trading/tgt-qr/mft/logs/*.log {
     daily
     rotate 30
     compress
@@ -96,7 +96,7 @@ echo ""
 echo "📊 Dashboard will be available at: http://$(curl -s ifconfig.me):5000"
 echo ""
 echo "🔧 SETUP REQUIRED:"
-echo "  1. Edit /home/trading/tgt-qr/.env file"
+echo "  1. Edit /home/trading/tgt-qr/mft/.env file"
 echo "     - Add your BYBIT_API_KEY"
 echo "     - Add your BYBIT_API_SECRET"
 echo "     - Set BYBIT_TESTNET=false for live trading"
