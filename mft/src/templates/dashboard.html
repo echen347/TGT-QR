@@ -54,36 +54,41 @@
         h3 i {
             margin-right: 10px;
         }
-        /* Grid Layout */
-        #system-control { grid-column: span 4; }
-        #risk-management { grid-column: span 8; }
-        #market-context { grid-column: span 12; }
+        /* Grid Layout - Dynamic sizing based on content */
+        #system-control { grid-column: span 12; min-height: 150px; }
+        #risk-management { grid-column: span 12; min-height: 150px; }
+        #market-context { grid-column: span 12; min-height: 200px; }
         #market-analysis { grid-column: span 12; }
-        #alerts { grid-column: span 5; }
-        #pnl-performance { grid-column: span 7; }
-        #current-positions { grid-column: span 7; }
-        #recent-signals { grid-column: span 5; }
+        #alerts { grid-column: span 12; min-height: 150px; }
+        #pnl-performance { grid-column: span 12; min-height: 400px; }
+        #current-positions { grid-column: span 12; min-height: 200px; }
+        #recent-signals { grid-column: span 12; min-height: 200px; }
+
+        @media (min-width: 768px) {
+            #system-control { grid-column: span 6; }
+            #risk-management { grid-column: span 6; }
+            #alerts { grid-column: span 6; }
+            #pnl-performance { grid-column: span 6; }
+            #current-positions { grid-column: span 7; }
+            #recent-signals { grid-column: span 5; }
+        }
 
         @media (min-width: 1200px) {
             #system-control { grid-column: span 4; }
             #risk-management { grid-column: span 8; }
-            #market-context { grid-column: span 12; }
-            #market-analysis { grid-column: span 12; }
-            #alerts { grid-column: span 4; }
-            #pnl-performance { grid-column: span 8; }
-            #current-positions { grid-column: span 12; }
-            #recent-signals { grid-column: span 12; }
-        }
-
-        @media (min-width: 1600px) {
-            #system-control { grid-column: span 4; }
-            #risk-management { grid-column: span 8; }
-            #market-context { grid-column: span 12; }
-            #market-analysis { grid-column: span 12; }
             #alerts { grid-column: span 4; }
             #pnl-performance { grid-column: span 8; }
             #current-positions { grid-column: span 7; }
             #recent-signals { grid-column: span 5; }
+        }
+
+        @media (min-width: 1600px) {
+            #system-control { grid-column: span 3; }
+            #risk-management { grid-column: span 9; }
+            #alerts { grid-column: span 3; }
+            #pnl-performance { grid-column: span 9; }
+            #current-positions { grid-column: span 6; }
+            #recent-signals { grid-column: span 6; }
         }
 
         .status-grid, .risk-grid {
@@ -360,11 +365,11 @@
             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;">
                 <div style="background: rgba(157, 114, 255, 0.1); padding: 12px; border-radius: 8px; text-align: center;">
                     <div style="font-size: 0.85em; color: var(--text-secondary-color); margin-bottom: 4px;">💰 Balance</div>
-                    <div style="font-size: 1.5em; font-weight: bold; color: var(--primary-color);">${{ "%.2f"|format(pnl_chart.account_balance) }}</div>
+                    <div data-balance style="font-size: 1.5em; font-weight: bold; color: var(--primary-color);">${{ "%.2f"|format(pnl_chart.account_balance) }}</div>
                 </div>
                 <div style="background: {% if pnl_chart.current_pnl >= 0 %}rgba(46, 204, 113, 0.1){% else %}rgba(231, 76, 60, 0.1){% endif %}; padding: 12px; border-radius: 8px; text-align: center;">
                     <div style="font-size: 0.85em; color: var(--text-secondary-color); margin-bottom: 4px;">📊 Total PnL</div>
-                    <div style="font-size: 1.5em; font-weight: bold; color: {% if pnl_chart.current_pnl >= 0 %}var(--green-color){% else %}var(--red-color){% endif %};">
+                    <div data-pnl style="font-size: 1.5em; font-weight: bold; color: {% if pnl_chart.current_pnl >= 0 %}var(--green-color){% else %}var(--red-color){% endif %};">
                         {{ "+" if pnl_chart.current_pnl >= 0 else "" }}${{ "%.4f"|format(pnl_chart.current_pnl) }}
                     </div>
                 </div>
@@ -514,6 +519,157 @@
             });
         });
         
+        // Function to update PnL chart dynamically
+        function updatePnLChart() {
+            fetch('/api/pnl_chart')
+                .then(response => response.json())
+                .then(pnlData => {
+                    if (pnlData.error) {
+                        document.getElementById('pnlChart').innerHTML = '<div class="empty-placeholder">' + pnlData.error + '</div>';
+                        return;
+                    }
+                    
+                    // Update balance and PnL displays
+                    if (pnlData.account_balance !== undefined) {
+                        const balanceEl = document.querySelector('#pnl-performance [data-balance]');
+                        if (balanceEl) balanceEl.textContent = '$' + pnlData.account_balance.toFixed(2);
+                    }
+                    if (pnlData.current_pnl !== undefined) {
+                        const pnlEl = document.querySelector('#pnl-performance [data-pnl]');
+                        if (pnlEl) {
+                            pnlEl.textContent = (pnlData.current_pnl >= 0 ? '+' : '') + '$' + pnlData.current_pnl.toFixed(4);
+                            pnlEl.style.color = pnlData.current_pnl >= 0 ? 'var(--green-color)' : 'var(--red-color)';
+                        }
+                    }
+                    
+                    // Update chart if we have data
+                    if (pnlData.cumulative_pnl && pnlData.cumulative_pnl.length > 0) {
+                        const layout = {
+                            xaxis: { 
+                                title: 'Time (EST)',
+                                gridcolor: 'rgba(255, 255, 255, 0.1)',
+                                color: '#c0c0c0'
+                            },
+                            yaxis: { 
+                                title: 'PnL (USDT)',
+                                gridcolor: 'rgba(255, 255, 255, 0.1)',
+                                color: '#c0c0c0',
+                                zeroline: true,
+                                zerolinecolor: 'rgba(255, 255, 255, 0.3)',
+                                zerolinewidth: 2
+                            },
+                            paper_bgcolor: 'rgba(60, 60, 70, 0.5)',
+                            plot_bgcolor: 'rgba(60, 60, 70, 0.5)',
+                            font: { color: '#f0f0f0', size: 12 },
+                            margin: { l: 50, r: 20, t: 10, b: 40 },
+                            showlegend: false
+                        };
+                        
+                        Plotly.react('pnlChart', [{
+                            x: pnlData.timestamps,
+                            y: pnlData.cumulative_pnl,
+                            type: 'scatter',
+                            mode: 'lines+markers',
+                            name: 'Cumulative PnL',
+                            line: { 
+                                color: pnlData.current_pnl >= 0 ? '#2ecc71' : '#e74c3c', 
+                                width: 3 
+                            },
+                            marker: {
+                                color: pnlData.current_pnl >= 0 ? '#2ecc71' : '#e74c3c',
+                                size: 6
+                            }
+                        }], layout);
+                    }
+                })
+                .catch(error => console.error('Error updating PnL chart:', error));
+        }
+        
+        // Function to update alerts
+        function updateAlerts() {
+            fetch('/api/alerts')
+                .then(response => response.json())
+                .then(alerts => {
+                    const alertsContainer = document.querySelector('#alerts .alerts-list');
+                    if (!alertsContainer) return;
+                    
+                    if (alerts && alerts.length > 0) {
+                        let html = '';
+                        alerts.forEach(alert => {
+                            html += `<p class="alert-item alert-${alert.level}">${alert.message}</p>`;
+                        });
+                        alertsContainer.innerHTML = html;
+                    } else {
+                        alertsContainer.innerHTML = '<p class="empty-placeholder">No issues</p>';
+                    }
+                })
+                .catch(error => console.error('Error updating alerts:', error));
+        }
+        
+        // Function to update signals
+        function updateSignals() {
+            fetch('/api/signals')
+                .then(response => response.json())
+                .then(signals => {
+                    const tbody = document.querySelector('#recent-signals tbody');
+                    if (!tbody) return;
+                    
+                    if (signals && signals.length > 0) {
+                        let html = '';
+                        signals.forEach(signal => {
+                            const signalClass = signal.signal === 'STRONG_BUY' ? 'signal-strong-buy' :
+                                              signal.signal === 1 ? 'signal-buy' :
+                                              signal.signal === -1 ? 'signal-sell' :
+                                              signal.signal === 'STRONG_SELL' ? 'signal-strong-sell' : 'signal-hold';
+                            const signalText = signal.signal === 'STRONG_BUY' ? '<i class="fas fa-arrow-up"></i> STRONG BUY' :
+                                             signal.signal === 1 ? '<i class="fas fa-arrow-up"></i> BUY' :
+                                             signal.signal === -1 ? '<i class="fas fa-arrow-down"></i> SELL' :
+                                             signal.signal === 'STRONG_SELL' ? '<i class="fas fa-arrow-down"></i> STRONG SELL' :
+                                             '<i class="fas fa-pause"></i> HOLD';
+                            html += `
+                                <tr>
+                                    <td><strong>${signal.symbol}</strong></td>
+                                    <td class="${signalClass}">${signalText}</td>
+                                    <td>$${signal.current_price.toFixed(2)}</td>
+                                    <td>$${signal.ma_value.toFixed(2)}</td>
+                                    <td>${signal.timestamp}</td>
+                                </tr>
+                            `;
+                        });
+                        tbody.innerHTML = html;
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="5" class="empty-placeholder">No recent signals</td></tr>';
+                    }
+                })
+                .catch(error => console.error('Error updating signals:', error));
+        }
+        
+        // Function to update market context
+        function updateMarketContext() {
+            fetch('/api/market_context')
+                .then(response => response.json())
+                .then(marketContext => {
+                    const marketGrid = document.querySelector('#market-context .card-grid');
+                    if (!marketGrid) return;
+                    
+                    let html = '';
+                    for (const [symbol, data] of Object.entries(marketContext)) {
+                        const signalClass = (data.signal || 'NEUTRAL').toLowerCase();
+                        html += `
+                            <div class="card market-card">
+                                <h4>${symbol}</h4>
+                                <p>Price: $${(data.price || 0).toFixed(2)}</p>
+                                <p>MA (m): $${(data.ma_value || 0).toFixed(2)}</p>
+                                <p>24h Vol: $${(data.volume_24h || 0).toLocaleString()}</p>
+                                <p>Signal: <span class="signal-${signalClass}">${data.signal || 'NEUTRAL'}</span></p>
+                            </div>
+                        `;
+                    }
+                    marketGrid.innerHTML = html;
+                })
+                .catch(error => console.error('Error updating market context:', error));
+        }
+        
         // Function to update emergency status and positions
         function updateSystemStatus() {
             fetch('/api/status')
@@ -546,7 +702,7 @@
                                     html += `
                                         <tr>
                                             <td>${pos.symbol}</td>
-                                            <td>${pos.size.toFixed(4)} (${pos.side})</td>
+                                            <td>${Math.abs(pos.size).toFixed(4)} (${pos.side})</td>
                                             <td>$${pos.entry_price.toFixed(2)}</td>
                                             <td>$${pos.current_price.toFixed(2)}</td>
                                             <td class="${pnlClass}">$${pos.pnl.toFixed(4)} (${pos.pnl_pct.toFixed(2)}%)</td>
@@ -561,12 +717,24 @@
                 .catch(error => console.error('Error updating status:', error));
         }
         
-        // Auto-refresh status every 5 seconds for live updates
+        // Update everything
+        function updateAll() {
+            updateSystemStatus();
+            updatePnLChart();
+            updateAlerts();
+            updateSignals();
+            updateMarketContext();
+        }
+        
+        // Auto-refresh every 3 seconds for live updates (more frequent)
         setInterval(() => {
             if (document.visibilityState === 'visible') {
-                updateSystemStatus();
+                updateAll();
             }
-        }, 5000);
+        }, 3000);
+        
+        // Initial update
+        updateAll();
         // Render PnL Chart
         const pnlData = {{ pnl_chart | tojson }};
         console.log('PnL Data:', pnlData);

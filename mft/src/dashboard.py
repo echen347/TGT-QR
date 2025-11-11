@@ -268,8 +268,34 @@ def api_status():
         'risk_status': dashboard.get_risk_status(),
         'positions': dashboard.get_positions_data(),
         'recent_signals': dashboard.get_signals_data()[:5],  # Last 5 signals
-        'pnl_summary': dashboard.get_pnl_chart_data()
+        'pnl_summary': dashboard.get_pnl_chart_data(),
+        'market_context': dashboard.get_market_data(),
+        'alerts': dashboard.get_alerts()
     })
+
+@app.route('/api/pnl_chart')
+def api_pnl_chart():
+    """API endpoint for PnL chart data"""
+    dashboard = TradingDashboard(strategy_instance, risk_manager_instance)
+    return jsonify(dashboard.get_pnl_chart_data())
+
+@app.route('/api/alerts')
+def api_alerts():
+    """API endpoint for alerts"""
+    dashboard = TradingDashboard(strategy_instance, risk_manager_instance)
+    return jsonify(dashboard.get_alerts())
+
+@app.route('/api/signals')
+def api_signals():
+    """API endpoint for recent signals"""
+    dashboard = TradingDashboard(strategy_instance, risk_manager_instance)
+    return jsonify(dashboard.get_signals_data()[:10])
+
+@app.route('/api/market_context')
+def api_market_context():
+    """API endpoint for market context"""
+    dashboard = TradingDashboard(strategy_instance, risk_manager_instance)
+    return jsonify(dashboard.get_market_data())
 
 @app.route('/shutdown', methods=['POST'])
 def shutdown():
