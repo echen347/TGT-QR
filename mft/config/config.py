@@ -16,8 +16,9 @@ BYBIT_API_SECRET = os.getenv('BYBIT_API_SECRET')
 # Trading Configuration - EXPANDED FOR MORE OPPORTUNITIES
 # --- Trading Pairs ---
 # List of symbols to trade
+# Phase 2A: Expanded symbol list - Add BTCUSDT (worked well in previous backtest) and others
 SYMBOLS = [
-    'ETHUSDT', 'SOLUSDT'
+    'ETHUSDT', 'SOLUSDT', 'BTCUSDT', 'AVAXUSDT'
 ]
 
 # --- Position Sizing & Leverage ---
