@@ -607,7 +607,9 @@
                             xaxis: { 
                                 title: 'Time (EST)',
                                 gridcolor: 'rgba(255, 255, 255, 0.1)',
-                                color: '#c0c0c0'
+                                color: '#c0c0c0',
+                                tickangle: -45,  // Rotate labels for better readability with seconds
+                                type: 'category'  // Use category to show all timestamps clearly
                             },
                             yaxis: { 
                                 title: 'PnL (USDT)',
