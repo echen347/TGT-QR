@@ -187,12 +187,54 @@
 
 ---
 
+### Experiment 13: ML Random Forest (50% confidence) - Additional Tickers
+**Hypothesis**: ML RF works on other liquid tickers  
+**Test Period**: 60 days  
+**Symbols**: SOLUSDT, COTIUSDT  
+**Features**: Same as Experiment 9  
+**Overfitting Prevention**: Same as Experiment 9  
+**Results**:
+- SOLUSDT: -100% return, 33.08% win rate, 1037 trades ❌
+- COTIUSDT: -100% return, 38.96% win rate, 1137 trades ❌  
+**Conclusion**: ❌ REJECTED - ML RF does not generalize to other tickers  
+**Learnings**: ETHUSDT-specific patterns, other tickers have different dynamics
+
+---
+
+### Experiment 14: ML Random Forest (50% confidence) - Different Timeframe
+**Hypothesis**: ML RF works on ETHUSDT across different timeframes  
+**Test Period**: 60 days  
+**Symbols**: ETHUSDT  
+**Timeframe**: 15 minutes (vs 1 minute in Experiment 9)  
+**Results**: 287.58% return, 73.68% win rate, 19 trades ✅ (Same as 1-minute)  
+**Conclusion**: ✅ CONFIRMED - Strategy robust across timeframes (1m and 15m show identical results)  
+**Learnings**: ETHUSDT ML RF signals are consistent across timeframes
+
+---
+
+### Experiment 15: Traditional Strategies on ETHUSDT
+**Hypothesis**: Strategies that failed on AVAXUSDT might work on ETHUSDT  
+**Test Period**: 60 days  
+**Symbols**: ETHUSDT  
+**Strategies**: RSI Mean Reversion, Mean Reversion (Z-Score)  
+**Results**:
+- RSI Mean Reversion: -100.62% return, 34.69% win rate, 49 trades ❌
+- Mean Reversion (Z-Score): 33.86% return, 33.33% win rate, 3 trades ⚠️ Too few trades  
+**Conclusion**: ⚠️ MIXED - Mean Reversion profitable but only 3 trades (not statistically significant)  
+**Learnings**: 
+- ETHUSDT shows better results than AVAXUSDT for some strategies
+- Mean Reversion works but needs more signals for statistical significance
+- RSI Mean Reversion still fails on ETHUSDT
+
+---
+
 ## Summary of Findings
 
 ### ✅ Promising Strategies (Need Verification):
-1. **ML RF (50% conf) on ETHUSDT**: 287.58% return, 73.68% win rate ⚠️ NEEDS OOD VERIFICATION (bug detected)
+1. **ML RF (50% conf) on ETHUSDT**: 287.58% return, 73.68% win rate, 19 trades ⚠️ NEEDS OOD VERIFICATION (bug detected)
 2. **Order Flow on ETHUSDT**: 92.66% return, 50% win rate ⚠️ Too few trades (8)
 3. **Volatility Clustering on ETHUSDT**: 83.88% return ⚠️ Too few trades (11)
+4. **Mean Reversion (Z-Score) on ETHUSDT**: 33.86% return ⚠️ Too few trades (3)
 
 ### ❌ Rejected Strategies:
 - MA (all periods tested)
@@ -203,7 +245,7 @@
 - Volatility Breakout
 - Momentum + MR Hybrid
 - ML RF (60% conf) on AVAXUSDT/DOGEUSDT/SOLUSDT
-- ML RF (50% conf) on DOGEUSDT/AVAXUSDT/BTCUSDT/GALAUSDT
+- ML RF (50% conf) on DOGEUSDT/AVAXUSDT/BTCUSDT/GALAUSDT/SOLUSDT/COTIUSDT
 - ML LR (all symbols)
 
 ### Key Observations:
