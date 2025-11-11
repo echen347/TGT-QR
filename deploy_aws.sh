@@ -4,7 +4,8 @@
 # Run this script on your AWS server after SSH access
 
 echo "🚀 Deploying TGT QR Trading System to AWS..."
-echo "📊 Risk Management: 50¢ per trade, $5 daily limit, 10x leverage"
+echo "📊 Risk Management: \$3 per trade, \$1.80 daily limit, \$4.50 total limit, 5x leverage"
+echo "📈 Trading: ETHUSDT, SOLUSDT | 15min timeframe"
 echo ""
 
 # Update system
@@ -39,12 +40,19 @@ chmod +x src/run_trading_system.py
 chmod +x deploy_aws.sh
 
 # Create .env file from example (you'll need to add your API keys)
-cp .env.example .env
+if [ ! -f .env ]; then
+    cp .env.example .env
+fi
+
+# Run database migration if needed
+echo "🔧 Running database migration..."
+source venv/bin/activate
+python3 tools/migrate_database.py
 
 # Create systemd service file for auto-start
 sudo tee /etc/systemd/system/tgt-trading.service > /dev/null <<EOF
 [Unit]
-Description=TGT QR Trading System - 50¢ per trade, 10x leverage
+Description=TGT QR Trading System - ETH/SOL, \$3 positions, 5x leverage
 After=network.target
 
 [Service]
@@ -103,6 +111,8 @@ echo "⚠️  IMPORTANT REMINDERS:"
 echo "  1. Monitor the system closely for the first few days"
 echo "  2. Use the dashboard shutdown button in emergencies"
 echo "  3. Check logs regularly: sudo journalctl -u tgt-trading.service"
-echo "  4. Risk limits: 50¢ per trade, $5 daily limit, $10 total limit"
+echo "  4. Risk limits: \$3 per trade, \$1.80 daily limit, \$4.50 total limit"
+echo "  5. Trading symbols: ETHUSDT, SOLUSDT"
+echo "  6. Timeframe: 15-minute candles"
 echo ""
-echo "🎯 System is now running with ultra-conservative risk management!"
+echo "🎯 System is now running with conservative risk management!"
