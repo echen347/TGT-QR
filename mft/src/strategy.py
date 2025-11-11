@@ -458,16 +458,27 @@ class MovingAverageStrategy:
             min_margin_for_order = min_notional_usdt / leverage
             
             if notional_usdt < min_notional_usdt:
-                if available_balance >= min_margin_for_order:
-                    # Use minimum margin needed to meet exchange requirement
-                    clamped_margin = min(min_margin_for_order, available_balance * 0.50)
+                # We need to increase margin to meet minimum order size
+                # Try to use full MAX_POSITION_USDT if balance allows
+                required_margin = max(min_margin_for_order, MAX_POSITION_USDT)
+                if available_balance * 0.80 >= required_margin:
+                    # Use full MAX_POSITION_USDT (optimal sizing)
+                    clamped_margin = MAX_POSITION_USDT
                     notional_usdt = clamped_margin * leverage
-                    # Ensure we still meet min order qty
                     qty_base = notional_usdt / current_price
+                    # Round to meet exchange step size
+                    qty_base = round(qty_base * 10) / 10
                     if qty_base < min_order_qty:
-                        notional_usdt = min_order_qty * current_price
-                        clamped_margin = notional_usdt / leverage
-                    self.logger.info(f"📈 Adjusted to meet min order: ${clamped_margin:.2f} margin (${notional_usdt:.2f} notional, {notional_usdt/current_price:.3f} {symbol.replace('USDT', '')})")
+                        qty_base = min_order_qty
+                    notional_usdt = qty_base * current_price
+                    clamped_margin = notional_usdt / leverage
+                    self.logger.info(f"📈 Using optimal size: ${clamped_margin:.2f} margin (${notional_usdt:.2f} notional, {qty_base:.3f} {symbol.replace('USDT', '')})")
+                elif available_balance * 0.80 >= min_margin_for_order:
+                    # Use minimum needed to meet exchange requirement
+                    clamped_margin = min_margin_for_order
+                    notional_usdt = min_notional_usdt
+                    qty_base = min_order_qty
+                    self.logger.info(f"📈 Using minimum size: ${clamped_margin:.2f} margin (${notional_usdt:.2f} notional, {qty_base:.3f} {symbol.replace('USDT', '')})")
                 else:
                     self.logger.warning(f"Insufficient balance for min order. Need ${min_margin_for_order:.2f} margin (${min_notional_usdt:.2f} notional, {min_order_qty} {symbol.replace('USDT', '')}), have ${available_balance:.2f} USDT")
                     return False
