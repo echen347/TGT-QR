@@ -29,8 +29,8 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler(log_file_path),
-        logging.StreamHandler(sys.stdout)
+        logging.FileHandler(log_file_path)
+        # Console handler removed - logs go to file and systemd/journalctl on AWS
     ]
 )
 

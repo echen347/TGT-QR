@@ -10,8 +10,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 # from src.strategy import strategy 
 from config.config import STRATEGY_INTERVAL_MINUTES
 
-# Basic logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# Logging configured by main script - no console output needed
+# Logs go to file and systemd/journalctl on AWS
 
 def start_scheduler(strategy):
     """

@@ -84,17 +84,13 @@ class MovingAverageStrategy:
             file_handler = logging.FileHandler(LOG_FILE)
         
         file_handler.setLevel(getattr(logging, LOG_LEVEL))
-        # Console handler
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(logging.INFO)
         # Formatter
         formatter = logging.Formatter(
             '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
         )
         file_handler.setFormatter(formatter)
-        console_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
-        logger.addHandler(console_handler)
+        # Console handler removed - logs go to file and systemd/journalctl on AWS
         return logger
     def set_risk_manager(self, risk_manager):
         """Allow the main script to set the shared risk manager instance."""
