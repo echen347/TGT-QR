@@ -43,7 +43,7 @@ update_and_restart() {
 
 # Run database migration
 run_migration() {
-    ssh -i "$KEY_FILE" "$EC2_HOST" "cd /home/trading/tgt-qr && source venv/bin/activate && python3 tools/migrate_database.py"
+    ssh -i "$KEY_FILE" "$EC2_HOST" "cd /home/trading/tgt-qr/mft && source venv/bin/activate && python3 tools/migrate_database.py"
 }
 
 # Check if service is running
