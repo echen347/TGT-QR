@@ -314,8 +314,14 @@ def api_signals():
 
 @app.route('/api/market_context')
 def api_market_context():
-    """API endpoint for market context"""
+    """API endpoint for market context - recalculates signals on-demand for freshness"""
     dashboard = TradingDashboard(strategy_instance, risk_manager_instance)
+    # Force signal recalculation to ensure fresh data
+    if strategy_instance:
+        try:
+            strategy_instance.update_market_data()
+        except Exception as e:
+            logging.warning(f"Failed to update market data in API: {e}")
     return jsonify(dashboard.get_market_data())
 
 @app.route('/shutdown', methods=['POST'])
