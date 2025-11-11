@@ -99,13 +99,13 @@ class MovingAverageStrategy:
     def set_risk_manager(self, risk_manager):
         """Allow the main script to set the shared risk manager instance."""
         self.risk_manager = risk_manager
-    def get_historical_prices(self, symbol, limit=200):
-        """Get historical price data. Reverted to get_kline for reliability."""
+    def get_historical_prices(self, symbol, limit=200, interval='1'):
+        """Get historical price data. Uses 1-minute candles for accurate signal calculation."""
         try:
             response = self.session.get_kline(
                 category="linear",
                 symbol=symbol,
-                interval=TIMEFRAME,
+                interval=interval,  # Use 1-minute candles for signal calculation (more accurate)
                 limit=limit
             )
             if response['retCode'] == 0:
@@ -298,8 +298,8 @@ class MovingAverageStrategy:
         self.logger.info("Updating market data for all symbols...")
         for symbol in SYMBOLS:
             try:
-                # Fetch latest k-line data
-                prices = self.get_historical_prices(symbol, MA_PERIOD + 20)
+                # Fetch latest k-line data (use 1-minute candles for accurate signals)
+                prices = self.get_historical_prices(symbol, MA_PERIOD + 20, interval='1')
                 if not prices:
                     self.logger.warning(f"Could not fetch price data for {symbol}. Keeping stale data.")
                     # Ensure default state if it was never populated
