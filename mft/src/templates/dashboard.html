@@ -30,6 +30,17 @@
             gap: 24px;
             max-width: 1800px;
             margin: auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        @media (max-width: 767px) {
+            body {
+                padding: 12px;
+            }
+            .container {
+                gap: 12px;
+            }
         }
         .card {
             background-color: var(--card-background-color);
@@ -436,7 +447,7 @@
         </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
     <script>
         document.getElementById('shutdown-btn').addEventListener('click', function() {
             const password = prompt('To trigger the EMERGENCY STOP, please enter the password:');
