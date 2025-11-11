@@ -185,8 +185,8 @@ def ml_strategy_signal(historical_prices, model_type='rf', retrain_interval=100)
         proba = model.predict_proba(recent_feature_scaled)[0]
         max_proba = np.max(proba)
         
-        # Only trade if model is confident (>60% probability)
-        if max_proba < 0.6:
+        # Only trade if model is confident (>50% probability - lowered from 60% to get more trades)
+        if max_proba < 0.5:
             return 0
         
         return int(prediction)

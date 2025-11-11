@@ -573,6 +573,30 @@ class Backtester:
                 # Silently fail if ML module not available
                 return 0
 
+        if strat == 'order_flow':
+            # Order Flow Imbalance Strategy
+            # Trades based on buy/sell volume imbalance
+            try:
+                import sys
+                import os
+                sys.path.insert(0, os.path.dirname(__file__))
+                from order_flow_strategy import order_flow_imbalance_signal
+                return order_flow_imbalance_signal(historical_prices)
+            except Exception as e:
+                return 0
+
+        if strat == 'volatility_clustering':
+            # Volatility Clustering Strategy
+            # Trades based on volatility clustering patterns
+            try:
+                import sys
+                import os
+                sys.path.insert(0, os.path.dirname(__file__))
+                from volatility_clustering import volatility_clustering_signal
+                return volatility_clustering_signal(historical_prices)
+            except Exception as e:
+                return 0
+
         # Default fallback to MA (Phase 1: no MA slope requirement)
         if trend_strength < MIN_TREND_STRENGTH:
             return 0
@@ -1272,7 +1296,7 @@ if __name__ == "__main__":
     parser.add_argument('--atr-gate-mult', type=float, default=0.5, help='ATR gate multiple for MA distance')
     parser.add_argument('--cooldown-bars', type=int, default=0, help='Bars to skip after a losing trade (per symbol)')
     # Strategy selection
-    parser.add_argument('--strategy', type=str, default='ma', choices=['ma','ma_cross','donchian','macd','rsi_mr','htf_pullback','mean_reversion','vwma','atr_dynamic','pairs','volatility_breakout','momentum_mr_hybrid','ml_rf','ml_lr'], help='Strategy to backtest')
+    parser.add_argument('--strategy', type=str, default='ma', choices=['ma','ma_cross','donchian','macd','rsi_mr','htf_pullback','mean_reversion','vwma','atr_dynamic','pairs','volatility_breakout','momentum_mr_hybrid','ml_rf','ml_lr','order_flow','volatility_clustering'], help='Strategy to backtest')
     parser.add_argument('--fast-ma', type=int, default=10, help='Fast MA for crossover')
     parser.add_argument('--slow-ma', type=int, default=50, help='Slow MA for crossover')
     parser.add_argument('--donchian-period', type=int, default=20, help='Donchian channel period')
