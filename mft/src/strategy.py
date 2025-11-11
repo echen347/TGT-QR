@@ -228,7 +228,7 @@ class MovingAverageStrategy:
             self.logger.error(f"❌ Failed to sync positions with Bybit: {e}")
 
     def check_exit_conditions(self, symbol, current_price):
-        """Check if position should be closed due to stop loss, take profit, or time limit"""
+        """Check if position should be closed due to stop loss, take profit, time limit, or profit exit"""
         if self.market_state[symbol]['position_size'] == 0:
             return False, None
 
@@ -239,6 +239,7 @@ class MovingAverageStrategy:
         
         # Check time limit (24 hours max hold)
         from datetime import datetime, timedelta
+        from config.config import MAX_POSITION_HOLD_HOURS, EXIT_ON_PROFIT, EXIT_ON_PROFIT_MIN_PCT
         entry_time = self.market_state[symbol].get('entry_time')
         if entry_time:
             time_held = datetime.utcnow() - entry_time
@@ -246,6 +247,19 @@ class MovingAverageStrategy:
                 self.logger.warning(f"⏰ Time limit reached for {symbol}: {time_held}")
                 side = "Sell" if position_size > 0 else "Buy"
                 return True, side
+
+        # Check exit on profit (defensive mode - exit as soon as profitable)
+        if EXIT_ON_PROFIT:
+            if position_size > 0:  # Long position
+                profit_pct = (current_price - entry_price) / entry_price
+                if profit_pct >= EXIT_ON_PROFIT_MIN_PCT:
+                    self.logger.info(f"💰 Exit on profit: {symbol} long position +{profit_pct*100:.2f}%")
+                    return True, "Sell"
+            else:  # Short position
+                profit_pct = (entry_price - current_price) / entry_price
+                if profit_pct >= EXIT_ON_PROFIT_MIN_PCT:
+                    self.logger.info(f"💰 Exit on profit: {symbol} short position +{profit_pct*100:.2f}%")
+                    return True, "Buy"
 
         # Check stop loss and take profit
         if position_size > 0:  # Long position
