@@ -13,7 +13,7 @@ BYBIT_TESTNET = os.getenv('BYBIT_TESTNET', 'true').lower() == 'true'
 BYBIT_API_KEY = os.getenv('BYBIT_API_KEY')
 BYBIT_API_SECRET = os.getenv('BYBIT_API_SECRET')
 
-# Trading Configuration - EXPANDED FOR MORE OPPORTUNITIES
+# Trading Configuration - PAUSED FOR RESEARCH
 # --- Trading Pairs ---
 # List of symbols to trade
 # FOCUSED: Backtest shows AVAXUSDT is only profitable symbol (+26.90%, 42.11% win rate)
@@ -26,7 +26,8 @@ SYMBOLS = [
 # --- Position Sizing & Leverage ---
 MAX_POSITION_USDT = 10.00 # Margin per position (restored for $26 bankroll - meets 0.1 SOL min order with 5x leverage)
 LEVERAGE = 5.0  # Higher leverage to reduce required margin per order
-MAX_POSITIONS = 1  # Focus on single symbol (AVAXUSDT) for now
+MAX_POSITIONS = 0  # PAUSED: Set to 0 to prevent new positions while researching profitable strategies
+PAUSE_TRADING = True  # If True, prevent all new positions (research mode - system will still monitor and exit old positions)
 MIN_VOLUME_USDT = 200000  # Only trade reasonably liquid pairs (500K+ USD volume)
 TIMEFRAME = '15'  # 15-minute candles per deployment decision
 MA_PERIOD = 20  # A shorter MA period will be more sensitive to price changes

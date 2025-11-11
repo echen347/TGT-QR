@@ -11,7 +11,8 @@ from config.config import (
     MAX_POSITION_USDT, TIMEFRAME, MA_PERIOD, LOG_FILE, LOG_LEVEL,
     LOG_ROTATION, LOG_RETENTION_DAYS, MIN_TREND_STRENGTH,
     VOLATILITY_THRESHOLD_HIGH, VOLATILITY_THRESHOLD_LOW, MAX_POSITION_HOLD_HOURS,
-    ENABLE_ADAPTIVE_PARAMS, ADAPTIVE_WINDOW_DAYS, ADAPTIVE_UPDATE_INTERVAL_HOURS
+    ENABLE_ADAPTIVE_PARAMS, ADAPTIVE_WINDOW_DAYS, ADAPTIVE_UPDATE_INTERVAL_HOURS,
+    PAUSE_TRADING
 )
 import logging
 from logging.handlers import TimedRotatingFileHandler
@@ -658,12 +659,16 @@ class MovingAverageStrategy:
                 return
 
             self.logger.info("=" * 60)
+            if PAUSE_TRADING:
+                self.logger.info("⏸️ TRADING PAUSED - Research Mode (no new positions)")
             self.logger.info("🔄 Running trading strategy (Phase 1 Alpha Improvements)")
             self.logger.info(f"   Symbols: {', '.join(SYMBOLS)}")
             self.logger.info(f"   MA Period: {MA_PERIOD}, Timeframe: {TIMEFRAME}min")
             self.logger.info(f"   MIN_TREND_STRENGTH: {MIN_TREND_STRENGTH}")
             self.logger.info(f"   Thresholds: 0.2%/0.05%/0.03% (High/Normal/Low vol)")
             self.logger.info(f"   MA Slope Requirement: REMOVED (Phase 1)")
+            if PAUSE_TRADING:
+                self.logger.info("   ⚠️ New positions disabled - will still exit old positions")
             self.logger.info("=" * 60)
             
             # CRITICAL: Sync positions with Bybit first
