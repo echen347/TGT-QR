@@ -409,38 +409,6 @@
             </div>
         </div>
         
-        <div class="card" id="pnl-performance">
-            <h3><i class="fas fa-chart-line"></i>Account Balance & PnL</h3>
-            {% if pnl_chart.account_balance %}
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;">
-                <div style="background: rgba(157, 114, 255, 0.1); padding: 12px; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 0.85em; color: var(--text-secondary-color); margin-bottom: 4px;">💰 Balance</div>
-                    <div data-balance style="font-size: 1.5em; font-weight: bold; color: var(--primary-color);">${{ "%.2f"|format(pnl_chart.account_balance) }}</div>
-                </div>
-                <div style="background: {% if pnl_chart.current_pnl >= 0 %}rgba(46, 204, 113, 0.1){% else %}rgba(231, 76, 60, 0.1){% endif %}; padding: 12px; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 0.85em; color: var(--text-secondary-color); margin-bottom: 4px;">📊 Total PnL</div>
-                    <div data-pnl style="font-size: 1.5em; font-weight: bold; color: {% if pnl_chart.current_pnl >= 0 %}var(--green-color){% else %}var(--red-color){% endif %};">
-                        {{ "+" if pnl_chart.current_pnl >= 0 else "" }}${{ "%.4f"|format(pnl_chart.current_pnl) }}
-                    </div>
-                </div>
-                <div style="background: rgba(52, 152, 219, 0.1); padding: 12px; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 0.85em; color: var(--text-secondary-color); margin-bottom: 4px;">🎯 Open Positions</div>
-                    <div style="font-size: 1.5em; font-weight: bold; color: #3498db;">{{ risk.positions_count }}</div>
-                </div>
-                <div style="background: rgba(241, 196, 15, 0.1); padding: 12px; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 0.85em; color: var(--text-secondary-color); margin-bottom: 4px;">⚡ Leverage</div>
-                    <div style="font-size: 1.5em; font-weight: bold; color: #f1c40f;">{{ risk.leverage }}x</div>
-                </div>
-            </div>
-            {% endif %}
-            <div class="chart-container">
-                <div id="pnlChart"></div>
-            </div>
-        </div>
-        
-        
-        
-        
         <div class="card" id="recent-signals">
             <h3><i class="fas fa-broadcast-tower"></i>Recent Signals</h3>
             {% if signals %}
@@ -483,6 +451,35 @@
             {% else %}
             <p class="empty-placeholder">No recent signals</p>
             {% endif %}
+        </div>
+        
+        <div class="card" id="pnl-performance">
+            <h3><i class="fas fa-chart-line"></i>Account Balance & PnL</h3>
+            {% if pnl_chart.account_balance %}
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;">
+                <div style="background: rgba(157, 114, 255, 0.1); padding: 12px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 0.85em; color: var(--text-secondary-color); margin-bottom: 4px;">💰 Balance</div>
+                    <div data-balance style="font-size: 1.5em; font-weight: bold; color: var(--primary-color);">${{ "%.2f"|format(pnl_chart.account_balance) }}</div>
+                </div>
+                <div style="background: {% if pnl_chart.current_pnl >= 0 %}rgba(46, 204, 113, 0.1){% else %}rgba(231, 76, 60, 0.1){% endif %}; padding: 12px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 0.85em; color: var(--text-secondary-color); margin-bottom: 4px;">📊 Total PnL</div>
+                    <div data-pnl style="font-size: 1.5em; font-weight: bold; color: {% if pnl_chart.current_pnl >= 0 %}var(--green-color){% else %}var(--red-color){% endif %};">
+                        {{ "+" if pnl_chart.current_pnl >= 0 else "" }}${{ "%.4f"|format(pnl_chart.current_pnl) }}
+                    </div>
+                </div>
+                <div style="background: rgba(52, 152, 219, 0.1); padding: 12px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 0.85em; color: var(--text-secondary-color); margin-bottom: 4px;">🎯 Open Positions</div>
+                    <div style="font-size: 1.5em; font-weight: bold; color: #3498db;">{{ risk.positions_count }}</div>
+                </div>
+                <div style="background: rgba(241, 196, 15, 0.1); padding: 12px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 0.85em; color: var(--text-secondary-color); margin-bottom: 4px;">⚡ Leverage</div>
+                    <div style="font-size: 1.5em; font-weight: bold; color: #f1c40f;">{{ risk.leverage }}x</div>
+                </div>
+            </div>
+            {% endif %}
+            <div class="chart-container">
+                <div id="pnlChart"></div>
+            </div>
         </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
