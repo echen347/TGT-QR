@@ -95,17 +95,26 @@
         @media (min-width: 1200px) {
             #system-control { grid-column: span 4; }
             #risk-management { grid-column: span 8; }
-            #alerts { grid-column: span 4; }
-            #pnl-performance { grid-column: span 8; }
-            #current-positions { grid-column: span 7; }
-            #recent-signals { grid-column: span 5; }
+            #alerts { grid-column: span 6; }
+            #pnl-performance { grid-column: span 12; }
+            #current-positions { grid-column: span 6; }
+            #recent-signals { grid-column: span 6; }
         }
 
         @media (min-width: 1600px) {
             #system-control { grid-column: span 3; }
             #risk-management { grid-column: span 9; }
+            #alerts { grid-column: span 4; }
+            #pnl-performance { grid-column: span 12; }
+            #current-positions { grid-column: span 6; }
+            #recent-signals { grid-column: span 6; }
+        }
+        
+        @media (min-width: 2000px) {
+            #system-control { grid-column: span 2; }
+            #risk-management { grid-column: span 10; }
             #alerts { grid-column: span 3; }
-            #pnl-performance { grid-column: span 9; }
+            #pnl-performance { grid-column: span 12; }
             #current-positions { grid-column: span 6; }
             #recent-signals { grid-column: span 6; }
         }
@@ -270,9 +279,15 @@
         .chart-wrapper {
             position: relative;
             height: 280px;
+            width: 100%;
             background-color: rgba(60, 60, 70, 0.5);
             border-radius: 8px;
             border: 1px solid var(--border-color);
+        }
+        
+        #pnlChart {
+            width: 100%;
+            height: 100%;
         }
 
         #error-container {
@@ -674,13 +689,7 @@
                 })
                 .then(marketContext => {
                     const marketGrid = document.querySelector('#market-context .card-grid');
-                    if (!marketGrid) {
-                        console.warn('Market context grid not found');
-                        return;
-                    }
-                    
-                    if (!marketContext || Object.keys(marketContext).length === 0) {
-                        console.warn('Empty market context received');
+                    if (!marketGrid || !marketContext || Object.keys(marketContext).length === 0) {
                         return;
                     }
                     
@@ -688,7 +697,6 @@
                     for (const [symbol, data] of Object.entries(marketContext)) {
                         const signalClass = (data.signal || 'NEUTRAL').toLowerCase().replace('_', '-');
                         const signalText = data.signal || 'NEUTRAL';
-                        console.log(`Updating ${symbol} signal to: ${signalText}`); // Debug log
                         html += `
                             <div class="card market-card">
                                 <h4>${symbol}</h4>
