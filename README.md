@@ -4,11 +4,12 @@
 Lightweight live trading bot with a clean Flask dashboard and a robust, CLI‑first backtester. Built for safety, reproducibility, and quick iteration on strategies (Bybit USDT‑perps).
 
 ## Current risk profile (config/config.py)
-- **MAX_POSITION_USDT**: $2.00
-- **LEVERAGE**: 2.5x (≈ $5 notional to meet exchange minimum)
-- **MAX_POSITIONS**: 1
+- **MAX_POSITION_USDT**: $3.00
+- **LEVERAGE**: 5.0x
+- **MAX_POSITIONS**: 2 (ETHUSDT, SOLUSDT)
 - **STOP_LOSS_PCT / TAKE_PROFIT_PCT**: 1% / 2%
 - **MAX_POSITION_HOLD_HOURS**: 24 (auto-close by time)
+- **TIMEFRAME**: 15 minutes
 - **INTERVAL**: every 5 minutes
 
 ## Project layout
