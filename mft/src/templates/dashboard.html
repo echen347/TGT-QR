@@ -269,10 +269,12 @@
 
         .chart-container {
             padding: 20px;
+            padding-bottom: 30px;  // Extra bottom padding to prevent label cutoff
             border-radius: 12px;
             background-color: var(--card-background-color);
             border: 1px solid var(--border-color);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow: visible;  // Ensure rotated labels aren't clipped
         }
 
         .chart-container:hover {
@@ -609,7 +611,8 @@
                                 gridcolor: 'rgba(255, 255, 255, 0.1)',
                                 color: '#c0c0c0',
                                 tickangle: -45,  // Rotate labels for better readability with seconds
-                                type: 'category'  // Use category to show all timestamps clearly
+                                type: 'category',  // Use category to show all timestamps clearly
+                                automargin: true  // Let Plotly automatically adjust margins for rotated labels
                             },
                             yaxis: { 
                                 title: 'PnL (USDT)',
@@ -622,7 +625,7 @@
                             paper_bgcolor: 'rgba(60, 60, 70, 0.5)',
                             plot_bgcolor: 'rgba(60, 60, 70, 0.5)',
                             font: { color: '#f0f0f0', size: 12 },
-                            margin: { l: 50, r: 20, t: 10, b: 70 },  // Increased bottom margin for rotated labels
+                            margin: { l: 50, r: 20, t: 10, b: 100 },  // Increased bottom margin for rotated labels (was 70)
                             showlegend: false,
                             autosize: true,
                             width: containerWidth
