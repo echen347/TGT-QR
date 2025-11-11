@@ -18,10 +18,11 @@ def migrate():
     
     try:
         # Check if BalanceSnapshot table exists by querying sqlite_master
-        result = db_manager.engine.execute(text(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name='balance_snapshots'"
-        ))
-        table_exists = result.fetchone() is not None
+        with db_manager.engine.connect() as conn:
+            result = conn.execute(text(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='balance_snapshots'"
+            ))
+            table_exists = result.fetchone() is not None
         
         # Create BalanceSnapshot table if it doesn't exist
         if not table_exists:
@@ -33,50 +34,56 @@ def migrate():
         
         # Check current signal column type
         try:
-            result = db_manager.engine.execute(text(
-                "SELECT sql FROM sqlite_master WHERE type='table' AND name='signal_records'"
-            ))
-            sql = result.fetchone()[0]
-            
-            if 'signal INTEGER' in sql:
-                print("🔄 Converting signal_records.signal from INTEGER to STRING...")
-                # SQLite doesn't support ALTER COLUMN, so we need to recreate the table
-                # Step 1: Create new table with correct schema
-                db_manager.engine.execute(text("""
-                    CREATE TABLE signal_records_new (
-                        id INTEGER PRIMARY KEY,
-                        symbol VARCHAR(20) NOT NULL,
-                        signal VARCHAR(20) NOT NULL,
-                        ma_value FLOAT NOT NULL,
-                        current_price FLOAT NOT NULL,
-                        timestamp DATETIME NOT NULL
-                    )
-                """))
-                
-                # Step 2: Copy data, converting integer signals to strings
-                db_manager.engine.execute(text("""
-                    INSERT INTO signal_records_new (id, symbol, signal, ma_value, current_price, timestamp)
-                    SELECT 
-                        id,
-                        symbol,
-                        CASE 
-                            WHEN signal = 1 THEN 'STRONG_BUY'
-                            WHEN signal = -1 THEN 'STRONG_SELL'
-                            ELSE 'NEUTRAL'
-                        END as signal,
-                        ma_value,
-                        current_price,
-                        timestamp
-                    FROM signal_records
-                """))
-                
-                # Step 3: Drop old table and rename new one
-                db_manager.engine.execute(text("DROP TABLE signal_records"))
-                db_manager.engine.execute(text("ALTER TABLE signal_records_new RENAME TO signal_records"))
-                
-                print("✅ signal_records.signal converted to STRING")
-            else:
-                print("✅ signal_records.signal is already STRING")
+            with db_manager.engine.connect() as conn:
+                result = conn.execute(text(
+                    "SELECT sql FROM sqlite_master WHERE type='table' AND name='signal_records'"
+                ))
+                row = result.fetchone()
+                if not row:
+                    print("⚠️  signal_records table doesn't exist yet - will be created with correct schema")
+                else:
+                    sql = row[0]
+                    
+                    if 'signal INTEGER' in sql:
+                        print("🔄 Converting signal_records.signal from INTEGER to STRING...")
+                        # SQLite doesn't support ALTER COLUMN, so we need to recreate the table
+                        # Step 1: Create new table with correct schema
+                        conn.execute(text("""
+                            CREATE TABLE signal_records_new (
+                                id INTEGER PRIMARY KEY,
+                                symbol VARCHAR(20) NOT NULL,
+                                signal VARCHAR(20) NOT NULL,
+                                ma_value FLOAT NOT NULL,
+                                current_price FLOAT NOT NULL,
+                                timestamp DATETIME NOT NULL
+                            )
+                        """))
+                        
+                        # Step 2: Copy data, converting integer signals to strings
+                        conn.execute(text("""
+                            INSERT INTO signal_records_new (id, symbol, signal, ma_value, current_price, timestamp)
+                            SELECT 
+                                id,
+                                symbol,
+                                CASE 
+                                    WHEN signal = 1 THEN 'STRONG_BUY'
+                                    WHEN signal = -1 THEN 'STRONG_SELL'
+                                    ELSE 'NEUTRAL'
+                                END as signal,
+                                ma_value,
+                                current_price,
+                                timestamp
+                            FROM signal_records
+                        """))
+                        
+                        # Step 3: Drop old table and rename new one
+                        conn.execute(text("DROP TABLE signal_records"))
+                        conn.execute(text("ALTER TABLE signal_records_new RENAME TO signal_records"))
+                        conn.commit()
+                        
+                        print("✅ signal_records.signal converted to STRING")
+                    else:
+                        print("✅ signal_records.signal is already STRING")
         except Exception as e:
             print(f"⚠️  Could not check signal_records schema: {e}")
             print("   This is okay if the table doesn't exist yet or schema is already correct")
