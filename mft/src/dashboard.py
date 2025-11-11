@@ -84,23 +84,36 @@ class TradingDashboard:
                 initial_balance = snapshots[0]['account_balance'] - snapshots[0]['total_pnl']
                 cumulative_pnl = [s['total_pnl'] for s in snapshots]
                 
-                # Add current point if it's been more than 1 minute since last snapshot
-                last_snapshot_time = snapshots[-1]['timestamp']
-                time_since_last = datetime.utcnow() - last_snapshot_time.replace(tzinfo=None)
-                if time_since_last.total_seconds() > 60:  # More than 1 minute
-                    # Calculate current total PnL
-                    from database import TradeRecord
-                    trades = self.db.session.query(TradeRecord).all()
-                    realized_pnl = sum(trade.pnl for trade in trades if hasattr(trade, 'pnl') and trade.pnl is not None)
-                    total_pnl = realized_pnl + unrealized_pnl
+                # ALWAYS add current point for real-time updates (don't wait for snapshot)
+                # This ensures chart stays synced with position cards
+                from database import TradeRecord
+                trades = self.db.session.query(TradeRecord).all()
+                realized_pnl = sum(trade.pnl for trade in trades if hasattr(trade, 'pnl') and trade.pnl is not None)
+                total_pnl = realized_pnl + unrealized_pnl
+                
+                # Only add if it's different from last snapshot (avoid duplicates)
+                last_snapshot_pnl = cumulative_pnl[-1] if cumulative_pnl else None
+                if last_snapshot_pnl is None or abs(total_pnl - last_snapshot_pnl) > 0.0001:  # 0.0001 USDT threshold
                     cumulative_pnl.append(total_pnl)
                     now_est = datetime.utcnow().replace(tzinfo=timezone('UTC')).astimezone(est)
                     timestamps_est.append(now_est)
                 
+                # Return more points for finer granularity (300 points = ~75 minutes at 15s intervals)
+                # Format timestamps with seconds for recent data (< 1 hour old)
+                now_utc = datetime.utcnow().replace(tzinfo=timezone('UTC'))
+                formatted_timestamps = []
+                for ts in timestamps_est[-300:]:  # Last 300 points for fine-grained chart
+                    ts_utc = ts.replace(tzinfo=None).replace(tzinfo=timezone('UTC'))
+                    hours_ago = (now_utc - ts_utc).total_seconds() / 3600
+                    if hours_ago < 1:  # Show seconds for data < 1 hour old
+                        formatted_timestamps.append(ts.strftime('%I:%M:%S%p EST'))
+                    else:  # Show minutes for older data
+                        formatted_timestamps.append(ts.strftime('%m/%d %I:%M%p EST'))
+                
                 return {
-                    'timestamps': [ts.strftime('%m/%d %I:%M%p EST') for ts in timestamps_est[-100:]],  # Last 100 points
-                    'cumulative_pnl': cumulative_pnl[-100:],
-                    'current_pnl': cumulative_pnl[-1] if cumulative_pnl else 0,
+                    'timestamps': formatted_timestamps,
+                    'cumulative_pnl': cumulative_pnl[-300:],
+                    'current_pnl': total_pnl,  # Use current calculated PnL, not last snapshot
                     'account_balance': account_balance
                 }
             

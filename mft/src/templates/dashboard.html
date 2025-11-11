@@ -832,12 +832,23 @@
             updateMarketContext();
         }
         
-        // Auto-refresh every 3 seconds for live updates (more frequent)
+        // Auto-refresh every 2 seconds for faster sync between chart and positions
+        // Chart updates independently for smoother real-time feel
         setInterval(() => {
             if (document.visibilityState === 'visible') {
-                updateAll();
+                updateSystemStatus(); // Positions update every 2s
+                updatePnLChart(); // Chart updates every 2s for real-time sync
+                updateAlerts();
+                updateSignals();
             }
-        }, 3000);
+        }, 2000);
+        
+        // Update market context less frequently (every 5 seconds) to reduce API load
+        setInterval(() => {
+            if (document.visibilityState === 'visible') {
+                updateMarketContext();
+            }
+        }, 5000);
         
         // Initial update (includes PnL chart) - wait a bit for page to fully load
         window.addEventListener('DOMContentLoaded', () => {

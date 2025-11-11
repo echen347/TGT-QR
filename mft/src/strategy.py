@@ -662,10 +662,10 @@ class MovingAverageStrategy:
             # Update all market data before making decisions
             self.update_market_data()
 
-            # Save balance snapshot periodically (every minute) for PnL chart evolution
+            # Save balance snapshot periodically (every 15 seconds) for fine-grained PnL chart evolution
             from datetime import datetime, timedelta
             last_snapshot_time = getattr(self, '_last_balance_snapshot', None)
-            if not last_snapshot_time or (datetime.utcnow() - last_snapshot_time).total_seconds() >= 60:
+            if not last_snapshot_time or (datetime.utcnow() - last_snapshot_time).total_seconds() >= 15:
                 try:
                     balance_resp = self.session.get_wallet_balance(accountType="UNIFIED", coin="USDT")
                     if balance_resp.get('retCode') == 0:
