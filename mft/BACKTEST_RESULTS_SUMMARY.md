@@ -28,7 +28,7 @@
 | RSI Mean Reversion | -99.65% | 43.15% | 248 | ❌ |
 | MACD | -99.83% | 30.73% | 397 | ❌ |
 | Donchian | Error | - | - | ❌ |
-| HTF Pullback | TBD | - | - | ⏳ |
+| HTF Pullback | -87.16% | 33.65% | 104 | ❌ |
 
 ---
 
