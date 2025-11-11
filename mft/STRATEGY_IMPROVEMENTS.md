@@ -24,25 +24,28 @@
 ## Proposed Improvements
 
 ### Phase 1: AVAXUSDT Parameter Optimization ⭐⭐⭐ HIGHEST PRIORITY
-**Status**: ✅ **ACTIVE** - Currently focused on AVAXUSDT only
+**Status**: 🔄 **IN PROGRESS** - Current MA strategy not profitable (-43.77% return)
 
-**Why**: AVAXUSDT is the only profitable symbol. Optimize parameters specifically for it.
+**Why**: Current MA strategy shows -43.77% return, 38.01% win rate on recent data. Need to find profitable parameters or alternative strategy.
 
-**Implementation**:
-```bash
-# Test different MA periods
-python3 tools/backtester.py --symbols AVAXUSDT --days 60 --ma-period 15
-python3 tools/backtester.py --symbols AVAXUSDT --days 60 --ma-period 20
-python3 tools/backtester.py --symbols AVAXUSDT --days 60 --ma-period 25
-python3 tools/backtester.py --symbols AVAXUSDT --days 60 --ma-period 30
-```
+**Approach**: 
+1. **Parameter Sweep** (with OOD validation):
+   ```bash
+   # Test different MA periods with train/test split
+   python3 tools/optimize_avax_params.py --train-days 60 --test-days 30
+   ```
+
+2. **Alternative Strategies** (if parameter optimization fails):
+   - See `STRATEGY_ALTERNATIVES.md` for ideas (RSI Mean Reversion, Breakout, ATR-Based, etc.)
+   - Test each on recent 60 days of data
+   - Only deploy if profitable on OOD test data
 
 **Expected Impact**: 
-- Find optimal MA period for AVAXUSDT
-- Improve win rate from 42% → ≥50%
-- Maintain or improve +26.90% return
+- Find profitable parameters OR alternative strategy
+- Achieve >0% return, ≥40% win rate on OOD test data
+- Avoid overfitting (test performance within 20% of train)
 
-**Risk**: Low - Simple parameter sweep, no overfitting risk
+**Risk**: Medium - Must be careful about overfitting, may need to try multiple strategies
 
 ---
 
