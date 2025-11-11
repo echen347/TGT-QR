@@ -61,6 +61,11 @@ MAX_POSITION_HOLD_HOURS = 24  # Maximum time to hold a position (24 hours)
 EXIT_ON_PROFIT = True  # If True, close positions as soon as they become profitable (defensive mode)
 EXIT_ON_PROFIT_MIN_PCT = 0.002  # Minimum profit % to exit (0.2% to cover fees)
 
+# Sliding Window Adaptation (Phase 2B)
+ENABLE_ADAPTIVE_PARAMS = True  # Enable adaptive parameter adjustment based on recent performance
+ADAPTIVE_WINDOW_DAYS = 7  # Track performance over last N days
+ADAPTIVE_UPDATE_INTERVAL_HOURS = 24  # Recalculate adaptive params every N hours
+
 # Trading Fees (Bybit Perpetual Futures)
 # Taker fee: 0.055% (5.5 bps) per side, Maker fee: 0.02% (2 bps) per side
 # Since we use market orders (taker), round-trip fee = 11 bps (5.5 bps entry + 5.5 bps exit)

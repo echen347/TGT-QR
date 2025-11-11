@@ -10,13 +10,15 @@ from config.config import (
     BYBIT_API_KEY, BYBIT_API_SECRET, BYBIT_TESTNET, SYMBOLS, LEVERAGE,
     MAX_POSITION_USDT, TIMEFRAME, MA_PERIOD, LOG_FILE, LOG_LEVEL,
     LOG_ROTATION, LOG_RETENTION_DAYS, MIN_TREND_STRENGTH,
-    VOLATILITY_THRESHOLD_HIGH, VOLATILITY_THRESHOLD_LOW, MAX_POSITION_HOLD_HOURS
+    VOLATILITY_THRESHOLD_HIGH, VOLATILITY_THRESHOLD_LOW, MAX_POSITION_HOLD_HOURS,
+    ENABLE_ADAPTIVE_PARAMS, ADAPTIVE_WINDOW_DAYS, ADAPTIVE_UPDATE_INTERVAL_HOURS
 )
 import logging
 from logging.handlers import TimedRotatingFileHandler
 from database import db_manager
 # Import the class, not the instance we removed
 from risk_manager import RiskManager
+from performance_tracker import PerformanceTracker
 
 class MovingAverageStrategy:
     """
@@ -46,6 +48,12 @@ class MovingAverageStrategy:
         self.price_history = {}
         self.signals = {}
         self.market_state = {} # New attribute for live data
+        
+        # Phase 2B: Sliding window performance tracker
+        self.performance_tracker = PerformanceTracker(window_days=ADAPTIVE_WINDOW_DAYS)
+        self.adaptive_params = None  # Will be updated periodically
+        self.last_adaptive_update = None
+        
         # Initialize price history for each symbol
         for symbol in SYMBOLS:
             self.price_history[symbol] = []
@@ -123,16 +131,67 @@ class MovingAverageStrategy:
         except Exception as e:
             self.logger.error(f"Exception getting prices for {symbol}: {str(e)}")
             return []
+    def update_adaptive_params(self):
+        """Update adaptive parameters based on recent performance (Phase 2B)"""
+        if not ENABLE_ADAPTIVE_PARAMS:
+            return
+        
+        # Check if it's time to update (every ADAPTIVE_UPDATE_INTERVAL_HOURS)
+        if self.last_adaptive_update:
+            hours_since_update = (datetime.utcnow() - self.last_adaptive_update).total_seconds() / 3600
+            if hours_since_update < ADAPTIVE_UPDATE_INTERVAL_HOURS:
+                return  # Not time to update yet
+        
+        try:
+            recommendations = self.performance_tracker.get_adaptive_recommendations()
+            self.adaptive_params = recommendations
+            self.last_adaptive_update = datetime.utcnow()
+            
+            if recommendations['reason'] != 'insufficient_data':
+                self.logger.info(
+                    f"📊 Adaptive params updated: {recommendations['reason']} | "
+                    f"TrendStrength={recommendations['adjust_trend_strength']:.2f}x, "
+                    f"Thresholds={recommendations['adjust_thresholds']:.2f}x, "
+                    f"PositionSize={recommendations['adjust_position_size']:.2f}x"
+                )
+        except Exception as e:
+            self.logger.warning(f"Failed to update adaptive params: {e}")
+    
     def calculate_ma_signal(self, symbol):
-        """Calculate moving average signal using unified signal calculator"""
+        """Calculate moving average signal using unified signal calculator with adaptive parameters"""
         from signal_calculator import calculate_signal
+        from signal_calculator import THRESHOLD_HIGH_VOL, THRESHOLD_NORMAL_VOL, THRESHOLD_LOW_VOL
         
         if len(self.price_history[symbol]) < MA_PERIOD + 10:
             self.market_state[symbol]['signal'] = "NEUTRAL"
             return 0
         
+        # Update adaptive parameters if enabled
+        if ENABLE_ADAPTIVE_PARAMS:
+            self.update_adaptive_params()
+        
+        # Get adaptive multipliers (default to 1.0 if not set)
+        if self.adaptive_params:
+            trend_mult = self.adaptive_params['adjust_trend_strength']
+            threshold_mult = self.adaptive_params['adjust_thresholds']
+        else:
+            trend_mult = 1.0
+            threshold_mult = 1.0
+        
+        # Apply adaptive parameters
+        adaptive_min_trend = MIN_TREND_STRENGTH * trend_mult
+        adaptive_threshold_high = THRESHOLD_HIGH_VOL * threshold_mult
+        adaptive_threshold_normal = THRESHOLD_NORMAL_VOL * threshold_mult
+        adaptive_threshold_low = THRESHOLD_LOW_VOL * threshold_mult
+        
         prices_df = pd.DataFrame(self.price_history[symbol])
-        signal_value, signal_name, metadata = calculate_signal(prices_df)
+        signal_value, signal_name, metadata = calculate_signal(
+            prices_df,
+            min_trend_strength=adaptive_min_trend,
+            threshold_high=adaptive_threshold_high,
+            threshold_normal=adaptive_threshold_normal,
+            threshold_low=adaptive_threshold_low
+        )
         
         # Update market_state with results
         self.market_state[symbol]['ma_value'] = metadata['ma']
@@ -141,11 +200,12 @@ class MovingAverageStrategy:
         
         # Enhanced logging for signal generation (INFO level for visibility)
         if signal_name != "NEUTRAL":
+            adaptive_note = f" (adaptive: trend={trend_mult:.2f}x, thresh={threshold_mult:.2f}x)" if ENABLE_ADAPTIVE_PARAMS else ""
             self.logger.info(
                 f"🔍 {symbol} {signal_name} signal generated: Price=${metadata['price']:.2f}, "
                 f"MA=${metadata['ma']:.2f}, Deviation={metadata['deviation_pct']:.3f}%, "
                 f"Threshold={metadata['threshold']:.3f}%, Vol={metadata['vol_category']}, "
-                f"TrendStrength={metadata['trend_strength']:.6f}"
+                f"TrendStrength={metadata['trend_strength']:.6f}{adaptive_note}"
             )
         
         return signal_value
