@@ -446,7 +446,7 @@ class MovingAverageStrategy:
 
             # Clamp to 80% of available to avoid 110007 and to MAX_POSITION_USDT (restored for $26 bankroll)
             from config.config import MAX_POSITION_USDT
-            clamped_margin = min(float(qty_usdt), max(0.0, available_balance * 0.50), float(MAX_POSITION_USDT))
+            clamped_margin = min(float(qty_usdt), max(0.0, available_balance * 0.80), float(MAX_POSITION_USDT))
             
             # Calculate notional with leverage
             notional_usdt = clamped_margin * leverage
