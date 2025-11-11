@@ -437,8 +437,11 @@ class MovingAverageStrategy:
             try:
                 balance_resp = self.session.get_wallet_balance(accountType="UNIFIED", coin="USDT")
                 if balance_resp.get('retCode') == 0:
-                    available_balance = float(balance_resp['result']['list'][0]['coin'][0]['availableToWithdraw'])
-            except Exception:
+                    wallet_data = balance_resp['result']['list'][0]['coin'][0]
+                    # Use walletBalance (total balance) since availableToWithdraw may be empty
+                    available_balance = float(wallet_data.get('walletBalance') or 0)
+            except Exception as e:
+                self.logger.warning(f"Error getting balance: {e}")
                 pass
 
             # Clamp to 90% of available to avoid 110007 and to MAX_POSITION_USDT
