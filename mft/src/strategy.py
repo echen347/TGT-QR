@@ -444,9 +444,9 @@ class MovingAverageStrategy:
                 self.logger.warning(f"Error getting balance: {e}")
                 pass
 
-            # Clamp to 90% of available to avoid 110007 and to MAX_POSITION_USDT
+            # Clamp to 50% of available to avoid 110007 (more conservative for margin requirements) and to MAX_POSITION_USDT
             from config.config import MAX_POSITION_USDT
-            clamped_margin = min(float(qty_usdt), max(0.0, available_balance * 0.90), float(MAX_POSITION_USDT))
+            clamped_margin = min(float(qty_usdt), max(0.0, available_balance * 0.50), float(MAX_POSITION_USDT))
             
             # Calculate notional with leverage
             notional_usdt = clamped_margin * leverage
