@@ -444,7 +444,7 @@ class MovingAverageStrategy:
                 self.logger.warning(f"Error getting balance: {e}")
                 pass
 
-            # Clamp to 50% of available to avoid 110007 (more conservative for margin requirements) and to MAX_POSITION_USDT
+            # Clamp to 80% of available to avoid 110007 and to MAX_POSITION_USDT (restored for $26 bankroll)
             from config.config import MAX_POSITION_USDT
             clamped_margin = min(float(qty_usdt), max(0.0, available_balance * 0.50), float(MAX_POSITION_USDT))
             

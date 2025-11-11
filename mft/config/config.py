@@ -21,7 +21,7 @@ SYMBOLS = [
 ]
 
 # --- Position Sizing & Leverage ---
-MAX_POSITION_USDT = 4.00 # Margin per position (increased to meet 0.1 SOL min order - ~$16.5 notional/$3.3 margin with 5x leverage)
+MAX_POSITION_USDT = 10.00 # Margin per position (restored for $26 bankroll - meets 0.1 SOL min order with 5x leverage)
 LEVERAGE = 5.0  # Higher leverage to reduce required margin per order
 MAX_POSITIONS = 2  # ETH + SOL
 MIN_VOLUME_USDT = 200000  # Only trade reasonably liquid pairs (500K+ USD volume)
@@ -29,10 +29,10 @@ TIMEFRAME = '15'  # 15-minute candles per deployment decision
 MA_PERIOD = 20  # A shorter MA period will be more sensitive to price changes
 ATR_PERIOD = 14
 
-# Strategy Configuration - INCREASED LIMITS FOR $16 BANKROLL
+# Strategy Configuration - RESTORED FOR $26 BANKROLL
 STRATEGY_INTERVAL_MINUTES = 5  # Run strategy every 5 minutes
-MAX_DAILY_LOSS_USDT = 6.00 # ~10% of bankroll daily loss limit
-MAX_TOTAL_LOSS_USDT = 10.00 # ~10% of bankroll total loss cap
+MAX_DAILY_LOSS_USDT = 10.00 # ~38% of bankroll daily loss limit (conservative)
+MAX_TOTAL_LOSS_USDT = 15.00 # ~58% of bankroll total loss cap (conservative)
 
 # Signal Filtering - More lenient for live trading vs backtesting
 # Reduced MIN_TREND_STRENGTH to increase signal frequency (target: 1+ trade/day)
