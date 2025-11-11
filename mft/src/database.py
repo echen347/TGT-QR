@@ -66,9 +66,19 @@ class SignalRecord(Base):
 
     id = Column(Integer, primary_key=True)
     symbol = Column(String(20), nullable=False)
-    signal = Column(Integer, nullable=False)  # -1, 0, 1
+    signal = Column(String(20), nullable=False)  # STRONG_BUY, STRONG_SELL, NEUTRAL, etc.
     ma_value = Column(Float, nullable=False)
     current_price = Column(Float, nullable=False)
+    timestamp = Column(DateTime, nullable=False)
+
+class BalanceSnapshot(Base):
+    """Store periodic account balance snapshots for PnL chart evolution"""
+    __tablename__ = 'balance_snapshots'
+
+    id = Column(Integer, primary_key=True)
+    account_balance = Column(Float, nullable=False)
+    unrealized_pnl = Column(Float, nullable=False, default=0)
+    total_pnl = Column(Float, nullable=False, default=0)
     timestamp = Column(DateTime, nullable=False)
 
 class BacktestRun(Base):
@@ -222,6 +232,39 @@ class DatabaseManager:
         except Exception as e:
             self.session.rollback()
             print(f"Error saving signal record: {e}")
+
+    def save_balance_snapshot(self, account_balance, unrealized_pnl=0, total_pnl=0):
+        """Save periodic account balance snapshot for PnL chart evolution"""
+        try:
+            snapshot = BalanceSnapshot(
+                account_balance=account_balance,
+                unrealized_pnl=unrealized_pnl,
+                total_pnl=total_pnl,
+                timestamp=datetime.utcnow()
+            )
+            self.session.add(snapshot)
+            self.session.commit()
+        except Exception as e:
+            self.session.rollback()
+            print(f"Error saving balance snapshot: {e}")
+
+    def get_balance_snapshots(self, hours=24):
+        """Get balance snapshots for the last N hours"""
+        try:
+            since_time = datetime.utcnow() - timedelta(hours=hours)
+            snapshots = self.session.query(BalanceSnapshot)\
+                .filter(BalanceSnapshot.timestamp >= since_time)\
+                .order_by(BalanceSnapshot.timestamp.asc())\
+                .all()
+            return [{
+                'timestamp': s.timestamp,
+                'account_balance': s.account_balance,
+                'unrealized_pnl': s.unrealized_pnl,
+                'total_pnl': s.total_pnl
+            } for s in snapshots]
+        except Exception as e:
+            print(f"Error getting balance snapshots: {e}")
+            return []
 
     def create_backtest_run(self, name, description, symbols, start_date, end_date, parameters=None):
         """Create a new backtest run record"""

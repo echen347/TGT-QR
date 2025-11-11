@@ -52,59 +52,9 @@ class TradingDashboard:
     def get_pnl_chart_data(self):
         """Get PnL data for charting - tracking account balance over time"""
         try:
-            # Get all trade records to calculate realized PnL
-            from database import TradeRecord
-            trades = self.db.session.query(TradeRecord)\
-                .order_by(TradeRecord.timestamp)\
-                .all()
-
-            if not trades:
-                # No trades yet, just show current account balance
-                try:
-                    balance = self.strategy.session.get_wallet_balance(
-                        accountType="UNIFIED",
-                        coin="USDT"
-                    )
-                    if balance['retCode'] == 0:
-                        wallet_balance = float(balance['result']['list'][0]['coin'][0]['walletBalance'])
-                        from pytz import timezone
-                        est = timezone('US/Eastern')
-                        now_est = datetime.utcnow().replace(tzinfo=timezone('UTC')).astimezone(est)
-                        return {
-                            'timestamps': [now_est.strftime('%m/%d %I:%M%p EST')],
-                            'pnl_values': [0],
-                            'cumulative_pnl': [0],
-                            'current_pnl': 0,
-                            'account_balance': wallet_balance
-                        }
-                except:
-                    pass
-                return {'error': 'No trading activity yet. Waiting for first trade...'}
-
-            # Calculate cumulative PnL from trades
-            timestamps = []
-            cumulative_pnl = []
-            running_pnl = 0
-            
-            for trade in trades:
-                timestamps.append(trade.timestamp)
-                # Use actual PnL from database, fallback to 0 if not available
-                trade_pnl = trade.pnl if hasattr(trade, 'pnl') and trade.pnl is not None else 0
-                running_pnl += trade_pnl
-                cumulative_pnl.append(running_pnl)
-
-            # Add current unrealized PnL from open positions
-            current_positions = self.strategy.get_current_positions()
-            unrealized_pnl = 0
-            for symbol, pos in current_positions.items():
-                if pos.get('position_size', 0) != 0:
-                    # Calculate unrealized PnL
-                    unrealized_pnl += pos.get('unrealized_pnl', 0)
-            
-            total_pnl = running_pnl + unrealized_pnl
-
-            # Get current account balance
+            # Get current account balance and unrealized PnL
             account_balance = 0
+            unrealized_pnl = 0
             try:
                 balance = self.strategy.session.get_wallet_balance(
                     accountType="UNIFIED",
@@ -115,13 +65,84 @@ class TradingDashboard:
             except Exception as e:
                 logging.error(f"Failed to fetch wallet balance: {e}")
 
+            # Get unrealized PnL from open positions
+            current_positions = self.strategy.get_current_positions()
+            for symbol, pos in current_positions.items():
+                if pos.get('position_size', 0) != 0:
+                    unrealized_pnl += pos.get('unrealized_pnl', 0)
+            
+            # Try to get balance snapshots first (for chart evolution)
+            snapshots = self.db.get_balance_snapshots(hours=24)
+            
+            if snapshots:
+                # Use balance snapshots for smooth chart evolution
+                from pytz import timezone
+                est = timezone('US/Eastern')
+                timestamps_est = [s['timestamp'].replace(tzinfo=timezone('UTC')).astimezone(est) for s in snapshots]
+                
+                # Calculate cumulative PnL from snapshots (relative to first snapshot)
+                initial_balance = snapshots[0]['account_balance'] - snapshots[0]['total_pnl']
+                cumulative_pnl = [s['total_pnl'] for s in snapshots]
+                
+                # Add current point if it's been more than 1 minute since last snapshot
+                last_snapshot_time = snapshots[-1]['timestamp']
+                time_since_last = datetime.utcnow() - last_snapshot_time.replace(tzinfo=None)
+                if time_since_last.total_seconds() > 60:  # More than 1 minute
+                    # Calculate current total PnL
+                    from database import TradeRecord
+                    trades = self.db.session.query(TradeRecord).all()
+                    realized_pnl = sum(trade.pnl for trade in trades if hasattr(trade, 'pnl') and trade.pnl is not None)
+                    total_pnl = realized_pnl + unrealized_pnl
+                    cumulative_pnl.append(total_pnl)
+                    now_est = datetime.utcnow().replace(tzinfo=timezone('UTC')).astimezone(est)
+                    timestamps_est.append(now_est)
+                
+                return {
+                    'timestamps': [ts.strftime('%m/%d %I:%M%p EST') for ts in timestamps_est[-100:]],  # Last 100 points
+                    'cumulative_pnl': cumulative_pnl[-100:],
+                    'current_pnl': cumulative_pnl[-1] if cumulative_pnl else 0,
+                    'account_balance': account_balance
+                }
+            
+            # Fallback: Use trade records if no snapshots
+            from database import TradeRecord
+            trades = self.db.session.query(TradeRecord)\
+                .order_by(TradeRecord.timestamp)\
+                .all()
+
+            if not trades:
+                # No trades yet, just show current account balance
+                from pytz import timezone
+                est = timezone('US/Eastern')
+                now_est = datetime.utcnow().replace(tzinfo=timezone('UTC')).astimezone(est)
+                return {
+                    'timestamps': [now_est.strftime('%m/%d %I:%M%p EST')],
+                    'pnl_values': [0],
+                    'cumulative_pnl': [0],
+                    'current_pnl': unrealized_pnl,
+                    'account_balance': account_balance
+                }
+
+            # Calculate cumulative PnL from trades
+            timestamps = []
+            cumulative_pnl = []
+            running_pnl = 0
+            
+            for trade in trades:
+                timestamps.append(trade.timestamp)
+                trade_pnl = trade.pnl if hasattr(trade, 'pnl') and trade.pnl is not None else 0
+                running_pnl += trade_pnl
+                cumulative_pnl.append(running_pnl)
+            
+            total_pnl = running_pnl + unrealized_pnl
+
             # Convert timestamps to EST
             from pytz import timezone
             est = timezone('US/Eastern')
             timestamps_est = [ts.replace(tzinfo=timezone('UTC')).astimezone(est) for ts in timestamps[-50:]]
             
             return {
-                'timestamps': [ts.strftime('%m/%d %I:%M%p EST') for ts in timestamps_est],  # Last 50 points in EST
+                'timestamps': [ts.strftime('%m/%d %I:%M%p EST') for ts in timestamps_est],
                 'pnl_values': [cumulative_pnl[i] - cumulative_pnl[i-1] if i > 0 else cumulative_pnl[0] 
                               for i in range(max(0, len(cumulative_pnl)-50), len(cumulative_pnl))],
                 'cumulative_pnl': cumulative_pnl[-50:],

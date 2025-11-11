@@ -585,6 +585,26 @@ class MovingAverageStrategy:
             # Update all market data before making decisions
             self.update_market_data()
 
+            # Save balance snapshot periodically (every minute) for PnL chart evolution
+            from datetime import datetime, timedelta
+            last_snapshot_time = getattr(self, '_last_balance_snapshot', None)
+            if not last_snapshot_time or (datetime.utcnow() - last_snapshot_time).total_seconds() >= 60:
+                try:
+                    balance_resp = self.session.get_wallet_balance(accountType="UNIFIED", coin="USDT")
+                    if balance_resp.get('retCode') == 0:
+                        wallet_balance = float(balance_resp['result']['list'][0]['coin'][0]['walletBalance'])
+                        current_positions = self.get_current_positions()
+                        unrealized_pnl = sum(pos.get('unrealized_pnl', 0) for pos in current_positions.values() if pos.get('position_size', 0) != 0)
+                        # Calculate realized PnL from closed trades
+                        from database import TradeRecord
+                        trades = db_manager.session.query(TradeRecord).all()
+                        realized_pnl = sum(trade.pnl for trade in trades if hasattr(trade, 'pnl') and trade.pnl is not None)
+                        total_pnl = realized_pnl + unrealized_pnl
+                        db_manager.save_balance_snapshot(wallet_balance, unrealized_pnl, total_pnl)
+                        self._last_balance_snapshot = datetime.utcnow()
+                except Exception as e:
+                    self.logger.warning(f"Failed to save balance snapshot: {e}")
+
             # --- TRADING LOGIC ---
             for symbol in SYMBOLS:
                 if len(self.price_history.get(symbol, [])) < MA_PERIOD:
