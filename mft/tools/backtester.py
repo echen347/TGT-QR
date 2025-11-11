@@ -84,7 +84,8 @@ class Backtester:
         self.run_description = run_description
         self.run_id = None
         # Overrides / simulation params
-        self.timeframe = str(timeframe or TIMEFRAME)
+        # Use 1-minute candles by default to match live trading (more accurate signals)
+        self.timeframe = str(timeframe or '1')  # Changed from TIMEFRAME to '1' for consistency
         self.ma_period = int(ma_period or MA_PERIOD)
         self.fee_bps = float(fee_bps)
         self.slippage_bps = float(slippage_bps)

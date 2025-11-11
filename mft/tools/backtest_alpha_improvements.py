@@ -196,7 +196,7 @@ class AlphaBacktester:
             end_date=end_date,
             run_name=f"{set_name} - {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}",
             run_description=f"Alpha improvement test: {set_name}",
-            timeframe=TIMEFRAME,
+            timeframe='1',  # Use 1-minute candles to match live trading
             ma_period=params['ma_period'],
             no_db=True,  # Don't save to DB for parameter sweep
             cache_ttl_sec=86400 * 365  # 1 year cache TTL to reuse existing data
