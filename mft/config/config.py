@@ -16,9 +16,11 @@ BYBIT_API_SECRET = os.getenv('BYBIT_API_SECRET')
 # Trading Configuration - EXPANDED FOR MORE OPPORTUNITIES
 # --- Trading Pairs ---
 # List of symbols to trade
-# Phase 2A: Expanded symbol list - Add BTCUSDT (worked well in previous backtest) and others
+# FOCUSED: Backtest shows AVAXUSDT is only profitable symbol (+26.90%, 42.11% win rate)
+# Focusing on AVAXUSDT first, can add others after optimization
 SYMBOLS = [
-    'ETHUSDT', 'SOLUSDT', 'BTCUSDT', 'AVAXUSDT'
+    'AVAXUSDT'  # Focus on profitable symbol first
+    # 'ETHUSDT', 'SOLUSDT', 'BTCUSDT'  # Disabled - underperforming in backtest
 ]
 
 # --- Position Sizing & Leverage ---
@@ -65,8 +67,9 @@ EXIT_ON_PROFIT_MIN_PCT = 0.002  # Minimum profit % to exit (0.2% to cover fees)
 BLOCK_NEW_POSITIONS_IF_LOSING = True  # If True, block new positions when existing positions have unrealized losses
 
 # Sliding Window Adaptation (Phase 2B)
-# ANTI-OVERFITTING: Conservative settings to prevent over-optimization
-ENABLE_ADAPTIVE_PARAMS = True  # Enable adaptive parameter adjustment based on recent performance
+# DISABLED: Adaptive system showed poor backtest results (-120% return, 38.64% win rate)
+# Focusing on simple rule-based strategy with symbol-specific optimization instead
+ENABLE_ADAPTIVE_PARAMS = False  # Disabled - not improving performance
 ADAPTIVE_WINDOW_DAYS = 14  # Track performance over last N days (increased from 7 for more stability)
 ADAPTIVE_UPDATE_INTERVAL_HOURS = 48  # Recalculate adaptive params every N hours (increased from 24 to reduce churn)
 ADAPTIVE_MIN_TRADES = 10  # Minimum trades required before adapting (prevents overfitting on small samples)
