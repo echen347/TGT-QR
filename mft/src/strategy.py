@@ -594,13 +594,14 @@ class MovingAverageStrategy:
                 signal = self.calculate_ma_signal(symbol) # This now also updates market_state
                 current_price = self.market_state[symbol].get('price', 0)
                 ma_value = self.market_state[symbol].get('ma_value', 0)
+                signal_name = self.market_state[symbol].get('signal', 'NEUTRAL')  # Get string signal name
 
                 if current_price == 0:
                     self.logger.warning(f"Skipping {symbol} due to zero price.")
                     continue
 
-                # Save signal to database
-                db_manager.save_signal_record(symbol, signal, ma_value, current_price)
+                # Save signal to database (use string signal name, not numeric value)
+                db_manager.save_signal_record(symbol, signal_name, ma_value, current_price)
                 
                 # Use market_state for position tracking (synced with Bybit)
                 current_position_size = self.market_state[symbol]['position_size']
