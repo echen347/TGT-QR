@@ -430,11 +430,27 @@ class MovingAverageStrategy:
             # Clamp to 90% of available to avoid 110007 and to MAX_POSITION_USDT
             from config.config import MAX_POSITION_USDT
             clamped_margin = min(float(qty_usdt), max(0.0, available_balance * 0.90), float(MAX_POSITION_USDT))
+            
+            # Calculate notional with leverage
+            notional_usdt = clamped_margin * leverage
+            
+            # CRITICAL: Ensure we meet exchange minimum notional ($5) by increasing margin if needed
+            # If notional is below $5, we need at least $1 margin (with 5x leverage = $5 notional)
+            min_margin_for_notional = 5.0 / leverage  # Minimum margin to meet $5 notional requirement
+            if clamped_margin < min_margin_for_notional:
+                if available_balance >= min_margin_for_notional:
+                    # Use minimum margin needed to meet exchange requirement
+                    clamped_margin = min(min_margin_for_notional, available_balance * 0.90)
+                    notional_usdt = clamped_margin * leverage
+                    self.logger.info(f"📈 Adjusted margin to ${clamped_margin:.2f} to meet $5 notional minimum (${notional_usdt:.2f} notional)")
+                else:
+                    self.logger.warning(f"Insufficient balance to meet exchange minimum. Need ${min_margin_for_notional:.2f} margin (${5.0:.2f} notional), have ${available_balance:.2f} USDT")
+                    return False
+            
             if clamped_margin <= 0:
                 self.logger.warning(f"Insufficient balance to place order for {symbol}. Avail={available_balance:.2f} USDT")
                 return False
 
-            notional_usdt = clamped_margin * leverage
             qty_contracts = notional_usdt / current_price
             # Comprehensive risk check before placing order
             current_volume = self.get_symbol_volume(symbol)
@@ -449,7 +465,7 @@ class MovingAverageStrategy:
                 self.logger.error(f"Leverage mismatch: requested {leverage}, configured {LEVERAGE}")
                 return False
 
-            # Enforce exchange min notional ($5) guard
+            # Final check: Enforce exchange min notional ($5) guard
             if notional_usdt < 5.0:
                 self.logger.warning(f"Notional ${notional_usdt:.2f} below exchange minimum $5. Skipping {symbol} order.")
                 return False
