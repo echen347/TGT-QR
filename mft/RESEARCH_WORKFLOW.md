@@ -140,5 +140,46 @@ python3 tools/backtest_avax_ood.py --train-days 36 --test-days 24 --strategy <st
   - **Conclusion**: Not profitable - spread may not be cointegrated or fees/slippage too high
 - **Next**: Test AVAXUSDT/SOLUSDT pair, or move to different strategy
 
-### Strategy 2: TBD
+### Strategy 2: Pairs Trading (AVAXUSDT/SOLUSDT) ❌ FAILED
+- **Hypothesis**: AVAXUSDT and SOLUSDT are cointegrated, spread mean-reverts
+- **Test**: 60 days, z-score entry >2, exit at 0
+- **Results**: 
+  - Return: -92.17%
+  - Win Rate: 17.12%
+  - Trades: 111
+  - **Conclusion**: Not profitable - pairs trading not working for these pairs
+
+### Strategy 3: Volatility Breakout (DOGEUSDT) ❌ FAILED
+- **Hypothesis**: Bollinger Band squeeze followed by breakout with volume
+- **Test**: 60 days, BB squeeze <2%, breakout with 1.5x volume
+- **Results**:
+  - Return: -94.09%
+  - Win Rate: 27.50%
+  - Trades: 80
+  - **Conclusion**: Not profitable - breakouts not reliable
+
+### Strategy 4: Momentum + Mean Reversion Hybrid (DOGEUSDT, AVAXUSDT) ❌ FAILED
+- **Hypothesis**: Combine MA trend with RSI pullback entries
+- **Test**: 60 days, MA for direction, RSI <40 (long) or >60 (short)
+- **Results**:
+  - DOGEUSDT: -59.89% return, 25% win rate, 28 trades
+  - AVAXUSDT: -74.76% return, 26.92% win rate, 26 trades
+  - **Conclusion**: Not profitable - hybrid approach not working
+
+### Strategy 5: ML Random Forest (AVAXUSDT) ❌ FAILED (but promising win rate)
+- **Hypothesis**: ML can find patterns traditional indicators miss
+- **Test**: 60 days, Random Forest with regularization, confidence threshold 60%
+- **Features**: Price z-score, MA ratios, volatility, volume, RSI-like, ATR-like
+- **Overfitting Prevention**: 
+  - Regularization (max_depth=5, min_samples_split=20)
+  - Confidence threshold (>60% probability)
+  - Limited training data (last 500 bars)
+- **Results**:
+  - Return: -99.87%
+  - Win Rate: 40.06% ✅ (close to target!)
+  - Trades: 332
+  - Average Win: 7.98%, Average Loss: -7.75%
+  - **Conclusion**: Win rate good but risk/reward poor - need better exit strategy or position sizing
+
+### Strategy 6: ML Logistic Regression (AVAXUSDT) - Testing
 

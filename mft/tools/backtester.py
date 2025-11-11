@@ -477,6 +477,102 @@ class Backtester:
             # For now, return 0 - pairs trading needs special handling
             return 0
 
+        if strat == 'volatility_breakout':
+            # Volatility Breakout Strategy
+            # Theory: Low volatility periods (Bollinger Band squeeze) followed by high volatility moves
+            # Entry: Breakout from squeeze with volume confirmation
+            closes = historical_prices['close']
+            volumes = historical_prices['volume']
+            
+            # Calculate Bollinger Bands
+            bb_period = 20
+            bb_std = 2.0
+            if len(closes) < bb_period:
+                return 0
+            
+            sma = closes.rolling(window=bb_period).mean()
+            std = closes.rolling(window=bb_period).std()
+            upper_band = sma + (bb_std * std)
+            lower_band = sma - (bb_std * std)
+            bb_width = (upper_band - lower_band) / sma  # Normalized width
+            
+            if pd.isna(bb_width.iloc[-1]) or pd.isna(bb_width.iloc[-2]):
+                return 0
+            
+            # Check for squeeze (low volatility) - BB width < 2% of price
+            squeeze_threshold = 0.02
+            was_squeezed = bb_width.iloc[-2] < squeeze_threshold
+            is_breaking_out = bb_width.iloc[-1] > bb_width.iloc[-2] * 1.2  # Width expanding
+            
+            if not was_squeezed or not is_breaking_out:
+                return 0
+            
+            # Volume confirmation - need volume spike
+            avg_volume = volumes.rolling(window=bb_period).mean().iloc[-1]
+            current_volume = volumes.iloc[-1]
+            if pd.isna(avg_volume) or avg_volume == 0:
+                return 0
+            volume_spike = current_volume > (1.5 * avg_volume)
+            
+            if not volume_spike:
+                return 0
+            
+            # Direction: breakout above upper band = LONG, below lower band = SHORT
+            if current_price > upper_band.iloc[-1]:
+                return 1  # Bullish breakout
+            if current_price < lower_band.iloc[-1]:
+                return -1  # Bearish breakout
+            return 0
+
+        if strat == 'momentum_mr_hybrid':
+            # Momentum + Mean Reversion Hybrid
+            # Theory: Use MA for trend direction, enter on pullbacks (RSI)
+            closes = historical_prices['close']
+            
+            # Calculate MA for trend direction
+            ma = closes.rolling(window=self.ma_period).mean().iloc[-1]
+            if pd.isna(ma):
+                return 0
+            
+            # Calculate RSI for mean reversion entry
+            rsi = self._rsi(closes, self.rsi_period)
+            rsi_val = rsi.iloc[-1]
+            if pd.isna(rsi_val):
+                return 0
+            
+            # Determine trend direction
+            price_above_ma = current_price > ma
+            
+            # Entry logic:
+            # - Uptrend (price > MA): Enter LONG on RSI pullback (RSI < 40)
+            # - Downtrend (price < MA): Enter SHORT on RSI rally (RSI > 60)
+            if price_above_ma and rsi_val < 40:
+                return 1  # Long on pullback in uptrend
+            if not price_above_ma and rsi_val > 60:
+                return -1  # Short on rally in downtrend
+            return 0
+
+        if strat == 'ml_rf' or strat == 'ml_lr':
+            # ML-Based Strategy (Random Forest or Logistic Regression)
+            # Uses technical features to predict price direction
+            # Careful overfitting prevention: regularization, confidence threshold
+            try:
+                import sys
+                import os
+                ml_module_path = os.path.join(os.path.dirname(__file__), 'ml_strategy.py')
+                if os.path.exists(ml_module_path):
+                    sys.path.insert(0, os.path.dirname(__file__))
+                    from ml_strategy import ml_strategy_signal
+                    
+                    model_type = 'rf' if strat == 'ml_rf' else 'lr'
+                    signal = ml_strategy_signal(historical_prices, model_type=model_type)
+                    return signal
+                else:
+                    return 0
+            except Exception as e:
+                # Silently fail if ML module not available
+                return 0
+
         # Default fallback to MA (Phase 1: no MA slope requirement)
         if trend_strength < MIN_TREND_STRENGTH:
             return 0
@@ -1176,7 +1272,7 @@ if __name__ == "__main__":
     parser.add_argument('--atr-gate-mult', type=float, default=0.5, help='ATR gate multiple for MA distance')
     parser.add_argument('--cooldown-bars', type=int, default=0, help='Bars to skip after a losing trade (per symbol)')
     # Strategy selection
-    parser.add_argument('--strategy', type=str, default='ma', choices=['ma','ma_cross','donchian','macd','rsi_mr','htf_pullback','mean_reversion','vwma','atr_dynamic','pairs'], help='Strategy to backtest')
+    parser.add_argument('--strategy', type=str, default='ma', choices=['ma','ma_cross','donchian','macd','rsi_mr','htf_pullback','mean_reversion','vwma','atr_dynamic','pairs','volatility_breakout','momentum_mr_hybrid','ml_rf','ml_lr'], help='Strategy to backtest')
     parser.add_argument('--fast-ma', type=int, default=10, help='Fast MA for crossover')
     parser.add_argument('--slow-ma', type=int, default=50, help='Slow MA for crossover')
     parser.add_argument('--donchian-period', type=int, default=20, help='Donchian channel period')
