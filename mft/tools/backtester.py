@@ -365,7 +365,7 @@ class Backtester:
 
         if strat == 'htf_pullback':
             # Higher-timeframe confirmation (1h MA) + 15m pullback entry
-            # Assumes current timeframe is 15m or 5m; we’ll synthesize an HTF MA from the 1h-equivalent window
+            # Assumes current timeframe is 15m or 5m; we'll synthesize an HTF MA from the 1h-equivalent window
             # Compute synthetic 1h MA by using period scaled by (60 / timeframe)
             try:
                 tf_minutes = int(self.timeframe)
@@ -401,6 +401,73 @@ class Backtester:
             # Short trend: sell rallies (RSI above pullback_ob)
             if direction == -1 and rsi_val >= self.pullback_ob:
                 return -1
+            return 0
+
+        if strat == 'mean_reversion':
+            # Mean reversion: trade against extremes
+            # Entry: Price > 2% above MA → SHORT, Price < 2% below MA → LONG
+            # Exit handled by stop loss/take profit
+            ma = closes.rolling(window=self.ma_period).mean().iloc[-1]
+            if pd.isna(ma):
+                return 0
+            deviation = (current_price - ma) / ma
+            # Entry thresholds: 2% deviation
+            if deviation > 0.02:  # Price > 2% above MA → SHORT
+                return -1
+            if deviation < -0.02:  # Price < 2% below MA → LONG
+                return 1
+            return 0
+
+        if strat == 'vwma':
+            # Volume-Weighted Moving Average
+            # VWMA = Σ(Price × Volume) / Σ(Volume)
+            volumes = historical_prices['volume']
+            if len(historical_prices) < self.ma_period or volumes.sum() == 0:
+                return 0
+            vwma = (closes * volumes).rolling(window=self.ma_period).sum() / volumes.rolling(window=self.ma_period).sum()
+            vwma_val = vwma.iloc[-1]
+            if pd.isna(vwma_val):
+                return 0
+            # Volume spike confirmation (>1.5x average)
+            avg_volume = volumes.rolling(window=self.ma_period).mean().iloc[-1]
+            current_volume = volumes.iloc[-1]
+            if pd.isna(avg_volume) or avg_volume == 0:
+                return 0
+            volume_spike = current_volume > (1.5 * avg_volume)
+            if not volume_spike:
+                return 0
+            # Signal: price crosses VWMA
+            prev_price = closes.iloc[-2]
+            prev_vwma = vwma.iloc[-2]
+            if pd.isna(prev_price) or pd.isna(prev_vwma):
+                return 0
+            # Crossover detection
+            if current_price > vwma_val and prev_price <= prev_vwma:
+                return 1  # Bullish crossover
+            if current_price < vwma_val and prev_price >= prev_vwma:
+                return -1  # Bearish crossover
+            return 0
+
+        if strat == 'atr_dynamic':
+            # ATR-Based Dynamic Strategy
+            # Entry: Price deviation from MA > 1.5×ATR
+            # Uses ATR to adapt to volatility
+            ma = closes.rolling(window=self.ma_period).mean().iloc[-1]
+            if pd.isna(ma):
+                return 0
+            atr_val = self._calculate_atr(historical_prices, period=14)
+            if atr_val == 0 or pd.isna(atr_val):
+                return 0
+            # Entry threshold: 1.5×ATR deviation
+            threshold = 1.5 * atr_val
+            deviation = abs(current_price - ma)
+            if deviation < threshold:
+                return 0
+            # Signal direction
+            if current_price > ma + threshold:
+                return 1  # LONG
+            if current_price < ma - threshold:
+                return -1  # SHORT
             return 0
 
         # Default fallback to MA (Phase 1: no MA slope requirement)
@@ -908,7 +975,7 @@ if __name__ == "__main__":
     parser.add_argument('--atr-gate-mult', type=float, default=0.5, help='ATR gate multiple for MA distance')
     parser.add_argument('--cooldown-bars', type=int, default=0, help='Bars to skip after a losing trade (per symbol)')
     # Strategy selection
-    parser.add_argument('--strategy', type=str, default='ma', choices=['ma','ma_cross','donchian','macd','rsi_mr','htf_pullback'], help='Strategy to backtest')
+    parser.add_argument('--strategy', type=str, default='ma', choices=['ma','ma_cross','donchian','macd','rsi_mr','htf_pullback','mean_reversion','vwma','atr_dynamic'], help='Strategy to backtest')
     parser.add_argument('--fast-ma', type=int, default=10, help='Fast MA for crossover')
     parser.add_argument('--slow-ma', type=int, default=50, help='Slow MA for crossover')
     parser.add_argument('--donchian-period', type=int, default=20, help='Donchian channel period')
