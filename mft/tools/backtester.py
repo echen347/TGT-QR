@@ -470,6 +470,13 @@ class Backtester:
                 return -1  # SHORT
             return 0
 
+        if strat == 'pairs':
+            # Pairs Trading Strategy (cointegration-based)
+            # Requires 2 symbols: first symbol is primary, second is pair
+            # This will be handled specially in run() method
+            # For now, return 0 - pairs trading needs special handling
+            return 0
+
         # Default fallback to MA (Phase 1: no MA slope requirement)
         if trend_strength < MIN_TREND_STRENGTH:
             return 0
@@ -486,6 +493,193 @@ class Backtester:
         if current_price < ma * (1 - threshold):
             return -1
         return 0
+
+    def _run_pairs_trading(self):
+        """Run pairs trading strategy - trades spread between two cointegrated assets"""
+        symbol1, symbol2 = self.symbols[0], self.symbols[1]
+        
+        if symbol1 not in self.historical_data or symbol2 not in self.historical_data:
+            print(f"❌ Missing data for pairs trading: {symbol1}, {symbol2}")
+            return
+        
+        df1 = self.historical_data[symbol1].copy()
+        df2 = self.historical_data[symbol2].copy()
+        
+        # Remove duplicate timestamps (keep last)
+        df1 = df1[~df1.index.duplicated(keep='last')]
+        df2 = df2[~df2.index.duplicated(keep='last')]
+        
+        # Align timestamps - use reindex to handle missing timestamps
+        # Find common time range
+        start_time = max(df1.index.min(), df2.index.min())
+        end_time = min(df1.index.max(), df2.index.max())
+        
+        if start_time >= end_time:
+            print(f"❌ No overlapping time range for pairs trading")
+            return
+        
+        # Create aligned time index (use 1-minute resolution)
+        aligned_index = pd.date_range(start=start_time, end=end_time, freq='1T')
+        
+        # Reindex both dataframes to aligned index, forward fill missing values
+        df1_aligned = df1.reindex(aligned_index, method='ffill').dropna()
+        df2_aligned = df2.reindex(aligned_index, method='ffill').dropna()
+        
+        # Find common timestamps after reindexing
+        common_times = df1_aligned.index.intersection(df2_aligned.index)
+        df1_aligned = df1_aligned.loc[common_times].sort_index()
+        df2_aligned = df2_aligned.loc[common_times].sort_index()
+        
+        if len(df1_aligned) < 100:
+            print(f"❌ Insufficient overlapping data for pairs trading: {len(df1_aligned)} candles")
+            return
+        
+        print(f"✅ Aligned {len(df1_aligned)} candles for pairs trading ({df1_aligned.index.min()} to {df1_aligned.index.max()})")
+        
+        # Calculate spread (price ratio)
+        spread = df1_aligned['close'] / df2_aligned['close']
+        
+        # Calculate z-score of spread (rolling window)
+        lookback = max(self.ma_period, 60)  # Use at least 60 periods for spread calculation
+        spread_mean = spread.rolling(window=lookback).mean()
+        spread_std = spread.rolling(window=lookback).std()
+        z_score = (spread - spread_mean) / spread_std.replace(0, 1e-10)
+        
+        # Trading logic
+        trades = []
+        position = 0  # 0: none, 1: long spread (long symbol1, short symbol2), -1: short spread
+        entry_z = 0
+        entry_spread = 0
+        entry_price1 = 0
+        entry_price2 = 0
+        
+        fee_pct = self.fee_bps / 10000.0
+        slip_pct = self.slippage_bps / 10000.0
+        z_entry_threshold = 2.0  # Enter when |z-score| > 2
+        z_exit_threshold = 0.0  # Exit when z-score returns to 0 (mean reversion)
+        
+        for i in range(lookback, len(df1_aligned)):
+            current_z = z_score.iloc[i]
+            current_spread = spread.iloc[i]
+            price1 = df1_aligned['close'].iloc[i]
+            price2 = df2_aligned['close'].iloc[i]
+            timestamp = df1_aligned.index[i]
+            
+            # Exit logic
+            if position != 0:
+                should_exit = False
+                if position == 1:  # Long spread position (long symbol1, short symbol2)
+                    # We entered when z < -2 (spread too low), exit when z returns to 0 or goes positive
+                    if current_z >= z_exit_threshold:
+                        should_exit = True
+                        # Close: sell symbol1, buy symbol2
+                        exit_price1 = price1 * (1 - slip_pct)
+                        exit_price2 = price2 * (1 + slip_pct)
+                        # PnL: profit when spread increases (we bought low spread, sell higher spread)
+                        entry_spread = entry_price1 / entry_price2
+                        exit_spread = exit_price1 / exit_price2
+                        spread_pct_change = (exit_spread - entry_spread) / entry_spread
+                        pnl = spread_pct_change - (4 * fee_pct)  # 4 fees: 2 entries + 2 exits
+                else:  # Short spread position (short symbol1, long symbol2)
+                    # We entered when z > 2 (spread too high), exit when z returns to 0 or goes negative
+                    if current_z <= z_exit_threshold:
+                        should_exit = True
+                        # Close: buy symbol1, sell symbol2
+                        exit_price1 = price1 * (1 + slip_pct)
+                        exit_price2 = price2 * (1 - slip_pct)
+                        # PnL: profit when spread decreases (we sold high spread, buy lower spread)
+                        entry_spread = entry_price1 / entry_price2
+                        exit_spread = exit_price1 / exit_price2
+                        spread_pct_change = (entry_spread - exit_spread) / entry_spread
+                        pnl = spread_pct_change - (4 * fee_pct)  # 4 fees: 2 entries + 2 exits
+                
+                if should_exit:
+                    trades[-1].update({
+                        'exit_date': timestamp,
+                        'exit_price': current_spread,
+                        'exit_z': current_z,
+                        'pnl': pnl
+                    })
+                    position = 0
+                    entry_z = 0
+                    continue
+            
+            # Entry logic
+            if position == 0:
+                if current_z > z_entry_threshold:
+                    # Short spread: short symbol1, long symbol2 (spread is too high, expect mean reversion)
+                    position = -1
+                    entry_z = current_z
+                    entry_spread = current_spread
+                    entry_price1 = price1 * (1 - slip_pct)  # Short entry
+                    entry_price2 = price2 * (1 + slip_pct)  # Long entry
+                    trades.append({
+                        'entry_date': timestamp,
+                        'entry_price': current_spread,
+                        'entry_z': current_z,
+                        'type': 'short_spread',
+                        'symbol1': symbol1,
+                        'symbol2': symbol2,
+                        'fee_bps': self.fee_bps,
+                        'slippage_bps': self.slippage_bps
+                    })
+                elif current_z < -z_entry_threshold:
+                    # Long spread: long symbol1, short symbol2 (spread is too low, expect mean reversion)
+                    position = 1
+                    entry_z = current_z
+                    entry_spread = current_spread
+                    entry_price1 = price1 * (1 + slip_pct)  # Long entry
+                    entry_price2 = price2 * (1 - slip_pct)  # Short entry
+                    trades.append({
+                        'entry_date': timestamp,
+                        'entry_price': current_spread,
+                        'entry_z': current_z,
+                        'type': 'long_spread',
+                        'symbol1': symbol1,
+                        'symbol2': symbol2,
+                        'fee_bps': self.fee_bps,
+                        'slippage_bps': self.slippage_bps
+                    })
+        
+        # Close any open positions at end
+        if position != 0 and trades:
+            last_idx = len(df1_aligned) - 1
+            final_price1 = df1_aligned['close'].iloc[last_idx]
+            final_price2 = df2_aligned['close'].iloc[last_idx]
+            final_spread = spread.iloc[last_idx]
+            final_z = z_score.iloc[last_idx]
+            
+            if position == 1:
+                exit_price1 = final_price1 * (1 - slip_pct)
+                exit_price2 = final_price2 * (1 + slip_pct)
+                spread_change = (exit_price1 / exit_price2) - (entry_price1 / entry_price2)
+                pnl = spread_change / (entry_price1 / entry_price2) - (4 * fee_pct)
+            else:
+                exit_price1 = final_price1 * (1 + slip_pct)
+                exit_price2 = final_price2 * (1 - slip_pct)
+                spread_change = (entry_price1 / entry_price2) - (exit_price1 / exit_price2)
+                pnl = spread_change / (entry_price1 / entry_price2) - (4 * fee_pct)
+            
+            trades[-1].update({
+                'exit_date': df1_aligned.index[last_idx],
+                'exit_price': final_spread,
+                'exit_z': final_z,
+                'pnl': pnl
+            })
+        
+        # Process results
+        completed_trades = [t for t in trades if 'exit_date' in t and 'pnl' in t]
+        if not completed_trades:
+            print("❌ No completed trades for pairs trading")
+            return
+        
+        pair_name = f"{symbol1}_{symbol2}"
+        all_results = {pair_name: pd.DataFrame(completed_trades)}
+        
+        # Calculate metrics
+        self.calculate_metrics(all_results)
+        if not self.no_db:
+            self.calculate_and_save_run_summary(all_results)
 
     def _calculate_atr(self, prices, period=14):
         """Calculate Average True Range for backtester"""
@@ -523,6 +717,13 @@ class Backtester:
             return
 
         self.fetch_historical_data()
+        
+        # Special handling for pairs trading strategy
+        if self.strategy_name.lower() == 'pairs':
+            if len(self.symbols) != 2:
+                print("❌ Pairs trading requires exactly 2 symbols")
+                return
+            return self._run_pairs_trading()
         
         all_results = {}
         for symbol in self.symbols:
@@ -975,7 +1176,7 @@ if __name__ == "__main__":
     parser.add_argument('--atr-gate-mult', type=float, default=0.5, help='ATR gate multiple for MA distance')
     parser.add_argument('--cooldown-bars', type=int, default=0, help='Bars to skip after a losing trade (per symbol)')
     # Strategy selection
-    parser.add_argument('--strategy', type=str, default='ma', choices=['ma','ma_cross','donchian','macd','rsi_mr','htf_pullback','mean_reversion','vwma','atr_dynamic'], help='Strategy to backtest')
+    parser.add_argument('--strategy', type=str, default='ma', choices=['ma','ma_cross','donchian','macd','rsi_mr','htf_pullback','mean_reversion','vwma','atr_dynamic','pairs'], help='Strategy to backtest')
     parser.add_argument('--fast-ma', type=int, default=10, help='Fast MA for crossover')
     parser.add_argument('--slow-ma', type=int, default=50, help='Slow MA for crossover')
     parser.add_argument('--donchian-period', type=int, default=20, help='Donchian channel period')
