@@ -216,15 +216,19 @@
 **Hypothesis**: Strategies that failed on AVAXUSDT might work on ETHUSDT  
 **Test Period**: 60 days  
 **Symbols**: ETHUSDT  
-**Strategies**: RSI Mean Reversion, Mean Reversion (Z-Score)  
+**Strategies**: RSI Mean Reversion, Mean Reversion (Z-Score), MACD, VWMA  
 **Results**:
 - RSI Mean Reversion: -100.62% return, 34.69% win rate, 49 trades ❌
-- Mean Reversion (Z-Score): 33.86% return, 33.33% win rate, 3 trades ⚠️ Too few trades  
-**Conclusion**: ⚠️ MIXED - Mean Reversion profitable but only 3 trades (not statistically significant)  
+- Mean Reversion (Z-Score): 33.86% return, 33.33% win rate, 3 trades ⚠️ Too few trades
+- MACD: 46.00% return, 25.53% win rate, 47 trades ✅ PROFITABLE
+- VWMA: -121.15% return, 50% win rate, 2 trades ❌ Too few trades  
+**Conclusion**: ✅ PARTIAL - MACD profitable on ETHUSDT (46% return, 47 trades) but low win rate (25.53%)  
 **Learnings**: 
-- ETHUSDT shows better results than AVAXUSDT for some strategies
+- ETHUSDT shows better results than AVAXUSDT for multiple strategies
+- MACD works on ETHUSDT despite failing on AVAXUSDT
 - Mean Reversion works but needs more signals for statistical significance
 - RSI Mean Reversion still fails on ETHUSDT
+- VWMA generates too few signals
 
 ---
 
@@ -234,13 +238,14 @@
 1. **ML RF (50% conf) on ETHUSDT**: 287.58% return, 73.68% win rate, 19 trades ⚠️ NEEDS OOD VERIFICATION (bug detected)
 2. **Order Flow on ETHUSDT**: 92.66% return, 50% win rate ⚠️ Too few trades (8)
 3. **Volatility Clustering on ETHUSDT**: 83.88% return ⚠️ Too few trades (11)
-4. **Mean Reversion (Z-Score) on ETHUSDT**: 33.86% return ⚠️ Too few trades (3)
+4. **MACD on ETHUSDT**: 46.00% return, 25.53% win rate, 47 trades ✅ (Low win rate but profitable)
+5. **Mean Reversion (Z-Score) on ETHUSDT**: 33.86% return ⚠️ Too few trades (3)
 
 ### ❌ Rejected Strategies:
 - MA (all periods tested)
-- RSI Mean Reversion
-- MACD
-- Mean Reversion (Z-Score)
+- RSI Mean Reversion (on AVAXUSDT and ETHUSDT)
+- MACD (on AVAXUSDT, but ✅ works on ETHUSDT)
+- Mean Reversion (Z-Score) (on AVAXUSDT, but ⚠️ works on ETHUSDT with too few trades)
 - Pairs Trading
 - Volatility Breakout
 - Momentum + MR Hybrid
@@ -250,9 +255,11 @@
 
 ### Key Observations:
 1. **ETHUSDT is special**: Multiple strategies work on ETHUSDT but not other tickers
-   - ML RF: 287.58% return (19 trades)
-   - Order Flow: 92.66% return (8 trades)
+   - ML RF: 287.58% return, 73.68% win rate (19 trades)
+   - Order Flow: 92.66% return, 50% win rate (8 trades)
    - Volatility Clustering: 83.88% return (11 trades)
+   - MACD: 46.00% return, 25.53% win rate (47 trades) ✅
+   - Mean Reversion: 33.86% return (3 trades, too few)
 2. **Trade frequency matters**: Strategies with <20 trades need more signals for statistical significance
 3. **Win rate alone insufficient**: Need good risk/reward ratio
 4. **ML shows promise**: But needs proper OOD validation (bug detected)
