@@ -9,22 +9,27 @@ import os
 import time
 from datetime import datetime
 
-# Add src to path
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'src'))
+# Add project root and src to path
+project_root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
+src_path = os.path.join(project_root, 'src')
+sys.path.insert(0, project_root)
+sys.path.insert(0, src_path)
 
 def test_imports():
     """Test that all modules can be imported"""
     print("🔍 Testing imports...")
 
     try:
-        from config import config
+        import config.config
         from src.database import db_manager
-        from src.risk_manager import risk_manager
+        from src.risk_manager import RiskManager
         from src.strategy import MovingAverageStrategy
         from src.dashboard import app, TradingDashboard
         print("✅ All imports successful")
         return True
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         print(f"❌ Import error: {e}")
         return False
 
@@ -35,20 +40,14 @@ def test_database():
     try:
         from src.database import db_manager
 
-        # Test saving price data
-        test_price = {
-            'timestamp': datetime.utcnow(),
-            'open': 50000,
-            'high': 50100,
-            'low': 49900,
-            'close': 50050,
-            'volume': 1000
-        }
-
-        db_manager.save_price_data('BTCUSDT', test_price)
+        # Test saving price data (using the method signature that matches strategy.py)
+        test_price = 3000.0  # ETH price
+        test_volume = 1000000.0  # volume
+        
+        db_manager.save_price_data('ETHUSDT', test_price, test_volume)
 
         # Test retrieving data
-        prices = db_manager.get_recent_prices('BTCUSDT', limit=1)
+        prices = db_manager.get_recent_prices('ETHUSDT', limit=1)
         if prices:
             print("✅ Database operations working")
             return True
@@ -65,24 +64,29 @@ def test_risk_manager():
     print("🛡️ Testing risk manager...")
 
     try:
-        from src.risk_manager import risk_manager
+        from src.risk_manager import RiskManager
 
+        risk_manager = RiskManager()
+        
         # Test initial state
         status = risk_manager.get_risk_status()
-        print(f"   Initial status: Can trade = {status['can_trade']}")
+        print(f"   Initial status: Can trade = {status.get('can_trade', 'N/A')}")
 
         # Test position size check
-        can_open = risk_manager.can_open_position('BTCUSDT', 1.00, 2000000)  # 2M volume
+        can_open = risk_manager.can_open_position('ETHUSDT', 1.00, 2000000)  # 2M volume
         print(f"   Position check: {can_open}")
 
         # Test loss recording
         risk_manager.record_loss(0.50)
-        print(f"   After $0.50 loss: Daily loss = ${risk_manager.daily_loss}")
+        status_after = risk_manager.get_risk_status()
+        print(f"   After $0.50 loss: Daily loss = ${status_after.get('daily_loss', 0):.2f}")
 
         print("✅ Risk manager working")
         return True
 
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         print(f"❌ Risk manager error: {e}")
         return False
 
@@ -112,8 +116,13 @@ def test_dashboard():
 
     try:
         from src.dashboard import TradingDashboard
+        from src.strategy import MovingAverageStrategy
+        from src.risk_manager import RiskManager
 
-        dashboard = TradingDashboard()
+        # Create mock instances for testing
+        strategy = MovingAverageStrategy()
+        risk_manager = RiskManager()
+        dashboard = TradingDashboard(strategy, risk_manager)
 
         # Test data retrieval methods
         pnl_data = dashboard.get_pnl_chart_data()
