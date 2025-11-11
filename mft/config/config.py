@@ -60,7 +60,7 @@ MAX_POSITION_HOLD_HOURS = 24  # Maximum time to hold a position (24 hours)
 RISK_LIMIT_ENABLED = True
 # Note: Bybit v5 uses tier-based risk; value may be interpreted per account tier.
 RISK_LIMIT_VALUE = 10000  # Target notional risk limit (exchange-tier specific)
-USE_TP_SL_ON_ORDER = False  # Temporarily disabled to test order placement (TP/SL may require additional margin)
+USE_TP_SL_ON_ORDER = True  # Attach TP/SL to orders for risk management
 
 # Dashboard Configuration
 DASHBOARD_PORT = 5000

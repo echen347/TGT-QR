@@ -356,6 +356,10 @@ class MovingAverageStrategy:
                     # Update the latest price in our history for consistency
                     if self.price_history[symbol]:
                         self.price_history[symbol][-1]['close'] = current_price
+                    
+                    # Recalculate signal to keep dashboard updated
+                    if len(self.price_history[symbol]) >= MA_PERIOD:
+                        self.calculate_ma_signal(symbol)  # Updates market_state['signal']
 
                     # Save current price data to database for main dashboard charts (only if changed significantly)
                     if current_price > 0 and len(self.price_history[symbol]) > 0:
