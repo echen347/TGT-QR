@@ -1,73 +1,90 @@
 # Strategy Improvements & Re-evaluation Plan
 
-## Current Issues
+## Current Status (Updated)
 
-### Performance Analysis
-- **ETHUSDT**: 0 trades (no signals generated) - strategy too conservative or wrong parameters
-- **SOLUSDT**: 13 trades, -39.54% return, 38.46% win rate - strategy underperforming
-- **Previous success**: BTCUSDT + ETHUSDT showed 112% return, 7.67 trades/day
-- **Key insight**: Strategy works better on BTCUSDT than SOLUSDT
+### Recent Backtest Results (60 days)
+- **AVAXUSDT**: +26.90% return, 42.11% win rate, 38 trades ✅ **ONLY PROFITABLE SYMBOL**
+- **ETHUSDT**: 0 trades (no signals generated)
+- **SOLUSDT**: -4.68% return, 20% win rate, 5 trades
+- **BTCUSDT**: -142.64% return, 0% win rate, 1 trade
+- **Adaptive System**: -120.42% return, 38.64% win rate ❌ **DISABLED**
 
-### Root Causes
-1. **Fixed parameters** - Same MA period/thresholds for all symbols regardless of volatility
-2. **Limited symbols** - Only 2 symbols (ETHUSDT, SOLUSDT) vs successful test (BTCUSDT, ETHUSDT)
-3. **No adaptation** - Strategy doesn't adapt to changing market conditions
-4. **Time period dependency** - Recent 60 days may be unfavorable market regime
+### Current Strategy Focus
+- **Symbol**: AVAXUSDT only (only profitable symbol)
+- **Adaptive System**: Disabled (not improving performance)
+- **Max Positions**: 1 (single symbol focus)
+- **Parameters**: MA=20, thresholds 0.2%/0.05%/0.03%
+
+### Key Insights
+1. **Symbol-specific performance** - AVAXUSDT works, others don't
+2. **Adaptive system failed** - Made performance worse (-120% return)
+3. **Simple is better** - Rule-based strategy outperforms adaptive
+4. **Focus needed** - One symbol is easier to optimize than multiple
 
 ## Proposed Improvements
 
-### Phase 2A: Add More Symbols ⭐ HIGH PRIORITY
-**Why**: Previous successful backtest used BTCUSDT. More symbols = more opportunities.
+### Phase 1: AVAXUSDT Parameter Optimization ⭐⭐⭐ HIGHEST PRIORITY
+**Status**: ✅ **ACTIVE** - Currently focused on AVAXUSDT only
+
+**Why**: AVAXUSDT is the only profitable symbol. Optimize parameters specifically for it.
+
+**Implementation**:
+```bash
+# Test different MA periods
+python3 tools/backtester.py --symbols AVAXUSDT --days 60 --ma-period 15
+python3 tools/backtester.py --symbols AVAXUSDT --days 60 --ma-period 20
+python3 tools/backtester.py --symbols AVAXUSDT --days 60 --ma-period 25
+python3 tools/backtester.py --symbols AVAXUSDT --days 60 --ma-period 30
+```
+
+**Expected Impact**: 
+- Find optimal MA period for AVAXUSDT
+- Improve win rate from 42% → ≥50%
+- Maintain or improve +26.90% return
+
+**Risk**: Low - Simple parameter sweep, no overfitting risk
+
+---
+
+### Phase 2: Entry/Exit Improvements ⭐⭐ MEDIUM PRIORITY
+**Status**: 🔄 **NEXT** - After Phase 1 optimization
+
+**Why**: Current win rate (42%) is below target (≥50%). Better entry/exit logic can help.
+
+**Options**:
+1. **Multi-timeframe confirmation** - Require 1m + 5m alignment
+2. **Volume confirmation** - Require volume spike for entry
+3. **ATR-based thresholds** - Use ATR instead of fixed percentages
+4. **Trailing stops** - Protect profits better
+
+**Expected Impact**:
+- Higher win rate (42% → ≥50%)
+- Better risk/reward ratio
+- Fewer false signals
+
+**Risk**: Medium - Need careful backtesting
+
+---
+
+### Phase 3: Add More Symbols (Only if AVAXUSDT works) ⭐ LOW PRIORITY
+**Status**: ⏸️ **PAUSED** - Focus on AVAXUSDT first
+
+**Why**: Once AVAXUSDT is profitable, test other symbols individually.
 
 **Implementation**:
 ```python
+# Only add symbols that show >50% win rate in backtest
 SYMBOLS = [
-    'ETHUSDT', 'SOLUSDT', 'BTCUSDT', 'AVAXUSDT', 'MATICUSDT'
+    'AVAXUSDT',  # Proven profitable
+    # Add others only after individual backtests show >50% win rate
 ]
 ```
 
 **Expected Impact**: 
-- 2.5x more trading opportunities (2 → 5 symbols)
-- Diversification across different market behaviors
-- Some symbols may perform better than others
+- More trading opportunities
+- Diversification
 
-**Risk**: Low - Same strategy, just more symbols
-
----
-
-### Phase 2B: Sliding Window Adaptive Strategy ⭐⭐ HIGH PRIORITY
-**Why**: Markets change. Strategy should adapt to recent performance.
-
-**Concept**: 
-- Track performance over rolling windows (e.g., last 7 days, 14 days, 30 days)
-- Adjust parameters based on recent win rate and returns
-- If performance drops, tighten filters or reduce position sizes
-
-**Implementation**:
-```python
-# Track recent performance
-recent_trades = get_trades_last_n_days(7)
-recent_win_rate = calculate_win_rate(recent_trades)
-recent_return = calculate_return(recent_trades)
-
-# Adaptive parameters
-if recent_win_rate < 0.45:  # Underperforming
-    # Tighten filters - reduce signal frequency
-    MIN_TREND_STRENGTH *= 1.5  # Require stronger trends
-    THRESHOLD_HIGH_VOL *= 1.2  # Require larger deviations
-    MAX_POSITION_USDT *= 0.8  # Reduce position size
-elif recent_win_rate > 0.55:  # Performing well
-    # Loosen filters - increase signal frequency
-    MIN_TREND_STRENGTH *= 0.9
-    THRESHOLD_HIGH_VOL *= 0.95
-```
-
-**Expected Impact**:
-- Better adaptation to market regimes
-- Reduced drawdowns during bad periods
-- Increased activity during good periods
-
-**Risk**: Medium - Need to avoid over-optimization
+**Risk**: Medium - Need to avoid adding unprofitable symbols
 
 ---
 
@@ -163,42 +180,49 @@ else:
 
 ## Implementation Priority
 
-### Immediate (This Week)
-1. ✅ **Add BTCUSDT** - Previous backtest showed it works well
-2. ✅ **Add AVAXUSDT** - High volume, good liquidity
-3. ✅ **Test on new symbols** - Backtest with expanded symbol list
+### Immediate (This Week) ✅ COMPLETED
+1. ✅ **Disable Adaptive System** - Not improving performance
+2. ✅ **Focus on AVAXUSDT** - Only profitable symbol
+3. ✅ **Set MAX_POSITIONS = 1** - Single symbol focus
 
 ### Short-term (Next Week)
-1. **Sliding Window Adaptation** - Track 7-day performance, adjust parameters
-2. **Symbol-Specific Parameters** - Tune for BTCUSDT, ETHUSDT, SOLUSDT separately
+1. **Parameter Optimization** - MA period sweep (15, 20, 25, 30)
+2. **Threshold Optimization** - Test tighter/looser thresholds
+3. **Trend Strength Tuning** - Test different MIN_TREND_STRENGTH values
 
 ### Medium-term (Next Month)
-1. **Multi-Timeframe Confirmation** - Add 5m and 15m confirmation
-2. **Dynamic MA Period** - Adjust based on volatility
+1. **Entry/Exit Improvements** - Multi-timeframe, volume confirmation
+2. **Add More Symbols** - Only if AVAXUSDT achieves ≥50% win rate
 
 ## Testing Plan
 
-### Step 1: Expand Symbols
+### Step 1: AVAXUSDT Parameter Optimization ✅ IN PROGRESS
 ```bash
-# Test with expanded symbol list
-python3 tools/backtester.py --symbols ETHUSDT,SOLUSDT,BTCUSDT,AVAXUSDT --days 60
+# Test different MA periods
+python3 tools/backtester.py --symbols AVAXUSDT --days 60 --ma-period 15
+python3 tools/backtester.py --symbols AVAXUSDT --days 60 --ma-period 20
+python3 tools/backtester.py --symbols AVAXUSDT --days 60 --ma-period 25
+python3 tools/backtester.py --symbols AVAXUSDT --days 60 --ma-period 30
+
+# Compare results and select best MA period
 ```
 
-### Step 2: Test Sliding Window
-- Implement performance tracking
-- Test adaptive parameters on historical data
-- Compare to fixed parameters
+### Step 2: Threshold Optimization
+- Test different volatility thresholds
+- Test different MIN_TREND_STRENGTH values
+- Find optimal combination for AVAXUSDT
 
-### Step 3: Test Symbol-Specific Params
-- Backtest each symbol with optimized parameters
-- Compare to unified parameters
+### Step 3: Entry/Exit Improvements
+- Test multi-timeframe confirmation
+- Test volume confirmation
+- Compare to baseline
 
 ## Success Metrics
 
-- **Trades/Day**: ≥1.0 (current: 0.2-0.4 on SOLUSDT)
-- **Win Rate**: ≥50% (current: 38.46% on SOLUSDT)
-- **Total Return**: Positive (current: -39.54% on SOLUSDT)
-- **Sharpe Ratio**: >1.0 (current: -7.82 on SOLUSDT)
+- **Trades/Day**: ≥1.0 (current: 0.63 on AVAXUSDT)
+- **Win Rate**: ≥50% (current: 42.11% on AVAXUSDT - needs improvement)
+- **Total Return**: Positive (current: +26.90% on AVAXUSDT ✅)
+- **Sharpe Ratio**: >1.0 (to be calculated)
 
 ## Risk Management
 
