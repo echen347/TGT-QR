@@ -38,7 +38,7 @@ start_service() {
 
 # Pull latest code and restart
 update_and_restart() {
-    ssh -i "$KEY_FILE" "$EC2_HOST" "cd /home/trading/tgt-qr && git pull && sudo systemctl restart tgt-trading.service"
+    ssh -i "$KEY_FILE" "$EC2_HOST" "cd /home/trading/tgt-qr/mft && git pull && sudo systemctl restart tgt-trading.service"
 }
 
 # Run database migration
