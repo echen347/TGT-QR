@@ -17,12 +17,14 @@ def migrate():
     print("🔄 Starting dashboard schema migration...")
     
     try:
-        # Check if BalanceSnapshot table exists
-        inspector = db_manager.engine.dialect.inspector(db_manager.engine)
-        tables = inspector.get_table_names()
+        # Check if BalanceSnapshot table exists by querying sqlite_master
+        result = db_manager.engine.execute(text(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='balance_snapshots'"
+        ))
+        table_exists = result.fetchone() is not None
         
         # Create BalanceSnapshot table if it doesn't exist
-        if 'balance_snapshots' not in tables:
+        if not table_exists:
             print("📊 Creating balance_snapshots table...")
             BalanceSnapshot.__table__.create(db_manager.engine, checkfirst=True)
             print("✅ balance_snapshots table created")
