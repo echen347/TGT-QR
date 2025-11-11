@@ -751,6 +751,12 @@ class MovingAverageStrategy:
                     continue  # Skip to next symbol after exit
 
                 # Trading logic with improved risk management
+                # PAUSE CHECK: Don't open new positions if trading is paused
+                if PAUSE_TRADING:
+                    if signal != 0:
+                        self.logger.info(f"⏸️ Trading paused - skipping {symbol} {('LONG' if signal == 1 else 'SHORT')} signal")
+                    continue  # Skip to next symbol
+                
                 if signal == 1 and current_position_size == 0:
                     # Go long - only if we can open position
                     current_volume = self.get_symbol_volume(symbol)
