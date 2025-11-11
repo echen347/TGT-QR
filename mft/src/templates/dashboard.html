@@ -647,14 +647,27 @@
         // Function to update market context
         function updateMarketContext() {
             fetch('/api/market_context')
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(marketContext => {
                     const marketGrid = document.querySelector('#market-context .card-grid');
-                    if (!marketGrid) return;
+                    if (!marketGrid) {
+                        console.warn('Market context grid not found');
+                        return;
+                    }
+                    
+                    if (!marketContext || Object.keys(marketContext).length === 0) {
+                        console.warn('Empty market context received');
+                        return;
+                    }
                     
                     let html = '';
                     for (const [symbol, data] of Object.entries(marketContext)) {
-                        const signalClass = (data.signal || 'NEUTRAL').toLowerCase();
+                        const signalClass = (data.signal || 'NEUTRAL').toLowerCase().replace('_', '-');
                         html += `
                             <div class="card market-card">
                                 <h4>${symbol}</h4>
@@ -667,7 +680,9 @@
                     }
                     marketGrid.innerHTML = html;
                 })
-                .catch(error => console.error('Error updating market context:', error));
+                .catch(error => {
+                    console.error('Error updating market context:', error);
+                });
         }
         
         // Function to update emergency status and positions
@@ -733,8 +748,22 @@
             }
         }, 3000);
         
-        // Initial update (includes PnL chart)
-        updateAll();
+        // Initial update (includes PnL chart) - wait a bit for page to fully load
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                updateAll();
+            }, 500);
+        });
+        
+        // Also run immediately if DOM is already loaded
+        if (document.readyState === 'loading') {
+            // DOM is still loading, wait for DOMContentLoaded
+        } else {
+            // DOM is already loaded, run immediately
+            setTimeout(() => {
+                updateAll();
+            }, 500);
+        }
     </script>
 </body>
 </html>
