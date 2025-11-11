@@ -14,6 +14,16 @@ Lightweight live trading bot with a clean Flask dashboard and a robust, CLI‑fi
 - **TIMEFRAME**: 15 minutes
 - **INTERVAL**: every 5 minutes
 
+## Phase 1 Alpha Improvements (Active)
+**Goal**: Achieve ≥1 trade/day while maintaining risk management
+
+**Changes**:
+- ✅ **MA slope requirement REMOVED** - Price deviation from MA is sufficient signal
+- ✅ **MIN_TREND_STRENGTH**: 0.0005 → 0.0002 (more lenient trend filter)
+- ✅ **Reduced thresholds**: 0.3%/0.1%/0.05% → 0.2%/0.05%/0.03% (High/Normal/Low vol)
+
+**Backtesting**: Use `tools/backtest_alpha_improvements.py` for systematic testing with out-of-sample validation.
+
 ## Project layout
 ```
 ├── src/
@@ -25,12 +35,17 @@ Lightweight live trading bot with a clean Flask dashboard and a robust, CLI‑fi
 │   └── scheduler.py         # Interval scheduling
 ├── tools/
 │   ├── backtester.py        # CLI backtester (robust, fast, flexible)
-│   ├── strategy_optimizer.py
-│   └── strategy_tester.py
+│   ├── backtest_alpha_improvements.py  # OOS testing for alpha improvements
+│   ├── monitor_performance.py          # Live performance monitoring
+│   ├── strategy_optimizer.py           # Legacy (deprecated)
+│   └── strategy_tester.py              # Legacy (deprecated)
 ├── config/config.py         # All tunables
 ├── logs/                    # trading.log, backtesting.log, etc.
 ├── data/                    # SQLite DB, caches
-└── results/                 # Charts/exports
+├── results/                 # Charts/exports
+├── RESEARCH_NOTES.md        # Research log (scientific method)
+├── DEPLOYMENT_CHECKLIST.md  # Deployment steps
+└── BACKTESTING_GUIDE.md     # Backtesting instructions
 ```
 
 ## Setup
@@ -60,9 +75,26 @@ sudo journalctl -u tgt-trading.service -f
 ## CLI backtesting (robust)
 The dashboard backtest UI was removed for simplicity. Use the CLI instead.
 
+### Standard Backtest
 Core command (defaults: 30d, DB on, plots on):
 ```bash
 python3 tools/backtester.py
+```
+
+### Alpha Improvements Testing (with OOS validation)
+Test Phase 1 improvements and parameter combinations:
+```bash
+python3 tools/backtest_alpha_improvements.py
+# Tests 5 parameter combinations with train/test split
+# Target: Find config achieving ≥1 trade/day on out-of-sample data
+```
+
+### Performance Monitoring
+Monitor live trading performance vs backtest predictions:
+```bash
+python3 tools/monitor_performance.py --days 7
+# Compares live metrics (trades/day, win rate) to backtest
+# Identifies if performance matches expectations
 ```
 
 Common examples:

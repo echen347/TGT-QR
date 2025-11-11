@@ -39,6 +39,12 @@ def main():
     print("=" * 60)
     print("🚀 TGT QR TRADING SYSTEM STARTUP")
     print("=" * 60)
+    print("📊 Phase 1 Alpha Improvements Active:")
+    print("   - MA slope requirement: REMOVED (more trading opportunities)")
+    print("   - MIN_TREND_STRENGTH: 0.0002 (reduced from 0.0005)")
+    print("   - Thresholds: 0.2%/0.05%/0.03% (reduced for more signals)")
+    print("   - Target: ≥1 trade/day")
+    print("=" * 60)
 
     # --- Create the single, shared instances ---
     risk_manager = RiskManager()

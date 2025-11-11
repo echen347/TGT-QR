@@ -128,7 +128,7 @@ class MovingAverageStrategy:
             self.logger.error(f"Exception getting prices for {symbol}: {str(e)}")
             return []
     def calculate_ma_signal(self, symbol):
-        """Calculate moving average signal with improved filtering"""
+        """Calculate moving average signal with Phase 1 improvements (no MA slope requirement)"""
         if len(self.price_history[symbol]) < MA_PERIOD + 10:
             return 0  # Need more data for reliable signals
 
@@ -140,36 +140,50 @@ class MovingAverageStrategy:
         self.market_state[symbol]['ma_value'] = ma
         self.market_state[symbol]['price'] = current_price
 
-        # Calculate trend strength using MA slope
+        # Calculate trend strength using MA slope (for filtering only, not signal requirement)
         ma_slope = (ma - prices['close'].rolling(window=MA_PERIOD).mean().iloc[-5]) / MA_PERIOD
         trend_strength = abs(ma_slope) / current_price
 
-        # Only trade if trend is reasonably strong (>0.1% per period)
-        if trend_strength < MIN_TREND_STRENGTH:  # Use configurable minimum trend strength
+        # Filter by trend strength (Phase 1: reduced from 0.0005 to 0.0002)
+        if trend_strength < MIN_TREND_STRENGTH:
+            self.market_state[symbol]['signal'] = "NEUTRAL"
             return 0
 
-        # Calculate volatility for better signal filtering
+        # Calculate volatility for threshold selection
         recent_volatility = prices['close'].pct_change().rolling(window=10).std().iloc[-1]
 
-        # Adjust thresholds based on volatility
+        # Phase 1: Reduced thresholds for more trading opportunities
         if recent_volatility > VOLATILITY_THRESHOLD_HIGH:  # High volatility
-            threshold = 0.003  # 0.3% threshold
+            threshold = 0.002  # 0.2% (reduced from 0.3%)
+            vol_category = "HIGH"
         elif recent_volatility > VOLATILITY_THRESHOLD_LOW:  # Normal volatility
-            threshold = 0.001  # 0.1% threshold
+            threshold = 0.0005  # 0.05% (reduced from 0.1%)
+            vol_category = "NORMAL"
         else:  # Low volatility
-            threshold = 0.0005  # 0.05% threshold for very calm markets
+            threshold = 0.0003  # 0.03% (reduced from 0.05%)
+            vol_category = "LOW"
 
-        # Improved signal logic with trend confirmation
+        # Phase 1: Removed MA slope requirement - price deviation is sufficient
+        price_deviation_pct = ((current_price - ma) / ma) * 100
+        
         if current_price > ma * (1 + threshold):
-            # Additional confirmation: price above MA and MA is rising
-            if ma_slope > 0:
-                self.market_state[symbol]['signal'] = "STRONG_BUY"
-                return 1
+            self.market_state[symbol]['signal'] = "STRONG_BUY"
+            # Enhanced logging for signal generation (INFO level for visibility)
+            self.logger.info(
+                f"🔍 {symbol} BUY signal generated: Price=${current_price:.2f}, MA=${ma:.2f}, "
+                f"Deviation={price_deviation_pct:.3f}%, Threshold={threshold*100:.3f}%, "
+                f"Vol={vol_category}, TrendStrength={trend_strength:.6f}"
+            )
+            return 1
         elif current_price < ma * (1 - threshold):
-            # Additional confirmation: price below MA and MA is falling
-            if ma_slope < 0:
-                self.market_state[symbol]['signal'] = "STRONG_SELL"
-                return -1
+            self.market_state[symbol]['signal'] = "STRONG_SELL"
+            # Enhanced logging for signal generation (INFO level for visibility)
+            self.logger.info(
+                f"🔍 {symbol} SELL signal generated: Price=${current_price:.2f}, MA=${ma:.2f}, "
+                f"Deviation={price_deviation_pct:.3f}%, Threshold={threshold*100:.3f}%, "
+                f"Vol={vol_category}, TrendStrength={trend_strength:.6f}"
+            )
+            return -1
 
         self.market_state[symbol]['signal'] = "NEUTRAL"
         return 0
@@ -541,7 +555,14 @@ class MovingAverageStrategy:
                 self.logger.error("Risk manager has not been set. Cannot run strategy.")
                 return
 
-            self.logger.info("Running trading strategy...")
+            self.logger.info("=" * 60)
+            self.logger.info("🔄 Running trading strategy (Phase 1 Alpha Improvements)")
+            self.logger.info(f"   Symbols: {', '.join(SYMBOLS)}")
+            self.logger.info(f"   MA Period: {MA_PERIOD}, Timeframe: {TIMEFRAME}min")
+            self.logger.info(f"   MIN_TREND_STRENGTH: {MIN_TREND_STRENGTH}")
+            self.logger.info(f"   Thresholds: 0.2%/0.05%/0.03% (High/Normal/Low vol)")
+            self.logger.info(f"   MA Slope Requirement: REMOVED (Phase 1)")
+            self.logger.info("=" * 60)
             
             # CRITICAL: Sync positions with Bybit first
             self.sync_positions_with_bybit()
@@ -578,9 +599,17 @@ class MovingAverageStrategy:
                 current_position_size = self.market_state[symbol]['position_size']
                 current_position_side = self.market_state[symbol]['side']
 
-                # Only log if signal is not NEUTRAL or we have a position
-                if self.market_state[symbol]['signal'] != 'NEUTRAL' or current_position_size != 0:
-                    self.logger.info(f"📊 {symbol}: Price=${current_price:.2f}, MA=${ma_value:.2f}, Signal='{self.market_state[symbol]['signal']}', Position={current_position_size} ({current_position_side})")
+                # Enhanced logging: Always log signals, detailed logging for non-neutral
+                if self.market_state[symbol]['signal'] != 'NEUTRAL':
+                    price_deviation = ((current_price - ma_value) / ma_value) * 100 if ma_value > 0 else 0
+                    self.logger.info(
+                        f"📊 {symbol}: Price=${current_price:.2f}, MA=${ma_value:.2f}, "
+                        f"Signal='{self.market_state[symbol]['signal']}', "
+                        f"Deviation={price_deviation:.3f}%, Position={current_position_size} ({current_position_side})"
+                    )
+                elif current_position_size != 0:
+                    # Log position even if signal is neutral
+                    self.logger.info(f"📊 {symbol}: Price=${current_price:.2f}, MA=${ma_value:.2f}, Signal='NEUTRAL', Position={current_position_size} ({current_position_side})")
 
                 # Check if we should exit current position due to stop loss/take profit
                 should_exit, exit_side = self.check_exit_conditions(symbol, current_price)

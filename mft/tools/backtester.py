@@ -156,7 +156,27 @@ class Backtester:
             print(f"✅ {symbol} loaded from cache ({self.progress}/{self.total_symbols})")
             return symbol, cached_data
 
-        # Fetch fresh data
+        # Try database second (avoids rate limits)
+        try:
+            from src.database import DatabaseManager
+            db = DatabaseManager()
+            db_prices = db.get_historical_prices(symbol, self.start_date, self.end_date)
+            if db_prices and len(db_prices) > 0:
+                df = pd.DataFrame(db_prices)
+                df['timestamp'] = pd.to_datetime(df['timestamp'])
+                df.set_index('timestamp', inplace=True)
+                df = df[(df.index >= self.start_date) & (df.index <= self.end_date)]
+                df = df.sort_index()
+                if len(df) > 0:
+                    # Cache the data
+                    self._save_cached_data(symbol, df)
+                    self.progress += 1
+                    print(f"✅ {symbol} loaded from database ({len(df)} candles) ({self.progress}/{self.total_symbols})")
+                    return symbol, df
+        except Exception as e:
+            print(f"⚠️ Database fetch failed for {symbol}: {e}, trying API...")
+
+        # Fetch fresh data from API
         all_klines = []
         # Pull in chunks of up to 1000 candles for the selected timeframe
         try:
@@ -277,9 +297,18 @@ class Backtester:
         if strat == 'ma':
             if trend_strength < MIN_TREND_STRENGTH:
                 return 0
-            if current_price > ma * (1 + threshold) and ma_slope > 0:
+            # Updated: Removed MA slope requirement for more trading opportunities (Phase 1)
+            # Use updated thresholds from config (reduced for more signals)
+            if recent_volatility > VOLATILITY_THRESHOLD_HIGH:
+                threshold = 0.002  # 0.2% (reduced from 0.3%)
+            elif recent_volatility > VOLATILITY_THRESHOLD_LOW:
+                threshold = 0.0005  # 0.05% (reduced from 0.1%)
+            else:
+                threshold = 0.0003  # 0.03% (reduced from 0.05%)
+            
+            if current_price > ma * (1 + threshold):
                 return 1
-            if current_price < ma * (1 - threshold) and ma_slope < 0:
+            if current_price < ma * (1 - threshold):
                 return -1
             return 0
 
@@ -377,12 +406,20 @@ class Backtester:
                 return -1
             return 0
 
-        # Default fallback to MA
+        # Default fallback to MA (Phase 1: no MA slope requirement)
         if trend_strength < MIN_TREND_STRENGTH:
             return 0
-        if current_price > ma * (1 + threshold) and ma_slope > 0:
+        # Use updated thresholds from config
+        if recent_volatility > VOLATILITY_THRESHOLD_HIGH:
+            threshold = 0.002  # 0.2% (reduced from 0.3%)
+        elif recent_volatility > VOLATILITY_THRESHOLD_LOW:
+            threshold = 0.0005  # 0.05% (reduced from 0.1%)
+        else:
+            threshold = 0.0003  # 0.03% (reduced from 0.05%)
+        
+        if current_price > ma * (1 + threshold):
             return 1
-        if current_price < ma * (1 - threshold) and ma_slope < 0:
+        if current_price < ma * (1 - threshold):
             return -1
         return 0
 

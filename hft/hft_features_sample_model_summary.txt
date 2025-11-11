@@ -1,0 +1,57 @@
+HFT Alpha Model Results
+============================================================
+
+XGBoost Results:
+  Train R²: 0.7226
+  Test R²: -0.1180
+
+Top Features:
+              feature  importance
+11           depth_20    0.036755
+26       ema_price_20    0.036320
+22       ema_price_10    0.036245
+28    ema_pressure_20    0.035266
+14   bid_volume_top10    0.034893
+30       ema_price_50    0.034706
+27      ema_spread_20    0.034108
+23      ema_spread_10    0.034098
+20     ema_pressure_5    0.033771
+10           depth_10    0.033720
+29  price_momentum_20    0.033314
+33  price_momentum_50    0.033138
+31      ema_spread_50    0.032047
+32    ema_pressure_50    0.031100
+19       ema_spread_5    0.030833
+18        ema_price_5    0.030756
+13           best_bid    0.030477
+6           mid_price    0.029912
+16           best_ask    0.029888
+17   ask_volume_top10    0.029640
+
+Lasso Results:
+  Best Alpha: 0.008744
+  Train R²: 0.0282
+  Test R²: 0.0233
+
+Top Features:
+              feature  coefficient  abs_coefficient
+26       ema_price_20     0.042811         0.042811
+12         bid_levels     0.019729         0.019729
+22       ema_price_10     0.017179         0.017179
+17   ask_volume_top10     0.015780         0.015780
+19       ema_spread_5    -0.009648         0.009648
+16           best_ask    -0.007318         0.007318
+14   bid_volume_top10     0.001958         0.001958
+24    ema_pressure_10    -0.000000         0.000000
+21   price_momentum_5    -0.000000         0.000000
+23      ema_spread_10    -0.000000         0.000000
+25  price_momentum_10     0.000000         0.000000
+27      ema_spread_20    -0.000000         0.000000
+28    ema_pressure_20    -0.000000         0.000000
+29  price_momentum_20    -0.000000         0.000000
+30       ema_price_50     0.000000         0.000000
+31      ema_spread_50    -0.000000         0.000000
+32    ema_pressure_50     0.000000         0.000000
+20     ema_pressure_5    -0.000000         0.000000
+0       book_pressure     0.000000         0.000000
+18        ema_price_5     0.000000         0.000000

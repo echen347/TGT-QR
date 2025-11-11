@@ -489,6 +489,34 @@ class DatabaseManager:
             print(f"Error getting recent prices: {e}")
             return []
 
+    def get_historical_prices(self, symbol, start_date=None, end_date=None):
+        """Get historical price data for a symbol within a date range"""
+        try:
+            query = self.session.query(PriceData).filter(PriceData.symbol == symbol)
+            
+            if start_date:
+                query = query.filter(PriceData.timestamp >= start_date)
+            if end_date:
+                query = query.filter(PriceData.timestamp <= end_date)
+            
+            records = query.order_by(PriceData.timestamp.asc()).all()
+
+            prices = []
+            for record in records:
+                prices.append({
+                    'timestamp': record.timestamp,
+                    'open': record.open_price,
+                    'high': record.high_price,
+                    'low': record.low_price,
+                    'close': record.close_price,
+                    'volume': record.volume
+                })
+
+            return prices
+        except Exception as e:
+            print(f"Error getting historical prices: {e}")
+            return []
+
     def save_price_data(self, symbol, price, volume):
         """Save current price data for a symbol"""
         try:

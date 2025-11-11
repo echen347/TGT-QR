@@ -1,0 +1,15 @@
+HFT Alpha Signal Analysis Report
+============================================================
+
+Model Type: lasso
+Number of signals: 15285
+
+Signal Quality Metrics:
+  Information Coefficient (IC): 0.1638
+  Signal-Target Correlation: 0.1638
+  Signal Mean: -0.528386
+  Signal Std: 0.083774
+
+Turnover Metrics:
+  Turnover Rate: 8.05%
+  Signal Changes: 1230

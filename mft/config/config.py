@@ -35,7 +35,8 @@ MAX_DAILY_LOSS_USDT = 6.00 # ~10% of bankroll daily loss limit
 MAX_TOTAL_LOSS_USDT = 10.00 # ~10% of bankroll total loss cap
 
 # Signal Filtering - More lenient for live trading vs backtesting
-MIN_TREND_STRENGTH = 0.0005  # Reduced from 0.001 for more trading opportunities
+# Reduced MIN_TREND_STRENGTH to increase signal frequency (target: 1+ trade/day)
+MIN_TREND_STRENGTH = 0.0002  # Reduced from 0.0005 for more trading opportunities
 VOLATILITY_THRESHOLD_HIGH = 0.025  # Increased from 0.02
 VOLATILITY_THRESHOLD_LOW = 0.015   # Increased from 0.01
 

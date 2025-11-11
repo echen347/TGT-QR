@@ -1,0 +1,57 @@
+HFT Alpha Model Results
+============================================================
+
+XGBoost Results:
+  Train R²: 0.1331
+  Test R²: -0.0027
+
+Top Features:
+              feature  importance
+22       ema_price_10    0.098860
+26       ema_price_20    0.064562
+15         ask_levels    0.044731
+18        ema_price_5    0.039103
+12         bid_levels    0.037563
+11           depth_20    0.030954
+30       ema_price_50    0.030713
+5          spread_bps    0.028076
+16           best_ask    0.027399
+27      ema_spread_20    0.026796
+23      ema_spread_10    0.026441
+19       ema_spread_5    0.026338
+17   ask_volume_top10    0.025867
+9             depth_5    0.025775
+14   bid_volume_top10    0.025625
+28    ema_pressure_20    0.025464
+13           best_bid    0.025421
+20     ema_pressure_5    0.024904
+31      ema_spread_50    0.024742
+29  price_momentum_20    0.024342
+
+Lasso Results:
+  Best Alpha: 0.001913
+  Train R²: 0.0336
+  Test R²: 0.0263
+
+Top Features:
+              feature  coefficient  abs_coefficient
+26       ema_price_20     0.032581         0.032581
+15         ask_levels     0.024305         0.024305
+18        ema_price_5     0.021901         0.021901
+12         bid_levels     0.016171         0.016171
+30       ema_price_50     0.013220         0.013220
+22       ema_price_10     0.011708         0.011708
+7     bid_maker_ratio    -0.003586         0.003586
+14   bid_volume_top10     0.003389         0.003389
+16           best_ask    -0.001544         0.001544
+8     ask_maker_ratio    -0.001138         0.001138
+17   ask_volume_top10     0.000570         0.000570
+28    ema_pressure_20     0.000000         0.000000
+27      ema_spread_20     0.000000         0.000000
+21   price_momentum_5     0.000000         0.000000
+25  price_momentum_10    -0.000000         0.000000
+29  price_momentum_20    -0.000000         0.000000
+24    ema_pressure_10     0.000000         0.000000
+31      ema_spread_50    -0.000000         0.000000
+23      ema_spread_10     0.000000         0.000000
+32    ema_pressure_50     0.000000         0.000000
