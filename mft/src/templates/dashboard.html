@@ -3,616 +3,1054 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ethanTGT Dashboard</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <title>TGT TERMINAL</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%230a0a0a' width='100' height='100'/><text y='75' x='15' font-size='70' fill='%2300ff88'>$</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        @font-face {
+            font-family: 'Berkeley Mono';
+            src: local('Berkeley Mono'), local('JetBrains Mono');
+        }
+
         :root {
-            --background-color: #1a1a1d;
-            --card-background-color: #2c2c34;
-            --border-color: #444;
-            --text-color: #f0f0f0;
-            --text-secondary-color: #a0a0a0;
-            --primary-color: #9d72ff;
-            --green-color: #2ecc71;
-            --red-color: #e74c3c;
-            --yellow-color: #f1c40f;
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --bg-card: #161616;
+            --bg-elevated: #1a1a1a;
+            --border-primary: #2a2a2a;
+            --border-accent: #333333;
+            --text-primary: #e8e8e8;
+            --text-secondary: #888888;
+            --text-muted: #555555;
+            --accent-green: #00ff88;
+            --accent-green-dim: #00cc6a;
+            --accent-red: #ff3366;
+            --accent-red-dim: #cc2952;
+            --accent-yellow: #ffcc00;
+            --accent-blue: #00aaff;
+            --accent-purple: #aa66ff;
+            --glow-green: rgba(0, 255, 136, 0.15);
+            --glow-red: rgba(255, 51, 102, 0.15);
         }
-        body {
-            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
-            background-color: var(--background-color);
-            color: var(--text-color);
+
+        * {
             margin: 0;
-            padding: 24px;
-        }
-        .container {
-            display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            gap: 20px;
-            max-width: 100%;
-            margin: auto;
-            width: 100%;
+            padding: 0;
             box-sizing: border-box;
-            padding: 0 24px;
-        }
-        
-        @media (min-width: 1600px) {
-            .container {
-                gap: 24px;
-                max-width: 95%;
-            }
-        }
-        
-        @media (min-width: 2000px) {
-            .container {
-                max-width: 95%;
-            }
-        }
-        
-        @media (max-width: 767px) {
-            body {
-                padding: 12px;
-            }
-            .container {
-                gap: 12px;
-            }
-        }
-        .card {
-            background-color: var(--card-background-color);
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-        
-        @media (min-width: 1600px) {
-            .card {
-                padding: 24px;
-            }
-        }
-        h3 {
-            margin-top: 0;
-            color: var(--primary-color);
-            font-size: 1.1em;
-            font-weight: 600;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 12px;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-        }
-        h3 i {
-            margin-right: 10px;
-        }
-        /* Grid Layout - Alerts/Signals/Positions in same row above PnL */
-        #system-control { grid-column: span 12; min-height: 150px; }
-        #risk-management { grid-column: span 12; min-height: 150px; }
-        #market-context { grid-column: span 12; min-height: 200px; }
-        #market-analysis { grid-column: span 12; }
-        #current-positions { grid-column: span 12; min-height: 200px; }
-        #alerts { grid-column: span 12; min-height: 150px; }
-        #recent-signals { grid-column: span 12; min-height: 200px; }
-        #trade-history { grid-column: span 12; min-height: 300px; }
-        #pnl-performance { grid-column: span 12; min-height: 400px; }
-
-        @media (min-width: 768px) {
-            #system-control { grid-column: span 6; }
-            #risk-management { grid-column: span 6; }
-            #current-positions { grid-column: span 4; }
-            #alerts { grid-column: span 4; }
-            #recent-signals { grid-column: span 4; }
-            #trade-history { grid-column: span 12; }
-            #pnl-performance { grid-column: span 12; }
         }
 
-        @media (min-width: 1200px) {
-            #system-control { grid-column: span 3; }
-            #risk-management { grid-column: span 9; }
-            #market-context { grid-column: span 12; }
-            #current-positions { grid-column: span 4; }
-            #alerts { grid-column: span 4; }
-            #recent-signals { grid-column: span 4; }
-            #trade-history { grid-column: span 6; }
-            #pnl-performance { grid-column: span 6; }
+        body {
+            font-family: 'JetBrains Mono', 'Berkeley Mono', monospace;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        @media (min-width: 1600px) {
-            #system-control { grid-column: span 2; }
-            #risk-management { grid-column: span 10; }
-            #market-context { grid-column: span 12; }
-            #current-positions { grid-column: span 4; }
-            #alerts { grid-column: span 4; }
-            #recent-signals { grid-column: span 4; }
-            #trade-history { grid-column: span 6; }
-            #pnl-performance { grid-column: span 6; }
-        }
-        
-        @media (min-width: 2000px) {
-            #system-control { grid-column: span 2; }
-            #risk-management { grid-column: span 10; }
-            #market-context { grid-column: span 12; }
-            #current-positions { grid-column: span 4; }
-            #alerts { grid-column: span 4; }
-            #recent-signals { grid-column: span 4; }
-            #trade-history { grid-column: span 6; }
-            #pnl-performance { grid-column: span 6; }
-        }
-
-        .status-grid, .risk-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-        }
-        .status-item p, .risk-item p { margin: 8px 0; }
-        .market-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 16px;
-        }
-        .market-card {
-            background-color: #383842;
-            padding: 16px;
-            border-radius: 8px;
-            border: 1px solid #555;
-        }
-        .market-card h4 { margin: 0 0 10px 0; }
-        .market-card p { margin: 6px 0; font-size: 0.95em; }
-
-        .card-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 16px;
-        }
-
-        .table-container { flex-grow: 1; overflow-x: auto; }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9em;
-        }
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-        }
-        th {
-            background-color: #383842;
-            font-weight: 600;
-        }
-        tbody tr { border-bottom: 1px solid var(--border-color); }
-        tbody tr:last-child { border-bottom: none; }
-        tbody tr:hover { background-color: #3c3c44; }
-
-        .alerts-list { flex-grow: 1; }
-        .alert-item {
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-        .alert-warning { background-color: var(--yellow-color); color: #121212; }
-        .alert-danger { background-color: var(--red-color); color: var(--text-color); }
-
-        .empty-placeholder {
-            flex-grow: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-secondary-color);
-            font-style: italic;
-            padding: 20px 0;
-        }
-        td.empty-placeholder { padding: 40px 0; }
-
-        .status-active { color: var(--green-color); font-weight: bold; }
-        .status-inactive { color: var(--red-color); font-weight: bold; }
-        .status-ok { color: var(--green-color); font-weight: bold; }
-
-        .signal-buy { color: var(--green-color); font-weight: bold; }
-        .signal-sell { color: var(--red-color); font-weight: bold; }
-        .signal-hold { color: var(--text-secondary-color); }
-        .signal-neutral { color: var(--text-secondary-color); }
-        .signal-strong-buy { color: #4CAF50; font-weight: bold; background: rgba(76, 175, 80, 0.1); padding: 2px 6px; border-radius: 3px; }
-        .signal-strong-sell { color: #F44336; font-weight: bold; background: rgba(244, 67, 54, 0.1); padding: 2px 6px; border-radius: 3px; }
-
-        #shutdown-btn {
-            background-color: var(--red-color);
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.2s;
-        }
-        #shutdown-btn:hover { background-color: #c0392b; }
-        
-        .system-control-buttons {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 15px;
-            flex-wrap: wrap;
-        }
-
-        #reset-stop-btn {
-            background-color: var(--green-color);
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.2s;
-            margin-left: 10px;
-        }
-        #reset-stop-btn:hover { background-color: #27ae60; }
-
-        .link-button {
-            background-color: var(--card-background-color);
-            color: var(--primary-color);
-            border: 1px solid var(--primary-color);
-            padding: 10px 15px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: bold;
-            transition: all 0.2s;
-            margin-left: 10px;
-            text-align: center;
-        }
-        .link-button:hover {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        .analysis-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-            gap: 24px;
-        }
-
-        .chart-container {
-            padding: 20px;
-            padding-bottom: 30px;  // Extra bottom padding to prevent label cutoff
-            border-radius: 12px;
-            background-color: var(--card-background-color);
-            border: 1px solid var(--border-color);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            overflow: visible;  // Ensure rotated labels aren't clipped
-        }
-
-        .chart-container:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-        }
-
-        .chart-container h4 {
-            margin-top: 0;
-            color: var(--primary-color);
-            font-size: 1.1em;
-        }
-
-        .chart-container p {
-            font-size: 0.85em;
-            color: var(--text-secondary-color);
-            margin-bottom: 16px;
-        }
-
-        .chart-wrapper {
-            position: relative;
-            height: 280px;
-            width: 100%;
-            background-color: rgba(60, 60, 70, 0.5);
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
-        
-        #pnlChart {
+        /* Scanline overlay effect */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 0, 0, 0.03) 2px,
+                rgba(0, 0, 0, 0.03) 4px
+            );
+            z-index: 9999;
         }
 
-        #error-container {
-            position: absolute;
-            top: 50%;
+        /* Noise texture */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.02;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            z-index: 9998;
         }
 
-        /* Navigation Header */
-        .nav-header {
-            grid-column: span 12;
+        .terminal-container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        /* Header */
+        .terminal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-bottom: 16px;
-            border-bottom: 1px solid var(--border-color);
-            margin-bottom: 4px;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border-primary);
+            margin-bottom: 20px;
         }
-        .nav-header h1 {
-            color: var(--primary-color);
-            margin: 0;
-            font-size: 1.5em;
+
+        .logo {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 20px;
+            color: var(--bg-primary);
+            clip-path: polygon(0 0, 100% 0, 100% 70%, 70% 100%, 0 100%);
+        }
+
+        .logo-text {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-text span {
+            color: var(--accent-green);
+        }
+
         .nav-links {
             display: flex;
-            gap: 16px;
+            gap: 8px;
         }
-        .nav-links a {
-            color: var(--text-color);
+
+        .nav-link {
+            padding: 10px 16px;
+            color: var(--text-secondary);
             text-decoration: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            transition: all 0.2s;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--text-primary);
+            border-color: var(--border-accent);
+        }
+
+        .nav-link.active {
+            color: var(--accent-green);
+            border-color: var(--accent-green);
+            background: var(--glow-green);
+        }
+
+        /* Status bar */
+        .status-bar {
+            display: flex;
+            gap: 24px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-primary);
+            margin-bottom: 20px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .status-item {
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        .nav-links a:hover {
-            background-color: rgba(157, 114, 255, 0.2);
-            color: var(--primary-color);
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            box-shadow: 0 0 8px var(--accent-green);
+            animation: pulse 2s infinite;
         }
-        .nav-links a.active {
-            background-color: var(--primary-color);
-            color: white;
+
+        .status-dot.inactive {
+            background: var(--accent-red);
+            box-shadow: 0 0 8px var(--accent-red);
+        }
+
+        .status-dot.warning {
+            background: var(--accent-yellow);
+            box-shadow: 0 0 8px var(--accent-yellow);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Grid Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 16px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-primary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: var(--accent-green);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-primary);
+            background: var(--bg-secondary);
+        }
+
+        .card-title {
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-secondary);
+        }
+
+        .card-badge {
+            font-size: 0.6rem;
+            padding: 3px 8px;
+            background: var(--glow-green);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+        }
+
+        .card-badge.warning {
+            background: var(--glow-red);
+            color: var(--accent-red);
+            border-color: var(--accent-red);
+        }
+
+        .card-body {
+            padding: 16px;
+        }
+
+        /* Metrics Grid */
+        .metrics-row {
+            grid-column: span 12;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .metric-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-primary);
+            padding: 20px;
+            position: relative;
+        }
+
+        .metric-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-green) 0%, transparent 100%);
+            opacity: 0.5;
+        }
+
+        .metric-card.positive::after {
+            background: linear-gradient(90deg, var(--accent-green) 0%, transparent 100%);
+        }
+
+        .metric-card.negative::after {
+            background: linear-gradient(90deg, var(--accent-red) 0%, transparent 100%);
+        }
+
+        .metric-label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.75rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .metric-value.positive {
+            color: var(--accent-green);
+        }
+
+        .metric-value.negative {
+            color: var(--accent-red);
+        }
+
+        .metric-change {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        /* Control Panel */
+        .control-panel {
+            grid-column: span 3;
+        }
+
+        @media (max-width: 1200px) {
+            .control-panel { grid-column: span 6; }
+        }
+
+        @media (max-width: 768px) {
+            .control-panel { grid-column: span 12; }
+        }
+
+        .control-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 12px 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 1px solid;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-danger {
+            background: transparent;
+            color: var(--accent-red);
+            border-color: var(--accent-red);
+        }
+
+        .btn-danger:hover {
+            background: var(--accent-red);
+            color: var(--bg-primary);
+            box-shadow: 0 0 20px var(--glow-red);
+        }
+
+        .btn-success {
+            background: transparent;
+            color: var(--accent-green);
+            border-color: var(--accent-green);
+        }
+
+        .btn-success:hover {
+            background: var(--accent-green);
+            color: var(--bg-primary);
+            box-shadow: 0 0 20px var(--glow-green);
+        }
+
+        /* Risk Panel */
+        .risk-panel {
+            grid-column: span 9;
+        }
+
+        @media (max-width: 1200px) {
+            .risk-panel { grid-column: span 6; }
+        }
+
+        @media (max-width: 768px) {
+            .risk-panel { grid-column: span 12; }
+        }
+
+        .risk-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 16px;
+        }
+
+        .risk-item {
+            text-align: center;
+            padding: 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+        }
+
+        .risk-label {
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .risk-value {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        /* Market Cards */
+        .market-section {
+            grid-column: span 12;
+        }
+
+        .market-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .market-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            padding: 16px;
+            position: relative;
+        }
+
+        .market-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .market-symbol {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .market-signal {
+            font-size: 0.6rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .market-signal.strong_buy, .market-signal.buy {
+            background: var(--glow-green);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+        }
+
+        .market-signal.strong_sell, .market-signal.sell {
+            background: var(--glow-red);
+            color: var(--accent-red);
+            border: 1px solid var(--accent-red);
+        }
+
+        .market-signal.neutral, .market-signal.hold {
+            background: rgba(136, 136, 136, 0.1);
+            color: var(--text-secondary);
+            border: 1px solid var(--text-secondary);
+        }
+
+        .market-price {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .market-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .market-stat {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            padding: 6px 0;
+            border-bottom: 1px solid var(--border-primary);
+        }
+
+        .market-stat-label {
+            color: var(--text-muted);
+        }
+
+        .market-stat-value {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* Tables */
+        .table-section {
+            grid-column: span 6;
+        }
+
+        @media (max-width: 1200px) {
+            .table-section { grid-column: span 12; }
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+        }
+
+        .data-table th {
+            padding: 10px 12px;
+            text-align: left;
+            font-size: 0.6rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-primary);
+        }
+
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-primary);
+        }
+
+        .data-table tr:hover td {
+            background: var(--bg-secondary);
+        }
+
+        .data-table .empty-row td {
+            text-align: center;
+            color: var(--text-muted);
+            font-style: italic;
+            padding: 24px;
+        }
+
+        .positive-value {
+            color: var(--accent-green);
+        }
+
+        .negative-value {
+            color: var(--accent-red);
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            font-size: 0.6rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tag-buy {
+            background: var(--glow-green);
+            color: var(--accent-green);
+        }
+
+        .tag-sell {
+            background: var(--glow-red);
+            color: var(--accent-red);
+        }
+
+        .tag-neutral {
+            background: rgba(136, 136, 136, 0.1);
+            color: var(--text-secondary);
+        }
+
+        /* Chart Section */
+        .chart-section {
+            grid-column: span 12;
+        }
+
+        .chart-container {
+            height: 350px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            position: relative;
+        }
+
+        /* Alerts */
+        .alerts-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .alert-item {
+            padding: 12px;
+            font-size: 0.75rem;
+            border-left: 3px solid;
+        }
+
+        .alert-item.warning {
+            background: rgba(255, 204, 0, 0.1);
+            border-color: var(--accent-yellow);
+            color: var(--accent-yellow);
+        }
+
+        .alert-item.danger {
+            background: var(--glow-red);
+            border-color: var(--accent-red);
+            color: var(--accent-red);
+        }
+
+        .empty-state {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 32px;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-style: italic;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .terminal-header {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .status-bar {
+                flex-wrap: wrap;
+            }
+
+            .metric-value {
+                font-size: 1.25rem;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-accent);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* Animation classes */
+        .fade-in {
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Time display */
+        .time-display {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-variant-numeric: tabular-nums;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Navigation Header -->
-        <div class="nav-header">
-            <h1><i class="fas fa-chart-line"></i> ethanTGT</h1>
-            <div class="nav-links">
-                <a href="/" class="active"><i class="fas fa-tachometer-alt"></i> Live Trading</a>
-                <a href="/research"><i class="fas fa-flask"></i> Research</a>
-                <a href="/logs"><i class="fas fa-file-alt"></i> Logs</a>
+    <div class="terminal-container">
+        <!-- Header -->
+        <header class="terminal-header">
+            <div class="logo">
+                <div class="logo-icon">$</div>
+                <div class="logo-text">TGT<span>TERMINAL</span></div>
             </div>
-        </div>
-        <div class="card" id="system-control">
-            <h3><i class="fas fa-power-off"></i>System Control</h3>
-            <div class="status-grid">
-                <div class="status-item">
-                    <p>Dashboard: <span class="status-active">{{ system_status.dashboard_status }}</span></p>
-                    <p>Trading Bot: <span class="{{ 'status-active' if system_status.bot_status == 'Active' else 'status-inactive' }}">{{ system_status.bot_status }}</span></p>
-                    <div class="status-item">
-                        <span>API Status: <span class="{{ 'status-ok' if system_status.api_status == 'OK' else 'status-inactive' }}">{{ system_status.api_status }}</span></span>
-                    </div>
-                </div>
-                <div class="system-control-buttons">
-                    <button id="shutdown-btn">EMERGENCY STOP</button>
-                    <button id="reset-stop-btn">RESET STOP</button>
-                </div>
+            <nav class="nav-links">
+                <a href="/" class="nav-link active">Live</a>
+                <a href="/research" class="nav-link">Research</a>
+                <a href="/logs" class="nav-link">Logs</a>
+            </nav>
+        </header>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-item">
+                <div class="status-dot {{ 'inactive' if system_status.bot_status != 'Active' else '' }}"></div>
+                <span>Bot: {{ system_status.bot_status }}</span>
             </div>
-        </div>
-        
-        <!-- Risk Management -->
-        <div class="card" id="risk-management">
-            <h3><i class="fas fa-shield-alt"></i> Risk Management</h3>
-            <div class="risk-grid">
-                <div class="risk-item">
-                    <p><strong>Max Position:</strong> ${{ "%.2f"|format(risk.max_position_usdt) }}</p>
-                    <p><strong>Daily Loss Limit:</strong> ${{ "%.2f"|format(risk.max_daily_loss_usdt) }}</p>
-                    <p><strong>Total Loss Limit:</strong> ${{ "%.2f"|format(risk.max_total_loss_usdt) }}</p>
-                </div>
-                <div class="risk-item">
-                    <p><strong>Active Positions:</strong> <span id="active-positions-count">{{ risk.positions_count }}</span> / {{ risk.max_positions }}</p>
-                    <p><strong>Emergency Stopped:</strong> <span id="emergency-status" class="{{ 'status-inactive' if risk.is_stopped else 'status-active' }}">{{ risk.is_stopped }}</span></p>
-                </div>
+            <div class="status-item">
+                <div class="status-dot {{ 'inactive' if system_status.api_status != 'OK' else '' }}"></div>
+                <span>API: {{ system_status.api_status }}</span>
             </div>
-        </div>
-        
-        <!-- Current Market Context -->
-        <div class="card" id="market-context">
-            <h3><i class="fas fa-globe-americas"></i> Current Market Context</h3>
-            <div class="card-grid">
-                {% for symbol, data in market_context.items() %}
-                <div class="card market-card">
-                    <h4>{{ symbol }}</h4>
-                    <p>Price: ${{ "%.2f"|format(data.get('price', 0)) }}</p>
-                    <p>MA (m): ${{ "%.2f"|format(data.get('ma_value', 0)) }}</p>
-                    <p>24h Vol: ${{ "{:,.0f}".format(data.get('volume_24h', 0)) }}</p>
-                    <p>Signal: <span class="signal-{{ data.get('signal', 'NEUTRAL')|string|lower }}">{{ data.get('signal', 'NEUTRAL') }}</span></p>
-                </div>
-                {% endfor %}
+            <div class="status-item">
+                <div class="status-dot {{ 'inactive' if risk.is_stopped else '' }}"></div>
+                <span id="emergency-label">Emergency: {{ 'STOPPED' if risk.is_stopped else 'OK' }}</span>
             </div>
-        </div>
-        
-        <div class="card" id="current-positions">
-            <h3><i class="fas fa-folder-open"></i>Current Positions</h3>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Symbol</th>
-                            <th>Size</th>
-                            <th>Entry Price</th>
-                            <th>Current Price</th>
-                            <th>Unrealized PnL</th>
-                        </tr>
-                    </thead>
-                    <tbody id="positionsTable">
-                        {% for position in positions %}
-                        <tr>
-                            <td>{{ position.symbol }}</td>
-                            <td>{{ "%.4f"|format(position.size|abs) }} ({{ position.side }})</td>
-                            <td>${{ "%.2f"|format(position.entry_price) }}</td>
-                            <td>${{ "%.2f"|format(position.current_price) }}</td>
-                            <td class="{{ 'signal-buy' if position.pnl >= 0 else 'signal-sell' }}">${{ "%.4f"|format(position.pnl) }} ({{ "%.2f"|format(position.pnl_pct) }}%)</td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="5" class="empty-placeholder">No active positions</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <div class="status-item" style="margin-left: auto;">
+                <span class="time-display" id="current-time"></span>
             </div>
-        </div>
-        
-        <div class="card" id="alerts">
-            <h3><i class="fas fa-bell"></i>Alerts</h3>
-            <div class="alerts-list">
-                {% if alerts %}
-                    {% for alert in alerts %}
-                        <p class="alert-item alert-{{ alert.level }}">{{ alert.message }}</p>
-                    {% endfor %}
-                {% else %}
-                    <p class="empty-placeholder">No issues</p>
-                {% endif %}
-            </div>
-        </div>
-        
-        <div class="card" id="recent-signals">
-            <h3><i class="fas fa-broadcast-tower"></i>Recent Signals</h3>
-            {% if signals %}
-            <div class="table-container">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Symbol</th>
-                        <th>Signal</th>
-                        <th>Price</th>
-                        <th>MA</th>
-                        <th>Time</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for signal in signals %}
-                    <tr>
-                        <td><strong>{{ signal.symbol }}</strong></td>
-                        <td class="
-                            {% if signal.signal == 'STRONG_BUY' %}signal-strong-buy
-                            {% elif signal.signal == 1 %}signal-buy
-                            {% elif signal.signal == -1 %}signal-sell
-                            {% elif signal.signal == 'STRONG_SELL' %}signal-strong-sell
-                            {% else %}signal-hold{% endif %}
-                        ">
-                            {% if signal.signal == 'STRONG_BUY' %}<i class="fas fa-arrow-up"></i> STRONG BUY
-                            {% elif signal.signal == 1 %}<i class="fas fa-arrow-up"></i> BUY
-                            {% elif signal.signal == -1 %}<i class="fas fa-arrow-down"></i> SELL
-                            {% elif signal.signal == 'STRONG_SELL' %}<i class="fas fa-arrow-down"></i> STRONG SELL
-                            {% else %}<i class="fas fa-pause"></i> HOLD{% endif %}
-                        </td>
-                        <td>${{ "%.2f"|format(signal.current_price) }}</td>
-                        <td>${{ "%.2f"|format(signal.ma_value) }}</td>
-                        <td>{{ signal.timestamp }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            </div>
-            {% else %}
-            <p class="empty-placeholder">No recent signals</p>
-            {% endif %}
         </div>
 
-        <div class="card" id="trade-history">
-            <h3><i class="fas fa-history"></i>Trade History</h3>
-            <div class="table-container">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Time</th>
-                            <th>Symbol</th>
-                            <th>Side</th>
-                            <th>Entry</th>
-                            <th>Exit</th>
-                            <th>PnL</th>
-                            <th>Reason</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tradeHistoryTable">
-                        <tr><td colspan="7" class="empty-placeholder">Loading...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        
-        <div class="card" id="pnl-performance">
-            <h3><i class="fas fa-chart-line"></i>Account Balance & PnL</h3>
-            {% if pnl_chart.account_balance %}
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;">
-                <div style="background: rgba(157, 114, 255, 0.1); padding: 12px; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 0.85em; color: var(--text-secondary-color); margin-bottom: 4px;">💰 Balance</div>
-                    <div data-balance style="font-size: 1.5em; font-weight: bold; color: var(--primary-color);">${{ "%.2f"|format(pnl_chart.account_balance) }}</div>
-                </div>
-                <div style="background: {% if pnl_chart.current_pnl >= 0 %}rgba(46, 204, 113, 0.1){% else %}rgba(231, 76, 60, 0.1){% endif %}; padding: 12px; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 0.85em; color: var(--text-secondary-color); margin-bottom: 4px;">📊 Total PnL</div>
-                    <div data-pnl style="font-size: 1.5em; font-weight: bold; color: {% if pnl_chart.current_pnl >= 0 %}var(--green-color){% else %}var(--red-color){% endif %};">
-                        {{ "+" if pnl_chart.current_pnl >= 0 else "" }}${{ "%.4f"|format(pnl_chart.current_pnl) }}
+        <!-- Main Grid -->
+        <div class="dashboard-grid">
+            <!-- Metrics Row -->
+            <div class="metrics-row">
+                <div class="metrics-grid">
+                    <div class="metric-card {{ 'positive' if pnl_chart.current_pnl >= 0 else 'negative' }}">
+                        <div class="metric-label">Account Balance</div>
+                        <div class="metric-value" data-balance>${{ "%.2f"|format(pnl_chart.account_balance) }}</div>
+                        <div class="metric-change">USDT</div>
+                    </div>
+                    <div class="metric-card {{ 'positive' if pnl_chart.current_pnl >= 0 else 'negative' }}">
+                        <div class="metric-label">Total P&L</div>
+                        <div class="metric-value {{ 'positive' if pnl_chart.current_pnl >= 0 else 'negative' }}" data-pnl>
+                            {{ "+" if pnl_chart.current_pnl >= 0 else "" }}${{ "%.4f"|format(pnl_chart.current_pnl) }}
+                        </div>
+                        <div class="metric-change">Realized + Unrealized</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Open Positions</div>
+                        <div class="metric-value" id="positions-count">{{ risk.positions_count }}</div>
+                        <div class="metric-change">of {{ risk.max_positions }} max</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Leverage</div>
+                        <div class="metric-value">{{ risk.leverage }}x</div>
+                        <div class="metric-change">Current multiplier</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Max Position</div>
+                        <div class="metric-value">${{ "%.0f"|format(risk.max_position_usdt) }}</div>
+                        <div class="metric-change">Per trade</div>
                     </div>
                 </div>
-                <div style="background: rgba(52, 152, 219, 0.1); padding: 12px; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 0.85em; color: var(--text-secondary-color); margin-bottom: 4px;">🎯 Open Positions</div>
-                    <div style="font-size: 1.5em; font-weight: bold; color: #3498db;">{{ risk.positions_count }}</div>
+            </div>
+
+            <!-- Control Panel -->
+            <div class="card control-panel">
+                <div class="card-header">
+                    <span class="card-title">System Control</span>
+                    <span class="card-badge {{ 'warning' if risk.is_stopped else '' }}">{{ 'STOPPED' if risk.is_stopped else 'ONLINE' }}</span>
                 </div>
-                <div style="background: rgba(241, 196, 15, 0.1); padding: 12px; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 0.85em; color: var(--text-secondary-color); margin-bottom: 4px;">⚡ Leverage</div>
-                    <div style="font-size: 1.5em; font-weight: bold; color: #f1c40f;">{{ risk.leverage }}x</div>
+                <div class="card-body">
+                    <div class="control-buttons">
+                        <button class="btn btn-danger" id="shutdown-btn">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18.36 6.64a9 9 0 1 1-12.73 0"/>
+                                <line x1="12" y1="2" x2="12" y2="12"/>
+                            </svg>
+                            Emergency Stop
+                        </button>
+                        <button class="btn btn-success" id="reset-stop-btn">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="23 4 23 10 17 10"/>
+                                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                            </svg>
+                            Reset Stop
+                        </button>
+                    </div>
                 </div>
             </div>
-            {% endif %}
-            <div class="chart-container">
-                <div id="pnlChart"></div>
+
+            <!-- Risk Panel -->
+            <div class="card risk-panel">
+                <div class="card-header">
+                    <span class="card-title">Risk Parameters</span>
+                </div>
+                <div class="card-body">
+                    <div class="risk-grid">
+                        <div class="risk-item">
+                            <div class="risk-label">Daily Loss Limit</div>
+                            <div class="risk-value">${{ "%.2f"|format(risk.max_daily_loss_usdt) }}</div>
+                        </div>
+                        <div class="risk-item">
+                            <div class="risk-label">Total Loss Limit</div>
+                            <div class="risk-value">${{ "%.2f"|format(risk.max_total_loss_usdt) }}</div>
+                        </div>
+                        <div class="risk-item">
+                            <div class="risk-label">Daily Loss</div>
+                            <div class="risk-value {{ 'negative-value' if risk.daily_loss > 0 else '' }}">${{ "%.2f"|format(risk.daily_loss) }}</div>
+                        </div>
+                        <div class="risk-item">
+                            <div class="risk-label">Total Loss</div>
+                            <div class="risk-value {{ 'negative-value' if risk.total_loss > 0 else '' }}">${{ "%.2f"|format(risk.total_loss) }}</div>
+                        </div>
+                        <div class="risk-item">
+                            <div class="risk-label">Can Trade</div>
+                            <div class="risk-value {{ 'positive-value' if risk.can_trade else 'negative-value' }}">{{ 'YES' if risk.can_trade else 'NO' }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Market Context -->
+            <div class="card market-section">
+                <div class="card-header">
+                    <span class="card-title">Market Overview</span>
+                </div>
+                <div class="card-body">
+                    <div class="market-grid" id="market-grid">
+                        {% for symbol, data in market_context.items() %}
+                        <div class="market-card">
+                            <div class="market-card-header">
+                                <span class="market-symbol">{{ symbol }}</span>
+                                <span class="market-signal {{ data.get('signal', 'NEUTRAL')|string|lower|replace('_', '-') }}">
+                                    {{ data.get('signal', 'NEUTRAL')|replace('_', ' ') }}
+                                </span>
+                            </div>
+                            <div class="market-price">${{ "%.2f"|format(data.get('price', 0)) }}</div>
+                            <div class="market-stats">
+                                <div class="market-stat">
+                                    <span class="market-stat-label">MA</span>
+                                    <span class="market-stat-value">${{ "%.2f"|format(data.get('ma_value', 0)) }}</span>
+                                </div>
+                                <div class="market-stat">
+                                    <span class="market-stat-label">Vol 24h</span>
+                                    <span class="market-stat-value">${{ "{:,.0f}".format(data.get('volume_24h', 0)) }}</span>
+                                </div>
+                                <div class="market-stat">
+                                    <span class="market-stat-label">RSI</span>
+                                    <span class="market-stat-value {% if data.get('rsi', 50) > 70 %}negative-value{% elif data.get('rsi', 50) < 30 %}positive-value{% endif %}">
+                                        {{ "%.1f"|format(data.get('rsi', 0)) if data.get('rsi') else 'N/A' }}
+                                    </span>
+                                </div>
+                                <div class="market-stat">
+                                    <span class="market-stat-label">ATR</span>
+                                    <span class="market-stat-value">{{ "%.4f"|format(data.get('atr', 0)) if data.get('atr') else 'N/A' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="empty-state">No market data available</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Positions Table -->
+            <div class="card table-section">
+                <div class="card-header">
+                    <span class="card-title">Current Positions</span>
+                    <span class="card-badge">{{ positions|length }} Active</span>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Side</th>
+                                <th>Size</th>
+                                <th>Entry</th>
+                                <th>Current</th>
+                                <th>P&L</th>
+                            </tr>
+                        </thead>
+                        <tbody id="positions-table">
+                            {% for position in positions %}
+                            <tr>
+                                <td><strong>{{ position.symbol }}</strong></td>
+                                <td><span class="tag tag-{{ 'buy' if position.side == 'Buy' else 'sell' }}">{{ position.side }}</span></td>
+                                <td>{{ "%.4f"|format(position.size|abs) }}</td>
+                                <td>${{ "%.2f"|format(position.entry_price) }}</td>
+                                <td>${{ "%.2f"|format(position.current_price) }}</td>
+                                <td class="{{ 'positive-value' if position.pnl >= 0 else 'negative-value' }}">
+                                    {{ "+" if position.pnl >= 0 else "" }}${{ "%.4f"|format(position.pnl) }}
+                                    <span style="opacity: 0.7">({{ "%.2f"|format(position.pnl_pct) }}%)</span>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr class="empty-row">
+                                <td colspan="6">No active positions</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Alerts -->
+            <div class="card table-section">
+                <div class="card-header">
+                    <span class="card-title">Alerts</span>
+                    <span class="card-badge {{ 'warning' if alerts else '' }}">{{ alerts|length if alerts else 0 }}</span>
+                </div>
+                <div class="card-body">
+                    <div class="alerts-list" id="alerts-list">
+                        {% if alerts %}
+                            {% for alert in alerts %}
+                            <div class="alert-item {{ alert.level }}">{{ alert.message }}</div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty-state">System operating normally</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart -->
+            <div class="card chart-section">
+                <div class="card-header">
+                    <span class="card-title">P&L Performance</span>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                    <div class="chart-container" id="pnl-chart"></div>
+                </div>
+            </div>
+
+            <!-- Signals Table -->
+            <div class="card table-section">
+                <div class="card-header">
+                    <span class="card-title">Recent Signals</span>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Symbol</th>
+                                <th>Signal</th>
+                                <th>Price</th>
+                                <th>MA</th>
+                            </tr>
+                        </thead>
+                        <tbody id="signals-table">
+                            {% for signal in signals %}
+                            <tr>
+                                <td>{{ signal.timestamp }}</td>
+                                <td><strong>{{ signal.symbol }}</strong></td>
+                                <td>
+                                    {% if signal.signal == 'STRONG_BUY' or signal.signal == 1 %}
+                                    <span class="tag tag-buy">{{ signal.signal if signal.signal == 'STRONG_BUY' else 'BUY' }}</span>
+                                    {% elif signal.signal == 'STRONG_SELL' or signal.signal == -1 %}
+                                    <span class="tag tag-sell">{{ signal.signal if signal.signal == 'STRONG_SELL' else 'SELL' }}</span>
+                                    {% else %}
+                                    <span class="tag tag-neutral">HOLD</span>
+                                    {% endif %}
+                                </td>
+                                <td>${{ "%.2f"|format(signal.current_price) }}</td>
+                                <td>${{ "%.2f"|format(signal.ma_value) }}</td>
+                            </tr>
+                            {% else %}
+                            <tr class="empty-row">
+                                <td colspan="5">No recent signals</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Trade History -->
+            <div class="card table-section">
+                <div class="card-header">
+                    <span class="card-title">Trade History</span>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Symbol</th>
+                                <th>Side</th>
+                                <th>Entry</th>
+                                <th>Exit</th>
+                                <th>P&L</th>
+                                <th>Reason</th>
+                            </tr>
+                        </thead>
+                        <tbody id="trades-table">
+                            <tr class="empty-row">
+                                <td colspan="7">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+
     <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
     <script>
+        // Update time display
+        function updateTime() {
+            const now = new Date();
+            const options = {
+                timeZone: 'America/New_York',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            };
+            document.getElementById('current-time').textContent = now.toLocaleTimeString('en-US', options) + ' EST';
+        }
+        updateTime();
+        setInterval(updateTime, 1000);
+
+        // Emergency Stop
         document.getElementById('shutdown-btn').addEventListener('click', function() {
-            const password = prompt('To trigger the EMERGENCY STOP, please enter the password:');
-            if (password === null) {
-                return; // User cancelled the prompt
-            }
+            const password = prompt('Enter password to trigger EMERGENCY STOP:');
+            if (password === null) return;
 
             if (password !== 'chaewon') {
-                alert('Incorrect password. Emergency Stop was not activated.');
+                alert('Incorrect password.');
                 return;
             }
 
-            if (confirm('Password accepted. Are you sure you want to trigger the EMERGENCY STOP? This will prevent all new trades.')) {
-                fetch('/shutdown', { 
+            if (confirm('Are you sure? This will close all positions and stop trading.')) {
+                fetch('/shutdown', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ password: password })
                 })
-                    .then(response => response.json())
-                    .then(data => {
-                        const statusEl = document.getElementById('shutdown-status');
-                        if (data.status === 'success') {
-                            statusEl.style.color = 'var(--green-color)';
-                            statusEl.innerText = data.message;
-                            alert('Emergency Stop Activated!');
-                        } else {
-                            statusEl.style.color = 'var(--red-color)';
-                            statusEl.innerText = 'Error: ' + data.message;
-                        alert('Failed to activate Emergency Stop: ' + data.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        const statusEl = document.getElementById('shutdown-status');
-                        statusEl.style.color = 'var(--red-color)';
-                        statusEl.innerText = 'A network error occurred.';
-                        alert('An error occurred while trying to stop the bot.');
-                    });
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    if (data.status === 'success' || data.status === 'partial') {
+                        location.reload();
+                    }
+                })
+                .catch(error => alert('Error: ' + error));
             }
         });
 
+        // Reset Stop
         document.getElementById('reset-stop-btn').addEventListener('click', function() {
-            const password = prompt('To reset the emergency stop, please enter the password:');
-            if (password === null) {
-                return; // User cancelled
-            }
+            const password = prompt('Enter password to reset emergency stop:');
+            if (password === null) return;
 
             if (password !== 'chaewon') {
-                alert('Incorrect password. Emergency stop was not reset.');
+                alert('Incorrect password.');
                 return;
             }
 
@@ -623,381 +1061,308 @@
             })
             .then(response => response.json())
             .then(data => {
-                const statusEl = document.getElementById('shutdown-status');
+                alert(data.message);
                 if (data.status === 'success') {
-                    statusEl.style.color = 'var(--green-color)';
-                    statusEl.innerText = data.message;
-                    alert('Emergency Stop Reset! Trading re-enabled.');
-                    setTimeout(() => window.location.reload(), 1000); // Reload to see updated status
-                } else {
-                    statusEl.style.color = 'var(--red-color)';
-                    statusEl.innerText = 'Error: ' + data.message;
-                    alert('Failed to reset stop: ' + data.message);
+                    location.reload();
                 }
             })
-            .catch(error => {
-                console.error('Error:', error);
-                const statusEl = document.getElementById('shutdown-status');
-                statusEl.style.color = 'var(--red-color)';
-                statusEl.innerText = 'A network error occurred.';
-                alert('An error occurred while trying to reset the stop.');
-            });
+            .catch(error => alert('Error: ' + error));
         });
-        
-       // Function to update PnL chart dynamically
-       function updatePnLChart() {
-           fetch('/api/pnl_chart')
-               .then(response => {
-                   if (!response.ok) {
-                       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                   }
-                   return response.json();
-               })
-               .then(pnlData => {
-                   if (pnlData.error) {
-                       // Don't show error if we have empty data (graceful degradation)
-                       if (!pnlData.timestamps || pnlData.timestamps.length === 0) {
-                           return; // Skip update if no data
-                       }
-                       document.getElementById('pnlChart').innerHTML = '<div class="empty-placeholder">' + pnlData.error + '</div>';
-                       return;
-                   }
-                    
+
+        // PnL Chart
+        function updatePnLChart() {
+            fetch('/api/pnl_chart')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error || !data.cumulative_pnl || data.cumulative_pnl.length === 0) return;
+
                     // Update balance and PnL displays
-                    if (pnlData.account_balance !== undefined) {
-                        const balanceEl = document.querySelector('#pnl-performance [data-balance]');
-                        if (balanceEl) balanceEl.textContent = '$' + pnlData.account_balance.toFixed(2);
+                    if (data.account_balance !== undefined) {
+                        const balanceEl = document.querySelector('[data-balance]');
+                        if (balanceEl) balanceEl.textContent = '$' + data.account_balance.toFixed(2);
                     }
-                    if (pnlData.current_pnl !== undefined) {
-                        const pnlEl = document.querySelector('#pnl-performance [data-pnl]');
+                    if (data.current_pnl !== undefined) {
+                        const pnlEl = document.querySelector('[data-pnl]');
                         if (pnlEl) {
-                            pnlEl.textContent = (pnlData.current_pnl >= 0 ? '+' : '') + '$' + pnlData.current_pnl.toFixed(4);
-                            pnlEl.style.color = pnlData.current_pnl >= 0 ? 'var(--green-color)' : 'var(--red-color)';
+                            pnlEl.textContent = (data.current_pnl >= 0 ? '+' : '') + '$' + data.current_pnl.toFixed(4);
+                            pnlEl.className = 'metric-value ' + (data.current_pnl >= 0 ? 'positive' : 'negative');
                         }
                     }
-                    
-                    // Update chart if we have data
-                    if (pnlData.cumulative_pnl && pnlData.cumulative_pnl.length > 0) {
-                        const chartContainer = document.getElementById('pnlChart');
-                        const containerWidth = chartContainer ? chartContainer.offsetWidth : 800;
-                        
-                        const layout = {
-                            xaxis: { 
-                                title: 'Time (EST)',
-                                gridcolor: 'rgba(255, 255, 255, 0.1)',
-                                color: '#c0c0c0',
-                                tickangle: -45,  // Rotate labels for better readability with seconds
-                                type: 'category',  // Use category to show all timestamps clearly
-                                automargin: true  // Let Plotly automatically adjust margins for rotated labels
-                            },
-                            yaxis: { 
-                                title: 'PnL (USDT)',
-                                gridcolor: 'rgba(255, 255, 255, 0.1)',
-                                color: '#c0c0c0',
-                                zeroline: true,
-                                zerolinecolor: 'rgba(255, 255, 255, 0.3)',
-                                zerolinewidth: 2
-                            },
-                            paper_bgcolor: 'rgba(60, 60, 70, 0.5)',
-                            plot_bgcolor: 'rgba(60, 60, 70, 0.5)',
-                            font: { color: '#f0f0f0', size: 12 },
-                            margin: { l: 50, r: 20, t: 10, b: 100 },  // Increased bottom margin for rotated labels (was 70)
-                            showlegend: false,
-                            autosize: true,
-                            width: containerWidth
-                        };
-                        
-                        Plotly.react('pnlChart', [{
-                            x: pnlData.timestamps,
-                            y: pnlData.cumulative_pnl,
-                            type: 'scatter',
-                            mode: 'lines+markers',
-                            name: 'Cumulative PnL',
-                            line: { 
-                                color: pnlData.current_pnl >= 0 ? '#2ecc71' : '#e74c3c', 
-                                width: 3 
-                            },
-                            marker: {
-                                color: pnlData.current_pnl >= 0 ? '#2ecc71' : '#e74c3c',
-                                size: 6
-                            }
-                        }], layout);
-                    }
-               })
-               .catch(error => {
-                   // Silently fail - don't spam console with network errors
-                   // Only log if it's not a network error
-                   if (!error.message.includes('Failed to fetch') && !error.message.includes('ERR_EMPTY_RESPONSE')) {
-                       console.error('Error updating PnL chart:', error);
-                   }
-               });
-       }
-       
-       // Function to update alerts
-       function updateAlerts() {
-           fetch('/api/alerts')
-               .then(response => {
-                   if (!response.ok) return [];
-                   return response.json();
-               })
-               .then(alerts => {
-                    const alertsContainer = document.querySelector('#alerts .alerts-list');
-                    if (!alertsContainer) return;
-                    
-                    if (alerts && alerts.length > 0) {
-                        let html = '';
-                        alerts.forEach(alert => {
-                            html += `<p class="alert-item alert-${alert.level}">${alert.message}</p>`;
-                        });
-                        alertsContainer.innerHTML = html;
-                    } else {
-                       alertsContainer.innerHTML = '<p class="empty-placeholder">No issues</p>';
-                   }
-               })
-               .catch(error => {
-                   // Silently fail for network errors
-                   if (!error.message.includes('Failed to fetch')) {
-                       console.error('Error updating alerts:', error);
-                   }
-               });
-       }
-       
-       // Function to update signals
-       function updateSignals() {
-           fetch('/api/signals')
-               .then(response => {
-                   if (!response.ok) return [];
-                   return response.json();
-               })
-               .then(signals => {
-                    const tbody = document.querySelector('#recent-signals tbody');
-                    if (!tbody) return;
-                    
-                    if (signals && signals.length > 0) {
-                        let html = '';
-                        signals.forEach(signal => {
-                            const signalClass = signal.signal === 'STRONG_BUY' ? 'signal-strong-buy' :
-                                              signal.signal === 1 ? 'signal-buy' :
-                                              signal.signal === -1 ? 'signal-sell' :
-                                              signal.signal === 'STRONG_SELL' ? 'signal-strong-sell' : 'signal-hold';
-                            const signalText = signal.signal === 'STRONG_BUY' ? '<i class="fas fa-arrow-up"></i> STRONG BUY' :
-                                             signal.signal === 1 ? '<i class="fas fa-arrow-up"></i> BUY' :
-                                             signal.signal === -1 ? '<i class="fas fa-arrow-down"></i> SELL' :
-                                             signal.signal === 'STRONG_SELL' ? '<i class="fas fa-arrow-down"></i> STRONG SELL' :
-                                             '<i class="fas fa-pause"></i> HOLD';
-                            html += `
-                                <tr>
-                                    <td><strong>${signal.symbol}</strong></td>
-                                    <td class="${signalClass}">${signalText}</td>
-                                    <td>$${signal.current_price.toFixed(2)}</td>
-                                    <td>$${signal.ma_value.toFixed(2)}</td>
-                                    <td>${signal.timestamp}</td>
-                                </tr>
-                            `;
-                        });
-                        tbody.innerHTML = html;
-                    } else {
-                       tbody.innerHTML = '<tr><td colspan="5" class="empty-placeholder">No recent signals</td></tr>';
-                   }
-               })
-               .catch(error => {
-                   // Silently fail for network errors
-                   if (!error.message.includes('Failed to fetch')) {
-                       console.error('Error updating signals:', error);
-                   }
-               });
-       }
-       
-       // Function to update market context
-       function updateMarketContext() {
-           fetch('/api/market_context?' + new Date().getTime()) // Add cache busting
-               .then(response => {
-                   if (!response.ok) {
-                       return {}; // Return empty object instead of throwing
-                   }
-                   return response.json();
-               })
-               .then(marketContext => {
-                    const marketGrid = document.querySelector('#market-context .card-grid');
-                    if (!marketGrid || !marketContext || Object.keys(marketContext).length === 0) {
-                        return;
-                    }
-                    
-                    let html = '';
-                    for (const [symbol, data] of Object.entries(marketContext)) {
-                        const signalClass = (data.signal || 'NEUTRAL').toLowerCase().replace('_', '-');
-                        const signalText = data.signal || 'NEUTRAL';
-                        const rsi = data.rsi !== undefined ? data.rsi.toFixed(1) : 'N/A';
-                        const atr = data.atr !== undefined ? data.atr.toFixed(4) : 'N/A';
-                        
-                        // RSI Color
-                        let rsiColor = 'var(--text-color)';
-                        if (data.rsi > 70) rsiColor = 'var(--red-color)';
-                        if (data.rsi < 30) rsiColor = 'var(--green-color)';
 
-                        html += `
-                            <div class="card market-card">
-                                <h4>${symbol}</h4>
-                                <p>Price: $${(data.price || 0).toFixed(2)}</p>
-                                <p>MA (m): $${(data.ma_value || 0).toFixed(2)}</p>
-                                <p>RSI: <span style="color: ${rsiColor}">${rsi}</span></p>
-                                <p>ATR: ${atr}</p>
-                                <p>24h Vol: $${(data.volume_24h || 0).toLocaleString()}</p>
-                                <p>Signal: <span class="signal-${signalClass}">${signalText}</span></p>
-                            </div>
-                        `;
+                    const isPositive = data.current_pnl >= 0;
+                    const lineColor = isPositive ? '#00ff88' : '#ff3366';
+                    const fillColor = isPositive ? 'rgba(0, 255, 136, 0.1)' : 'rgba(255, 51, 102, 0.1)';
+
+                    const trace = {
+                        x: data.timestamps,
+                        y: data.cumulative_pnl,
+                        type: 'scatter',
+                        mode: 'lines',
+                        fill: 'tozeroy',
+                        fillcolor: fillColor,
+                        line: {
+                            color: lineColor,
+                            width: 2,
+                            shape: 'spline'
+                        },
+                        hovertemplate: '%{y:.4f} USDT<extra></extra>'
+                    };
+
+                    const layout = {
+                        paper_bgcolor: 'transparent',
+                        plot_bgcolor: 'transparent',
+                        font: {
+                            family: 'JetBrains Mono, monospace',
+                            color: '#888888',
+                            size: 10
+                        },
+                        margin: { l: 50, r: 20, t: 20, b: 60 },
+                        xaxis: {
+                            gridcolor: '#2a2a2a',
+                            linecolor: '#2a2a2a',
+                            tickangle: -45,
+                            tickfont: { size: 9 }
+                        },
+                        yaxis: {
+                            gridcolor: '#2a2a2a',
+                            linecolor: '#2a2a2a',
+                            zeroline: true,
+                            zerolinecolor: '#444444',
+                            zerolinewidth: 1,
+                            tickformat: '.4f'
+                        },
+                        showlegend: false,
+                        hovermode: 'x unified'
+                    };
+
+                    Plotly.react('pnl-chart', [trace], layout, { displayModeBar: false, responsive: true });
+                })
+                .catch(() => {});
+        }
+
+        // Update Positions
+        function updatePositions() {
+            fetch('/api/status')
+                .then(response => response.json())
+                .then(data => {
+                    // Update positions count
+                    const countEl = document.getElementById('positions-count');
+                    if (countEl && data.risk_status) {
+                        countEl.textContent = data.risk_status.positions_count || 0;
                     }
-                   marketGrid.innerHTML = html;
-               })
-               .catch(error => {
-                   // Silently fail for network errors
-                   if (!error.message.includes('Failed to fetch') && !error.message.includes('ERR_EMPTY_RESPONSE')) {
-                       console.error('Error updating market context:', error);
-                   }
-               });
-       }
-       
-       // Function to update emergency status and positions
-       function updateSystemStatus() {
-           fetch('/api/status')
-               .then(response => {
-                   if (!response.ok) {
-                       return {}; // Return empty object instead of throwing
-                   }
-                   return response.json();
-               })
-               .then(data => {
-                    // Update emergency stop status
-                    const emergencyStatus = document.getElementById('emergency-status');
-                    if (emergencyStatus) {
-                        const isStoppedValue = data.risk?.is_stopped || false;
-                        emergencyStatus.textContent = isStoppedValue;
-                        emergencyStatus.className = isStoppedValue ? 'status-inactive' : 'status-active';
+
+                    // Update emergency label
+                    const emergencyLabel = document.getElementById('emergency-label');
+                    if (emergencyLabel && data.risk_status) {
+                        emergencyLabel.textContent = 'Emergency: ' + (data.risk_status.is_stopped ? 'STOPPED' : 'OK');
                     }
-                    
-                    // Update active positions count
-                    const positionsCount = document.getElementById('active-positions-count');
-                    if (positionsCount && data.risk) {
-                        positionsCount.textContent = data.risk.positions_count;
-                    }
-                    
-                    // Update positions table live
+
+                    // Update positions table
                     if (data.positions) {
-                        const tbody = document.getElementById('positionsTable');
+                        const tbody = document.getElementById('positions-table');
                         if (tbody) {
                             if (data.positions.length === 0) {
-                                tbody.innerHTML = '<tr><td colspan="5" class="empty-placeholder">No active positions</td></tr>';
+                                tbody.innerHTML = '<tr class="empty-row"><td colspan="6">No active positions</td></tr>';
                             } else {
                                 let html = '';
                                 data.positions.forEach(pos => {
-                                    const pnlClass = pos.pnl >= 0 ? 'signal-buy' : 'signal-sell';
+                                    const pnlClass = pos.pnl >= 0 ? 'positive-value' : 'negative-value';
+                                    const sideClass = pos.side === 'Buy' ? 'buy' : 'sell';
                                     html += `
                                         <tr>
-                                            <td>${pos.symbol}</td>
-                                            <td>${Math.abs(pos.size).toFixed(4)} (${pos.side})</td>
+                                            <td><strong>${pos.symbol}</strong></td>
+                                            <td><span class="tag tag-${sideClass}">${pos.side}</span></td>
+                                            <td>${Math.abs(pos.size).toFixed(4)}</td>
                                             <td>$${pos.entry_price.toFixed(2)}</td>
                                             <td>$${pos.current_price.toFixed(2)}</td>
-                                            <td class="${pnlClass}">$${pos.pnl.toFixed(4)} (${pos.pnl_pct.toFixed(2)}%)</td>
+                                            <td class="${pnlClass}">
+                                                ${pos.pnl >= 0 ? '+' : ''}$${pos.pnl.toFixed(4)}
+                                                <span style="opacity: 0.7">(${pos.pnl_pct.toFixed(2)}%)</span>
+                                            </td>
                                         </tr>
                                     `;
                                 });
                                 tbody.innerHTML = html;
                             }
-                       }
-                   }
-               })
-                .catch(error => {
-                    // Silently fail for network errors
-                    if (!error.message.includes('Failed to fetch') && !error.message.includes('ERR_EMPTY_RESPONSE')) {
-                        console.error('Error updating positions:', error);
+                        }
                     }
-                });
+                })
+                .catch(() => {});
         }
 
-        // Function to update trade history
-        function updateTradeHistory() {
-            fetch('/api/trade_history')
-                .then(response => {
-                    if (!response.ok) return [];
-                    return response.json();
+        // Update Alerts
+        function updateAlerts() {
+            fetch('/api/alerts')
+                .then(response => response.json())
+                .then(alerts => {
+                    const container = document.getElementById('alerts-list');
+                    if (!container) return;
+
+                    if (alerts && alerts.length > 0) {
+                        let html = '';
+                        alerts.forEach(alert => {
+                            html += `<div class="alert-item ${alert.level}">${alert.message}</div>`;
+                        });
+                        container.innerHTML = html;
+                    } else {
+                        container.innerHTML = '<div class="empty-state">System operating normally</div>';
+                    }
                 })
-                .then(trades => {
-                    const tbody = document.getElementById('tradeHistoryTable');
+                .catch(() => {});
+        }
+
+        // Update Signals
+        function updateSignals() {
+            fetch('/api/signals')
+                .then(response => response.json())
+                .then(signals => {
+                    const tbody = document.getElementById('signals-table');
                     if (!tbody) return;
 
-                    if (trades && trades.length > 0) {
+                    if (signals && signals.length > 0) {
                         let html = '';
-                        trades.forEach(trade => {
-                            const pnlClass = trade.pnl >= 0 ? 'signal-buy' : 'signal-sell';
-                            const pnlSign = trade.pnl >= 0 ? '+' : '';
+                        signals.forEach(signal => {
+                            let tagClass = 'neutral';
+                            let tagText = 'HOLD';
+                            if (signal.signal === 'STRONG_BUY' || signal.signal === 1) {
+                                tagClass = 'buy';
+                                tagText = signal.signal === 'STRONG_BUY' ? 'STRONG BUY' : 'BUY';
+                            } else if (signal.signal === 'STRONG_SELL' || signal.signal === -1) {
+                                tagClass = 'sell';
+                                tagText = signal.signal === 'STRONG_SELL' ? 'STRONG SELL' : 'SELL';
+                            }
                             html += `
                                 <tr>
-                                    <td>${trade.timestamp}</td>
-                                    <td><strong>${trade.symbol}</strong></td>
-                                    <td>${trade.side}</td>
-                                    <td>$${trade.entry_price.toFixed(2)}</td>
-                                    <td>$${trade.exit_price.toFixed(2)}</td>
-                                    <td class="${pnlClass}">${pnlSign}$${trade.pnl.toFixed(4)}</td>
-                                    <td>${trade.exit_reason}</td>
+                                    <td>${signal.timestamp}</td>
+                                    <td><strong>${signal.symbol}</strong></td>
+                                    <td><span class="tag tag-${tagClass}">${tagText}</span></td>
+                                    <td>$${signal.current_price.toFixed(2)}</td>
+                                    <td>$${signal.ma_value.toFixed(2)}</td>
                                 </tr>
                             `;
                         });
                         tbody.innerHTML = html;
                     } else {
-                        tbody.innerHTML = '<tr><td colspan="7" class="empty-placeholder">No recent trades</td></tr>';
+                        tbody.innerHTML = '<tr class="empty-row"><td colspan="5">No recent signals</td></tr>';
                     }
                 })
-                .catch(error => {
-                    if (!error.message.includes('Failed to fetch')) {
-                        console.error('Error updating trade history:', error);
-                    }
-                });
+                .catch(() => {});
         }
-        
-        // Update everything
+
+        // Update Trade History
+        function updateTradeHistory() {
+            fetch('/api/trade_history')
+                .then(response => response.json())
+                .then(trades => {
+                    const tbody = document.getElementById('trades-table');
+                    if (!tbody) return;
+
+                    if (trades && trades.length > 0) {
+                        let html = '';
+                        trades.forEach(trade => {
+                            const pnlClass = trade.pnl >= 0 ? 'positive-value' : 'negative-value';
+                            const sideClass = trade.side === 'Buy' ? 'buy' : 'sell';
+                            html += `
+                                <tr>
+                                    <td>${trade.timestamp}</td>
+                                    <td><strong>${trade.symbol}</strong></td>
+                                    <td><span class="tag tag-${sideClass}">${trade.side}</span></td>
+                                    <td>$${trade.entry_price.toFixed(2)}</td>
+                                    <td>$${trade.exit_price.toFixed(2)}</td>
+                                    <td class="${pnlClass}">${trade.pnl >= 0 ? '+' : ''}$${trade.pnl.toFixed(4)}</td>
+                                    <td>${trade.exit_reason || '-'}</td>
+                                </tr>
+                            `;
+                        });
+                        tbody.innerHTML = html;
+                    } else {
+                        tbody.innerHTML = '<tr class="empty-row"><td colspan="7">No trade history</td></tr>';
+                    }
+                })
+                .catch(() => {});
+        }
+
+        // Update Market Context
+        function updateMarketContext() {
+            fetch('/api/market_context?' + Date.now())
+                .then(response => response.json())
+                .then(marketContext => {
+                    const grid = document.getElementById('market-grid');
+                    if (!grid || !marketContext || Object.keys(marketContext).length === 0) return;
+
+                    let html = '';
+                    for (const [symbol, data] of Object.entries(marketContext)) {
+                        const signalClass = (data.signal || 'NEUTRAL').toLowerCase().replace('_', '-');
+                        const signalText = (data.signal || 'NEUTRAL').replace('_', ' ');
+                        const rsi = data.rsi !== undefined ? data.rsi.toFixed(1) : 'N/A';
+                        const atr = data.atr !== undefined ? data.atr.toFixed(4) : 'N/A';
+
+                        let rsiClass = '';
+                        if (data.rsi > 70) rsiClass = 'negative-value';
+                        else if (data.rsi < 30) rsiClass = 'positive-value';
+
+                        html += `
+                            <div class="market-card">
+                                <div class="market-card-header">
+                                    <span class="market-symbol">${symbol}</span>
+                                    <span class="market-signal ${signalClass}">${signalText}</span>
+                                </div>
+                                <div class="market-price">$${(data.price || 0).toFixed(2)}</div>
+                                <div class="market-stats">
+                                    <div class="market-stat">
+                                        <span class="market-stat-label">MA</span>
+                                        <span class="market-stat-value">$${(data.ma_value || 0).toFixed(2)}</span>
+                                    </div>
+                                    <div class="market-stat">
+                                        <span class="market-stat-label">Vol 24h</span>
+                                        <span class="market-stat-value">$${(data.volume_24h || 0).toLocaleString()}</span>
+                                    </div>
+                                    <div class="market-stat">
+                                        <span class="market-stat-label">RSI</span>
+                                        <span class="market-stat-value ${rsiClass}">${rsi}</span>
+                                    </div>
+                                    <div class="market-stat">
+                                        <span class="market-stat-label">ATR</span>
+                                        <span class="market-stat-value">${atr}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    grid.innerHTML = html;
+                })
+                .catch(() => {});
+        }
+
+        // Initial load
         function updateAll() {
-            updateSystemStatus();
             updatePnLChart();
+            updatePositions();
             updateAlerts();
             updateSignals();
-            updateMarketContext();
             updateTradeHistory();
+            updateMarketContext();
         }
-        
-        // Auto-refresh every 2 seconds for faster sync between chart and positions
-        // Chart updates independently for smoother real-time feel
+
+        // Refresh intervals
         setInterval(() => {
             if (document.visibilityState === 'visible') {
-                updateSystemStatus(); // Positions update every 2s
-                updatePnLChart(); // Chart updates every 2s for real-time sync
+                updatePnLChart();
+                updatePositions();
                 updateAlerts();
                 updateSignals();
             }
         }, 2000);
-        
-        // Update market context less frequently (every 5 seconds) to reduce API load
+
         setInterval(() => {
             if (document.visibilityState === 'visible') {
                 updateMarketContext();
+                updateTradeHistory();
             }
         }, 5000);
-        
-        // Initial update (includes PnL chart) - wait a bit for page to fully load
-        window.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                updateAll();
-            }, 500);
-        });
-        
-        // Also run immediately if DOM is already loaded
-        if (document.readyState === 'loading') {
-            // DOM is still loading, wait for DOMContentLoaded
-        } else {
-            // DOM is already loaded, run immediately
-            setTimeout(() => {
-                updateAll();
-            }, 500);
-        }
+
+        // Initial update
+        setTimeout(updateAll, 500);
     </script>
 </body>
 </html>

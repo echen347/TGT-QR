@@ -47,9 +47,19 @@ python3 tests/symbol_check.py    # List available Bybit symbols
 
 ### AWS Deployment
 ```bash
+# SSH into AWS (from local machine)
+ssh -i "tgt-qr-key-oct-9.pem" ubuntu@16.171.196.141
+
+# On AWS: Pull and restart
+cd /home/ubuntu/TGT-QR/mft
+git pull origin master
 sudo systemctl restart tgt-trading.service tgt-dashboard.service
+
+# Check status
+sudo systemctl status tgt-dashboard.service
 sudo journalctl -u tgt-trading.service -f
 ```
+Dashboard URL: http://16.171.196.141:5000
 
 ## Architecture
 

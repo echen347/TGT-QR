@@ -3,208 +3,384 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Research Dashboard - ethanTGT</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔬</text></svg>">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <title>TGT TERMINAL | Research</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%230a0a0a' width='100' height='100'/><text y='75' x='15' font-size='70' fill='%2300ff88'>$</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --background-color: #1a1a1d;
-            --card-background-color: #2c2c34;
-            --border-color: #444;
-            --text-color: #f0f0f0;
-            --text-secondary-color: #a0a0a0;
-            --primary-color: #9d72ff;
-            --green-color: #2ecc71;
-            --red-color: #e74c3c;
-            --yellow-color: #f1c40f;
-            --confirmed-color: #27ae60;
-            --rejected-color: #e74c3c;
-            --inconclusive-color: #f39c12;
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --bg-card: #161616;
+            --border-primary: #2a2a2a;
+            --border-accent: #333333;
+            --text-primary: #e8e8e8;
+            --text-secondary: #888888;
+            --text-muted: #555555;
+            --accent-green: #00ff88;
+            --accent-red: #ff3366;
+            --accent-yellow: #ffcc00;
+            --accent-blue: #00aaff;
+            --accent-purple: #aa66ff;
+            --glow-green: rgba(0, 255, 136, 0.15);
+            --glow-red: rgba(255, 51, 102, 0.15);
         }
-        body {
-            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
-            background-color: var(--background-color);
-            color: var(--text-color);
+
+        * {
             margin: 0;
-            padding: 24px;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .container {
-            max-width: 1400px;
-            margin: auto;
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
         }
-        .nav-header {
+
+        /* Scanline effect */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 0, 0, 0.03) 2px,
+                rgba(0, 0, 0, 0.03) 4px
+            );
+            z-index: 9999;
+        }
+
+        .terminal-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        /* Header */
+        .terminal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid var(--border-color);
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border-primary);
+            margin-bottom: 20px;
         }
-        .nav-header h1 {
-            color: var(--primary-color);
-            margin: 0;
-            font-size: 1.5em;
+
+        .logo {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 20px;
+            color: var(--bg-primary);
+            clip-path: polygon(0 0, 100% 0, 100% 70%, 70% 100%, 0 100%);
+        }
+
+        .logo-text {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-text span {
+            color: var(--accent-green);
+        }
+
         .nav-links {
             display: flex;
-            gap: 16px;
-        }
-        .nav-links a {
-            color: var(--text-color);
-            text-decoration: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
             gap: 8px;
         }
-        .nav-links a:hover {
-            background-color: rgba(157, 114, 255, 0.2);
-            color: var(--primary-color);
+
+        .nav-link {
+            padding: 10px 16px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
         }
-        .nav-links a.active {
-            background-color: var(--primary-color);
-            color: white;
+
+        .nav-link:hover {
+            color: var(--text-primary);
+            border-color: var(--border-accent);
         }
-        h1 {
-            color: var(--primary-color);
-            margin: 0;
-            font-size: 1.5em;
+
+        .nav-link.active {
+            color: var(--accent-green);
+            border-color: var(--accent-green);
+            background: var(--glow-green);
         }
-        .card {
-            background-color: var(--card-background-color);
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid var(--border-color);
-            margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-        h3 {
-            margin-top: 0;
-            color: var(--primary-color);
-            font-size: 1.1em;
-            font-weight: 600;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 12px;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-        }
-        h3 i { margin-right: 10px; }
 
         /* Stats Grid */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 16px;
             margin-bottom: 20px;
         }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
         .stat-card {
-            background: rgba(157, 114, 255, 0.1);
-            border-radius: 8px;
-            padding: 16px;
-            text-align: center;
+            background: var(--bg-card);
+            border: 1px solid var(--border-primary);
+            padding: 20px;
+            position: relative;
         }
-        .stat-value {
-            font-size: 2em;
-            font-weight: bold;
-            color: var(--primary-color);
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-purple) 0%, transparent 100%);
+            opacity: 0.5;
         }
+
         .stat-label {
-            color: var(--text-secondary-color);
-            font-size: 0.9em;
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-purple);
+        }
+
+        .stat-value.confirmed { color: var(--accent-green); }
+        .stat-value.rejected { color: var(--accent-red); }
+        .stat-value.pending { color: var(--accent-yellow); }
+
+        /* Main Layout */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Card */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-primary);
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-primary);
+            background: var(--bg-secondary);
+        }
+
+        .card-title {
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-secondary);
+        }
+
+        .card-body {
+            padding: 16px;
         }
 
         /* Experiment List */
         .experiment-list {
-            max-height: 400px;
+            max-height: 500px;
             overflow-y: auto;
         }
+
         .experiment-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px;
-            border-radius: 8px;
-            background: rgba(255,255,255,0.03);
-            margin-bottom: 8px;
+            padding: 16px;
+            border-bottom: 1px solid var(--border-primary);
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background 0.2s ease;
         }
+
+        .experiment-item:last-child {
+            border-bottom: none;
+        }
+
         .experiment-item:hover {
-            background: rgba(255,255,255,0.08);
+            background: var(--bg-secondary);
         }
+
         .experiment-info {
             flex: 1;
         }
+
         .experiment-name {
             font-weight: 600;
             margin-bottom: 4px;
-        }
-        .experiment-meta {
-            font-size: 0.85em;
-            color: var(--text-secondary-color);
-        }
-        .experiment-status {
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 0.8em;
-            font-weight: 600;
-        }
-        .status-confirmed {
-            background: rgba(39, 174, 96, 0.2);
-            color: var(--confirmed-color);
-        }
-        .status-rejected {
-            background: rgba(231, 76, 60, 0.2);
-            color: var(--rejected-color);
-        }
-        .status-pending {
-            background: rgba(241, 196, 15, 0.2);
-            color: var(--yellow-color);
-        }
-        .status-running {
-            background: rgba(157, 114, 255, 0.2);
-            color: var(--primary-color);
+            color: var(--text-primary);
         }
 
-        /* Success Criteria */
+        .experiment-meta {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .experiment-status {
+            font-size: 0.6rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status-confirmed {
+            background: var(--glow-green);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+        }
+
+        .status-rejected {
+            background: var(--glow-red);
+            color: var(--accent-red);
+            border: 1px solid var(--accent-red);
+        }
+
+        .status-pending, .status-running {
+            background: rgba(255, 204, 0, 0.15);
+            color: var(--accent-yellow);
+            border: 1px solid var(--accent-yellow);
+        }
+
+        /* Criteria List */
         .criteria-list {
             list-style: none;
-            padding: 0;
-            margin: 0;
         }
-        .criteria-list li {
-            padding: 8px 0;
+
+        .criteria-item {
             display: flex;
             align-items: center;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-primary);
+            font-size: 0.75rem;
         }
-        .criteria-list li i {
-            margin-right: 10px;
-            width: 20px;
-        }
-        .criteria-pass { color: var(--green-color); }
-        .criteria-fail { color: var(--red-color); }
 
-        /* Create Experiment Button */
-        .btn-primary {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
+        .criteria-item:last-child {
+            border-bottom: none;
+        }
+
+        .criteria-icon {
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+        }
+
+        .criteria-icon.pass {
+            color: var(--accent-green);
+        }
+
+        .criteria-icon.fail {
+            color: var(--accent-red);
+        }
+
+        /* Notes */
+        .note-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: var(--bg-secondary);
+            border-left: 3px solid var(--accent-purple);
+            font-size: 0.75rem;
+        }
+
+        .note-item.insight { border-left-color: var(--accent-green); }
+        .note-item.warning { border-left-color: var(--accent-yellow); }
+        .note-item.bug { border-left-color: var(--accent-red); }
+        .note-item.idea { border-left-color: var(--accent-blue); }
+
+        .note-meta {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
             font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 1px solid;
+            cursor: pointer;
+            transition: all 0.2s ease;
             display: inline-flex;
             align-items: center;
             gap: 8px;
         }
+
+        .btn-primary {
+            background: transparent;
+            color: var(--accent-green);
+            border-color: var(--accent-green);
+        }
+
         .btn-primary:hover {
-            opacity: 0.9;
+            background: var(--accent-green);
+            color: var(--bg-primary);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-secondary);
+            border-color: var(--border-accent);
+        }
+
+        .btn-secondary:hover {
+            color: var(--text-primary);
+            border-color: var(--text-primary);
         }
 
         /* Modal */
@@ -215,144 +391,208 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 1000;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 10000;
             justify-content: center;
             align-items: center;
         }
+
         .modal.active {
             display: flex;
         }
+
         .modal-content {
-            background: var(--card-background-color);
-            border-radius: 12px;
-            padding: 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-primary);
             max-width: 600px;
             width: 90%;
             max-height: 80vh;
             overflow-y: auto;
         }
+
+        .modal-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-primary);
+            background: var(--bg-secondary);
+        }
+
+        .modal-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
         .form-group {
             margin-bottom: 16px;
         }
-        .form-group label {
+
+        .form-label {
             display: block;
-            margin-bottom: 6px;
-            font-weight: 500;
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
         }
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
+
+        .form-input,
+        .form-textarea,
+        .form-select {
             width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            background: var(--background-color);
-            color: var(--text-color);
-            font-size: 1em;
-            box-sizing: border-box;
+            padding: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-primary);
+            color: var(--text-primary);
+            transition: border-color 0.2s ease;
         }
-        .form-group textarea {
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--accent-green);
+        }
+
+        .form-textarea {
             min-height: 100px;
             resize: vertical;
         }
+
         .form-actions {
             display: flex;
             justify-content: flex-end;
             gap: 12px;
-            margin-top: 20px;
-        }
-        .btn-secondary {
-            background: transparent;
-            color: var(--text-color);
-            border: 1px solid var(--border-color);
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-primary);
         }
 
-        /* Research Notes */
-        .note-item {
-            padding: 12px;
-            background: rgba(255,255,255,0.03);
-            border-radius: 8px;
-            margin-bottom: 8px;
-            border-left: 3px solid var(--primary-color);
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
         }
-        .note-item.insight { border-left-color: var(--green-color); }
-        .note-item.warning { border-left-color: var(--yellow-color); }
-        .note-item.bug { border-left-color: var(--red-color); }
-        .note-item.idea { border-left-color: var(--primary-color); }
-        .note-meta {
-            font-size: 0.8em;
-            color: var(--text-secondary-color);
-            margin-top: 8px;
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-accent);
+        }
+
+        @media (max-width: 768px) {
+            .terminal-header {
+                flex-direction: column;
+                gap: 16px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="nav-header">
-            <h1><i class="fas fa-chart-line"></i> ethanTGT</h1>
-            <div class="nav-links">
-                <a href="/"><i class="fas fa-tachometer-alt"></i> Live Trading</a>
-                <a href="/research" class="active"><i class="fas fa-flask"></i> Research</a>
-                <a href="/logs"><i class="fas fa-file-alt"></i> Logs</a>
+    <div class="terminal-container">
+        <!-- Header -->
+        <header class="terminal-header">
+            <div class="logo">
+                <div class="logo-icon">$</div>
+                <div class="logo-text">TGT<span>TERMINAL</span></div>
             </div>
-        </div>
+            <nav class="nav-links">
+                <a href="/" class="nav-link">Live</a>
+                <a href="/research" class="nav-link active">Research</a>
+                <a href="/logs" class="nav-link">Logs</a>
+            </nav>
+        </header>
 
-        <!-- Stats Overview -->
+        <!-- Stats -->
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-value" id="total-experiments">-</div>
                 <div class="stat-label">Total Experiments</div>
+                <div class="stat-value" id="total-experiments">-</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value" id="confirmed-count">-</div>
                 <div class="stat-label">Confirmed</div>
+                <div class="stat-value confirmed" id="confirmed-count">-</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value" id="rejected-count">-</div>
                 <div class="stat-label">Rejected</div>
+                <div class="stat-value rejected" id="rejected-count">-</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value" id="pending-count">-</div>
                 <div class="stat-label">Pending</div>
+                <div class="stat-value pending" id="pending-count">-</div>
             </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
-            <!-- Experiments List -->
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Experiments -->
             <div class="card">
-                <h3><i class="fas fa-list"></i> Experiments</h3>
-                <button class="btn-primary" onclick="showCreateModal()" style="margin-bottom: 16px;">
-                    <i class="fas fa-plus"></i> New Experiment
-                </button>
-                <div class="experiment-list" id="experiment-list">
-                    <p style="color: var(--text-secondary-color);">Loading experiments...</p>
+                <div class="card-header">
+                    <span class="card-title">Experiments</span>
+                    <button class="btn btn-primary" onclick="showCreateModal()">+ New</button>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                    <div class="experiment-list" id="experiment-list">
+                        <div class="empty-state">Loading experiments...</div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Success Criteria & Notes -->
+            <!-- Sidebar -->
             <div>
+                <!-- Success Criteria -->
                 <div class="card">
-                    <h3><i class="fas fa-check-circle"></i> Success Criteria</h3>
-                    <ul class="criteria-list">
-                        <li><i class="fas fa-check criteria-pass"></i> Test return > 0%</li>
-                        <li><i class="fas fa-check criteria-pass"></i> Win rate >= 40%</li>
-                        <li><i class="fas fa-check criteria-pass"></i> Trades >= 20 (significance)</li>
-                        <li><i class="fas fa-check criteria-pass"></i> Test within 20% of train</li>
-                    </ul>
+                    <div class="card-header">
+                        <span class="card-title">Success Criteria</span>
+                    </div>
+                    <div class="card-body">
+                        <ul class="criteria-list">
+                            <li class="criteria-item">
+                                <span class="criteria-icon pass">&#10003;</span>
+                                <span>Test return > 0%</span>
+                            </li>
+                            <li class="criteria-item">
+                                <span class="criteria-icon pass">&#10003;</span>
+                                <span>Win rate >= 40%</span>
+                            </li>
+                            <li class="criteria-item">
+                                <span class="criteria-icon pass">&#10003;</span>
+                                <span>Trades >= 20 (significance)</span>
+                            </li>
+                            <li class="criteria-item">
+                                <span class="criteria-icon pass">&#10003;</span>
+                                <span>Test within 20% of train</span>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
 
+                <!-- Recent Notes -->
                 <div class="card">
-                    <h3><i class="fas fa-sticky-note"></i> Recent Notes</h3>
-                    <div id="notes-list">
-                        <p style="color: var(--text-secondary-color);">Loading notes...</p>
+                    <div class="card-header">
+                        <span class="card-title">Recent Notes</span>
                     </div>
-                    <button class="btn-primary" onclick="showAddNoteModal()" style="margin-top: 12px;">
-                        <i class="fas fa-plus"></i> Add Note
-                    </button>
+                    <div class="card-body">
+                        <div id="notes-list">
+                            <div class="empty-state">Loading notes...</div>
+                        </div>
+                        <button class="btn btn-primary" onclick="showNoteModal()" style="width: 100%; margin-top: 12px;">+ Add Note</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -361,65 +601,73 @@
     <!-- Create Experiment Modal -->
     <div class="modal" id="create-modal">
         <div class="modal-content">
-            <h3><i class="fas fa-plus-circle"></i> Create Experiment</h3>
-            <form id="create-form">
-                <div class="form-group">
-                    <label>Name</label>
-                    <input type="text" name="name" required placeholder="e.g., MACD Strategy on ETHUSDT">
-                </div>
-                <div class="form-group">
-                    <label>Hypothesis</label>
-                    <textarea name="hypothesis" required placeholder="I think this strategy works because..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Strategy</label>
-                    <select name="strategy" required>
-                        <option value="ma">Moving Average</option>
-                        <option value="macd">MACD</option>
-                        <option value="rsi_mr">RSI Mean Reversion</option>
-                        <option value="ml_rf">ML Random Forest</option>
-                        <option value="ml_lr">ML Logistic Regression</option>
-                        <option value="momentum_mr_hybrid">Momentum + MR Hybrid</option>
-                        <option value="volatility_breakout">Volatility Breakout</option>
-                        <option value="order_flow">Order Flow</option>
-                        <option value="volatility_clustering">Volatility Clustering</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Symbols (comma-separated)</label>
-                    <input type="text" name="symbols" value="ETHUSDT" required>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn-secondary" onclick="hideCreateModal()">Cancel</button>
-                    <button type="submit" class="btn-primary">Create</button>
-                </div>
-            </form>
+            <div class="modal-header">
+                <span class="modal-title">Create Experiment</span>
+            </div>
+            <div class="modal-body">
+                <form id="create-form">
+                    <div class="form-group">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-input" name="name" required placeholder="e.g., MACD Strategy on ETHUSDT">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Hypothesis</label>
+                        <textarea class="form-textarea" name="hypothesis" required placeholder="I think this strategy works because..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Strategy</label>
+                        <select class="form-select" name="strategy" required>
+                            <option value="ma">Moving Average</option>
+                            <option value="macd">MACD</option>
+                            <option value="rsi_mr">RSI Mean Reversion</option>
+                            <option value="ml_rf">ML Random Forest</option>
+                            <option value="ml_lr">ML Logistic Regression</option>
+                            <option value="momentum_mr_hybrid">Momentum + MR Hybrid</option>
+                            <option value="volatility_breakout">Volatility Breakout</option>
+                            <option value="order_flow">Order Flow</option>
+                            <option value="volatility_clustering">Volatility Clustering</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Symbols (comma-separated)</label>
+                        <input type="text" class="form-input" name="symbols" value="ETHUSDT" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="hideCreateModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
     <!-- Add Note Modal -->
     <div class="modal" id="note-modal">
         <div class="modal-content">
-            <h3><i class="fas fa-sticky-note"></i> Add Research Note</h3>
-            <form id="note-form">
-                <div class="form-group">
-                    <label>Type</label>
-                    <select name="note_type">
-                        <option value="insight">Insight</option>
-                        <option value="idea">Idea</option>
-                        <option value="warning">Warning</option>
-                        <option value="bug">Bug</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Content</label>
-                    <textarea name="content" required placeholder="Your note..."></textarea>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn-secondary" onclick="hideNoteModal()">Cancel</button>
-                    <button type="submit" class="btn-primary">Add Note</button>
-                </div>
-            </form>
+            <div class="modal-header">
+                <span class="modal-title">Add Research Note</span>
+            </div>
+            <div class="modal-body">
+                <form id="note-form">
+                    <div class="form-group">
+                        <label class="form-label">Type</label>
+                        <select class="form-select" name="note_type">
+                            <option value="insight">Insight</option>
+                            <option value="idea">Idea</option>
+                            <option value="warning">Warning</option>
+                            <option value="bug">Bug</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Content</label>
+                        <textarea class="form-textarea" name="content" required placeholder="Your note..."></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="hideNoteModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Note</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -443,14 +691,14 @@
                 // Render list
                 const list = document.getElementById('experiment-list');
                 if (experiments.length === 0) {
-                    list.innerHTML = '<p style="color: var(--text-secondary-color);">No experiments yet. Create your first one!</p>';
+                    list.innerHTML = '<div class="empty-state">No experiments yet. Create your first one!</div>';
                     return;
                 }
 
                 list.innerHTML = experiments.map(exp => `
                     <div class="experiment-item" onclick="window.location='/research/experiment/${exp.id}'">
                         <div class="experiment-info">
-                            <div class="experiment-name">${exp.name}</div>
+                            <div class="experiment-name">${escapeHtml(exp.name)}</div>
                             <div class="experiment-meta">
                                 ${exp.strategy} | ${(exp.symbols || []).join(', ')} |
                                 ${new Date(exp.created_at).toLocaleDateString()}
@@ -463,6 +711,8 @@
                 `).join('');
             } catch (error) {
                 console.error('Error loading experiments:', error);
+                document.getElementById('experiment-list').innerHTML =
+                    '<div class="empty-state" style="color: var(--accent-red);">Failed to load experiments</div>';
             }
         }
 
@@ -475,13 +725,13 @@
 
                 const list = document.getElementById('notes-list');
                 if (notes.length === 0) {
-                    list.innerHTML = '<p style="color: var(--text-secondary-color);">No notes yet.</p>';
+                    list.innerHTML = '<div class="empty-state">No notes yet.</div>';
                     return;
                 }
 
                 list.innerHTML = notes.slice(0, 5).map(note => `
                     <div class="note-item ${note.note_type}">
-                        ${note.content}
+                        ${escapeHtml(note.content)}
                         <div class="note-meta">${note.note_type} - ${new Date(note.created_at).toLocaleDateString()}</div>
                     </div>
                 `).join('');
@@ -490,19 +740,37 @@
             }
         }
 
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         // Modal controls
         function showCreateModal() {
             document.getElementById('create-modal').classList.add('active');
         }
+
         function hideCreateModal() {
             document.getElementById('create-modal').classList.remove('active');
         }
-        function showAddNoteModal() {
+
+        function showNoteModal() {
             document.getElementById('note-modal').classList.add('active');
         }
+
         function hideNoteModal() {
             document.getElementById('note-modal').classList.remove('active');
         }
+
+        // Close modals on outside click
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        });
 
         // Create experiment
         document.getElementById('create-form').addEventListener('submit', async (e) => {

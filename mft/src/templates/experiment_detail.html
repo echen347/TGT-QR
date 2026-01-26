@@ -3,86 +3,218 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Experiment Details - ethanTGT</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔬</text></svg>">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <title>TGT TERMINAL | Experiment</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%230a0a0a' width='100' height='100'/><text y='75' x='15' font-size='70' fill='%2300ff88'>$</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --background-color: #1a1a1d;
-            --card-background-color: #2c2c34;
-            --border-color: #444;
-            --text-color: #f0f0f0;
-            --text-secondary-color: #a0a0a0;
-            --primary-color: #9d72ff;
-            --green-color: #2ecc71;
-            --red-color: #e74c3c;
-            --yellow-color: #f1c40f;
-            --confirmed-color: #27ae60;
-            --rejected-color: #e74c3c;
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --bg-card: #161616;
+            --border-primary: #2a2a2a;
+            --border-accent: #333333;
+            --text-primary: #e8e8e8;
+            --text-secondary: #888888;
+            --text-muted: #555555;
+            --accent-green: #00ff88;
+            --accent-red: #ff3366;
+            --accent-yellow: #ffcc00;
+            --accent-blue: #00aaff;
+            --accent-purple: #aa66ff;
+            --glow-green: rgba(0, 255, 136, 0.15);
+            --glow-red: rgba(255, 51, 102, 0.15);
         }
-        body {
-            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
-            background-color: var(--background-color);
-            color: var(--text-color);
+
+        * {
             margin: 0;
-            padding: 24px;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .container { max-width: 1200px; margin: auto; }
-        .nav-header {
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* Scanline effect */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 0, 0, 0.03) 2px,
+                rgba(0, 0, 0, 0.03) 4px
+            );
+            z-index: 9999;
+        }
+
+        .terminal-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        /* Header */
+        .terminal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid var(--border-color);
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border-primary);
+            margin-bottom: 20px;
         }
-        .nav-header h1 {
+
+        .logo {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 20px;
+            color: var(--bg-primary);
+            clip-path: polygon(0 0, 100% 0, 100% 70%, 70% 100%, 0 100%);
+        }
+
+        .logo-text {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-text span {
+            color: var(--accent-green);
+        }
+
         .nav-links {
             display: flex;
-            gap: 16px;
-        }
-        .nav-links a {
-            color: var(--text-color);
-            text-decoration: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
             gap: 8px;
         }
-        .nav-links a:hover {
-            background-color: rgba(157, 114, 255, 0.2);
-            color: var(--primary-color);
+
+        .nav-link {
+            padding: 10px 16px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
         }
-        .nav-links a.active {
-            background-color: var(--primary-color);
-            color: white;
+
+        .nav-link:hover {
+            color: var(--text-primary);
+            border-color: var(--border-accent);
         }
-        h1, h2 { color: var(--primary-color); margin: 0; }
-        h1 { font-size: 1.5em; }
-        h2 { font-size: 1.2em; margin-bottom: 12px; }
-        .card {
-            background-color: var(--card-background-color);
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid var(--border-color);
+
+        .nav-link.active {
+            color: var(--accent-green);
+            border-color: var(--accent-green);
+            background: var(--glow-green);
+        }
+
+        /* Experiment Header */
+        .exp-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
             margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-primary);
+        }
+
+        .exp-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .exp-meta {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .exp-status {
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 6px 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status-confirmed {
+            background: var(--glow-green);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+        }
+
+        .status-rejected {
+            background: var(--glow-red);
+            color: var(--accent-red);
+            border: 1px solid var(--accent-red);
+        }
+
+        .status-pending, .status-inconclusive {
+            background: rgba(255, 204, 0, 0.15);
+            color: var(--accent-yellow);
+            border: 1px solid var(--accent-yellow);
+        }
+
+        /* Card */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-primary);
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-primary);
+            background: var(--bg-secondary);
+        }
+
+        .card-title {
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-secondary);
+        }
+
+        .card-body {
+            padding: 16px;
         }
 
         /* Hypothesis */
         .hypothesis-box {
-            background: rgba(157, 114, 255, 0.1);
-            border-left: 4px solid var(--primary-color);
+            background: var(--bg-secondary);
+            border-left: 3px solid var(--accent-purple);
             padding: 16px;
-            border-radius: 8px;
             font-style: italic;
-            margin-bottom: 20px;
+            color: var(--text-secondary);
+            line-height: 1.6;
         }
 
         /* Comparison Grid */
@@ -91,148 +223,254 @@
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
-        .phase-card {
-            border-radius: 8px;
-            padding: 16px;
-        }
-        .phase-card.train {
-            background: rgba(46, 204, 113, 0.1);
-            border: 1px solid rgba(46, 204, 113, 0.3);
-        }
-        .phase-card.test {
-            background: rgba(52, 152, 219, 0.1);
-            border: 1px solid rgba(52, 152, 219, 0.3);
-        }
-        .phase-title {
-            font-weight: 600;
-            font-size: 1.1em;
-            margin-bottom: 16px;
-        }
-        .metric-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        .metric-label { color: var(--text-secondary-color); }
-        .metric-value { font-weight: 600; }
-        .metric-value.positive { color: var(--green-color); }
-        .metric-value.negative { color: var(--red-color); }
-
-        /* Warnings */
-        .warning-box {
-            background: rgba(241, 196, 15, 0.1);
-            border-left: 4px solid var(--yellow-color);
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .warning-box i { color: var(--yellow-color); }
-        .warning-box.error {
-            background: rgba(231, 76, 60, 0.1);
-            border-left-color: var(--red-color);
-        }
-        .warning-box.error i { color: var(--red-color); }
-
-        /* Conclusion Form */
-        .conclusion-form {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .btn {
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            border: none;
-        }
-        .btn-confirmed {
-            background: var(--confirmed-color);
-            color: white;
-        }
-        .btn-rejected {
-            background: var(--rejected-color);
-            color: white;
-        }
-        .btn-inconclusive {
-            background: var(--yellow-color);
-            color: #333;
-        }
-        .btn-secondary {
-            background: transparent;
-            color: var(--text-color);
-            border: 1px solid var(--border-color);
-        }
-
-        /* Learnings */
-        .learnings-textarea {
-            width: 100%;
-            min-height: 100px;
-            padding: 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            background: var(--background-color);
-            color: var(--text-color);
-            resize: vertical;
-            margin-top: 12px;
-            box-sizing: border-box;
-        }
-
-        /* Status Badge */
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 0.85em;
-            font-weight: 600;
-        }
-        .status-confirmed {
-            background: rgba(39, 174, 96, 0.2);
-            color: var(--confirmed-color);
-        }
-        .status-rejected {
-            background: rgba(231, 76, 60, 0.2);
-            color: var(--rejected-color);
-        }
-        .status-pending {
-            background: rgba(241, 196, 15, 0.2);
-            color: var(--yellow-color);
-        }
 
         @media (max-width: 768px) {
             .comparison-grid {
                 grid-template-columns: 1fr;
             }
         }
+
+        .phase-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            padding: 16px;
+        }
+
+        .phase-card.train {
+            border-left: 3px solid var(--accent-green);
+        }
+
+        .phase-card.test {
+            border-left: 3px solid var(--accent-blue);
+        }
+
+        .phase-title {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-primary);
+        }
+
+        .phase-card.train .phase-title { color: var(--accent-green); }
+        .phase-card.test .phase-title { color: var(--accent-blue); }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-primary);
+            font-size: 0.75rem;
+        }
+
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: var(--text-muted);
+        }
+
+        .metric-value {
+            font-weight: 600;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .metric-value.positive { color: var(--accent-green); }
+        .metric-value.negative { color: var(--accent-red); }
+
+        /* Warnings */
+        .warning-box {
+            background: rgba(255, 204, 0, 0.1);
+            border-left: 3px solid var(--accent-yellow);
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            font-size: 0.75rem;
+            color: var(--accent-yellow);
+        }
+
+        .warning-box.error {
+            background: var(--glow-red);
+            border-left-color: var(--accent-red);
+            color: var(--accent-red);
+        }
+
+        /* Conclusion Buttons */
+        .conclusion-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 1px solid;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-confirmed {
+            background: transparent;
+            color: var(--accent-green);
+            border-color: var(--accent-green);
+        }
+
+        .btn-confirmed:hover {
+            background: var(--accent-green);
+            color: var(--bg-primary);
+        }
+
+        .btn-rejected {
+            background: transparent;
+            color: var(--accent-red);
+            border-color: var(--accent-red);
+        }
+
+        .btn-rejected:hover {
+            background: var(--accent-red);
+            color: var(--bg-primary);
+        }
+
+        .btn-inconclusive {
+            background: transparent;
+            color: var(--accent-yellow);
+            border-color: var(--accent-yellow);
+        }
+
+        .btn-inconclusive:hover {
+            background: var(--accent-yellow);
+            color: var(--bg-primary);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-secondary);
+            border-color: var(--border-accent);
+        }
+
+        .btn-secondary:hover {
+            color: var(--text-primary);
+            border-color: var(--text-primary);
+        }
+
+        /* Learnings */
+        .learnings-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-primary);
+            color: var(--text-primary);
+            resize: vertical;
+            margin-top: 16px;
+        }
+
+        .learnings-textarea:focus {
+            outline: none;
+            border-color: var(--accent-green);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 24px;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        /* Back Link */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.7rem;
+            margin-bottom: 16px;
+            transition: color 0.2s ease;
+        }
+
+        .back-link:hover {
+            color: var(--accent-green);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-accent);
+        }
+
+        @media (max-width: 768px) {
+            .terminal-header {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .exp-header {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="nav-header">
+    <div class="terminal-container">
+        <!-- Header -->
+        <header class="terminal-header">
+            <div class="logo">
+                <div class="logo-icon">$</div>
+                <div class="logo-text">TGT<span>TERMINAL</span></div>
+            </div>
+            <nav class="nav-links">
+                <a href="/" class="nav-link">Live</a>
+                <a href="/research" class="nav-link active">Research</a>
+                <a href="/logs" class="nav-link">Logs</a>
+            </nav>
+        </header>
+
+        <!-- Back Link -->
+        <a href="/research" class="back-link">&#8592; Back to Research</a>
+
+        <!-- Experiment Header -->
+        <div class="exp-header">
             <div>
-                <h1 id="experiment-name"><i class="fas fa-flask"></i> Loading...</h1>
-                <span class="status-badge status-pending" id="experiment-status">-</span>
+                <h1 class="exp-title" id="experiment-name">Loading...</h1>
+                <div class="exp-meta">
+                    <span id="exp-strategy">-</span> |
+                    <span id="exp-symbols">-</span> |
+                    Created: <span id="exp-created">-</span>
+                </div>
             </div>
-            <div class="nav-links">
-                <a href="/"><i class="fas fa-tachometer-alt"></i> Live Trading</a>
-                <a href="/research" class="active"><i class="fas fa-flask"></i> Research</a>
-                <a href="/logs"><i class="fas fa-file-alt"></i> Logs</a>
-            </div>
+            <span class="exp-status status-pending" id="experiment-status">pending</span>
         </div>
 
         <!-- Hypothesis -->
         <div class="card">
-            <h2><i class="fas fa-lightbulb"></i> Hypothesis</h2>
-            <div class="hypothesis-box" id="hypothesis-text">Loading...</div>
-            <div style="color: var(--text-secondary-color); font-size: 0.9em;">
-                Strategy: <span id="exp-strategy">-</span> |
-                Symbols: <span id="exp-symbols">-</span> |
-                Created: <span id="exp-created">-</span>
+            <div class="card-header">
+                <span class="card-title">Hypothesis</span>
+            </div>
+            <div class="card-body" style="padding: 0;">
+                <div class="hypothesis-box" id="hypothesis-text">Loading...</div>
             </div>
         </div>
 
@@ -241,18 +479,22 @@
 
         <!-- Train vs Test Comparison -->
         <div class="card">
-            <h2><i class="fas fa-balance-scale"></i> Train vs Test Comparison</h2>
-            <div class="comparison-grid">
-                <div class="phase-card train">
-                    <div class="phase-title"><i class="fas fa-graduation-cap"></i> TRAIN</div>
-                    <div id="train-metrics">
-                        <p style="color: var(--text-secondary-color);">No train results yet</p>
+            <div class="card-header">
+                <span class="card-title">Train vs Test Comparison</span>
+            </div>
+            <div class="card-body">
+                <div class="comparison-grid">
+                    <div class="phase-card train">
+                        <div class="phase-title">Train (In-Sample)</div>
+                        <div id="train-metrics">
+                            <div class="empty-state">No train results yet</div>
+                        </div>
                     </div>
-                </div>
-                <div class="phase-card test">
-                    <div class="phase-title"><i class="fas fa-flask"></i> TEST (OOD)</div>
-                    <div id="test-metrics">
-                        <p style="color: var(--text-secondary-color);">No test results yet</p>
+                    <div class="phase-card test">
+                        <div class="phase-title">Test (Out-of-Sample)</div>
+                        <div id="test-metrics">
+                            <div class="empty-state">No test results yet</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -260,29 +502,37 @@
 
         <!-- Conclusion -->
         <div class="card">
-            <h2><i class="fas fa-gavel"></i> Conclusion</h2>
-            <div class="conclusion-form">
-                <button class="btn btn-confirmed" onclick="setConclusion('confirmed')">
-                    <i class="fas fa-check"></i> Confirmed
-                </button>
-                <button class="btn btn-rejected" onclick="setConclusion('rejected')">
-                    <i class="fas fa-times"></i> Rejected
-                </button>
-                <button class="btn btn-inconclusive" onclick="setConclusion('inconclusive')">
-                    <i class="fas fa-question"></i> Inconclusive
-                </button>
+            <div class="card-header">
+                <span class="card-title">Conclusion</span>
             </div>
-            <textarea class="learnings-textarea" id="learnings" placeholder="Key learnings from this experiment..."></textarea>
-            <div style="margin-top: 12px;">
-                <button class="btn btn-secondary" onclick="saveLearnings()">
-                    <i class="fas fa-save"></i> Save Learnings
-                </button>
+            <div class="card-body">
+                <div class="conclusion-buttons">
+                    <button class="btn btn-confirmed" onclick="setConclusion('confirmed')">
+                        &#10003; Confirmed
+                    </button>
+                    <button class="btn btn-rejected" onclick="setConclusion('rejected')">
+                        &#10005; Rejected
+                    </button>
+                    <button class="btn btn-inconclusive" onclick="setConclusion('inconclusive')">
+                        ? Inconclusive
+                    </button>
+                </div>
+                <textarea class="learnings-textarea" id="learnings" placeholder="Key learnings from this experiment..."></textarea>
+                <div style="margin-top: 12px;">
+                    <button class="btn btn-secondary" onclick="saveLearnings()">Save Learnings</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
         const experimentId = {{ experiment_id }};
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
 
         // Load experiment details
         async function loadExperiment() {
@@ -302,8 +552,9 @@
                 document.getElementById('learnings').value = exp.learnings || '';
 
                 const statusBadge = document.getElementById('experiment-status');
-                statusBadge.textContent = exp.conclusion || exp.status || 'pending';
-                statusBadge.className = `status-badge status-${exp.conclusion || exp.status || 'pending'}`;
+                const status = exp.conclusion || exp.status || 'pending';
+                statusBadge.textContent = status;
+                statusBadge.className = `exp-status status-${status}`;
             } catch (error) {
                 console.error('Error loading experiment:', error);
             }
@@ -320,8 +571,7 @@
                 if (data.warnings && data.warnings.length > 0) {
                     warningsContainer.innerHTML = data.warnings.map(w => `
                         <div class="warning-box ${w.type === 'identical_results' ? 'error' : ''}">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <span>${w.message}</span>
+                            ${escapeHtml(w.message)}
                         </div>
                     `).join('');
                 } else {
