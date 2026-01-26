@@ -148,6 +148,7 @@ def fill_gaps(
     df: pd.DataFrame,
     timeframe: str,
     method: str = "ffill",
+    max_gap_bars: int = 100,
 ) -> pd.DataFrame:
     """
     Fill gaps in OHLCV data.
@@ -156,14 +157,30 @@ def fill_gaps(
         df: DataFrame with OHLCV data
         timeframe: Timeframe string
         method: Fill method - "ffill" (forward fill) or "interpolate"
+        max_gap_bars: Maximum gap size to fill (in bars). Larger gaps raise ValueError.
 
     Returns:
         DataFrame with gaps filled
+
+    Raises:
+        ValueError: If gap exceeds max_gap_bars
     """
     if len(df) == 0:
         return df.copy()
 
     interval_seconds = timeframe_to_seconds(timeframe)
+
+    # Check for excessively large gaps before filling
+    timestamps = pd.to_datetime(df["timestamp"])
+    diffs = timestamps.diff().dt.total_seconds().dropna()
+    max_gap_seconds = diffs.max() if len(diffs) > 0 else 0
+    max_allowed_gap = interval_seconds * max_gap_bars
+
+    if max_gap_seconds > max_allowed_gap:
+        raise ValueError(
+            f"Gap of {max_gap_seconds/60:.0f} minutes exceeds max_gap_bars={max_gap_bars} "
+            f"({max_allowed_gap/60:.0f} minutes). Use a larger max_gap_bars or fix data."
+        )
 
     # Create complete timestamp index
     start = pd.to_datetime(df["timestamp"].iloc[0])

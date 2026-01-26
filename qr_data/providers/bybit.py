@@ -151,32 +151,45 @@ class BybitProvider(DataProvider):
         while current_start_ms < end_ms:
             current_end_ms = min(current_start_ms + chunk_size, end_ms)
 
-            try:
-                response = self.session.get_kline(
-                    category="linear",
-                    symbol=symbol.upper(),
-                    interval=bybit_interval,
-                    start=current_start_ms,
-                    end=current_end_ms,
-                    limit=1000,
-                )
+            # Retry logic for transient failures
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    response = self.session.get_kline(
+                        category="linear",
+                        symbol=symbol.upper(),
+                        interval=bybit_interval,
+                        start=current_start_ms,
+                        end=current_end_ms,
+                        limit=1000,
+                    )
 
-                if response["retCode"] != 0:
-                    raise ConnectionError(f"Bybit API error: {response['retMsg']}")
+                    if response["retCode"] != 0:
+                        raise ConnectionError(f"Bybit API error: {response['retMsg']}")
 
-                klines = response["result"]["list"]
+                    klines = response["result"]["list"]
+                    if not klines:
+                        # No more data
+                        break
+
+                    all_klines.extend(klines)
+                    current_start_ms = current_end_ms
+
+                    # Rate limiting
+                    time.sleep(self.rate_limit_delay)
+                    break  # Success, exit retry loop
+
+                except ConnectionError:
+                    raise  # Don't retry API errors (invalid symbol, etc.)
+                except Exception as e:
+                    if attempt < max_retries - 1:
+                        time.sleep(1.0 * (attempt + 1))  # Exponential backoff
+                        continue
+                    raise ConnectionError(f"Failed to fetch data for {symbol}: {e}")
+            else:
+                # No more data (break from inner loop)
                 if not klines:
-                    # No more data
                     break
-
-                all_klines.extend(klines)
-                current_start_ms = current_end_ms
-
-                # Rate limiting
-                time.sleep(self.rate_limit_delay)
-
-            except Exception as e:
-                raise ConnectionError(f"Failed to fetch data for {symbol}: {e}")
 
         if not all_klines:
             # Return empty OHLCVData

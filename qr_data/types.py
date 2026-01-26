@@ -119,6 +119,14 @@ class OHLCVData:
             )
 
         # Fallback: extract from path naming convention (symbol_timeframe.parquet)
+        import warnings
+        warnings.warn(
+            f"No metadata file found for {path}. "
+            "Inferring symbol/timeframe from filename. "
+            "Consider regenerating cache with metadata.",
+            UserWarning,
+        )
+
         stem = path.stem
         parts = stem.split("_")
         if len(parts) >= 2:

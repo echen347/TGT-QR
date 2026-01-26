@@ -341,3 +341,37 @@ Number of Trades: {m.num_trades}
 Avg Trade P&L: ${m.avg_trade_pnl:.2f}
 Total Commission: ${m.total_commission:.2f}
 """
+
+    def to_returns(self) -> pd.Series:
+        """
+        Convert equity curve to returns Series.
+
+        Returns:
+            pandas Series of periodic returns (compatible with QuantStats)
+        """
+        return self.equity_curve.pct_change().dropna()
+
+    def tearsheet(
+        self,
+        output: str = "tearsheet.html",
+        benchmark: Optional[str] = None,
+    ) -> None:
+        """
+        Generate QuantStats HTML tearsheet.
+
+        Requires quantstats to be installed: pip install quantstats
+
+        Args:
+            output: Output HTML file path
+            benchmark: Benchmark ticker for comparison (e.g., "SPY", "BTC-USD")
+        """
+        try:
+            import quantstats as qs
+        except ImportError:
+            raise ImportError(
+                "quantstats is required for tearsheet generation. "
+                "Install with: pip install quantstats"
+            )
+
+        returns = self.to_returns()
+        qs.reports.html(returns, benchmark=benchmark, output=output)

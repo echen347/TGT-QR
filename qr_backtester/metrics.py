@@ -14,7 +14,7 @@ def calculate_metrics(
     equity_curve: pd.Series,
     initial_capital: float,
     risk_free_rate: float = 0.0,
-    periods_per_year: int = 252 * 24,  # Assuming hourly for crypto
+    periods_per_year: Optional[int] = None,  # Auto-detect from data if None
 ) -> Metrics:
     """
     Calculate comprehensive performance metrics.
@@ -31,6 +31,20 @@ def calculate_metrics(
     """
     if not trades or equity_curve.empty:
         return Metrics()
+
+    # Auto-detect periods_per_year from equity curve frequency
+    if periods_per_year is None:
+        if len(equity_curve) >= 2:
+            # Infer from median time between observations
+            time_diffs = pd.Series(equity_curve.index).diff().dropna()
+            median_seconds = time_diffs.dt.total_seconds().median()
+            if median_seconds > 0:
+                seconds_per_year = 365.25 * 24 * 3600
+                periods_per_year = int(seconds_per_year / median_seconds)
+            else:
+                periods_per_year = 252 * 24  # Fallback to hourly
+        else:
+            periods_per_year = 252 * 24  # Fallback to hourly
 
     # Basic trade statistics
     num_trades = len(trades)

@@ -49,8 +49,10 @@ class Portfolio:
         self.equity_history: list[tuple[datetime, float]] = []
 
         # Price history for strategy calculations
+        # Pre-allocate DataFrame for efficiency on long backtests
         self._history: Optional[pd.DataFrame] = None
         self._history_list: list[dict] = []
+        self._history_dirty: bool = False
 
         # State
         self._order_counter = 0
@@ -87,8 +89,9 @@ class Portfolio:
     @property
     def history(self) -> pd.DataFrame:
         """Get price history as DataFrame."""
-        if self._history is None or len(self._history_list) > len(self._history):
+        if self._history is None or self._history_dirty:
             self._history = pd.DataFrame(self._history_list)
+            self._history_dirty = False
         return self._history
 
     @property
@@ -124,7 +127,7 @@ class Portfolio:
             "close": bar.close,
             "volume": bar.volume,
         })
-        self._history = None  # Invalidate cache
+        self._history_dirty = True  # Mark for rebuild on next access
 
         # Update position P&L
         if self.position:
@@ -369,6 +372,7 @@ class Portfolio:
         self.equity_history = []
         self._history = None
         self._history_list = []
+        self._history_dirty = False
         self._order_counter = 0
         self._trade_counter = 0
         self._current_bar = None

@@ -8,10 +8,11 @@ import pandas as pd
 if TYPE_CHECKING:
     from qr_data import OHLCVData
 
-from .types import Bar, Order, BacktestResult, OrderType, OrderStatus
+from .types import Bar, Order, BacktestResult, OrderType, OrderStatus, Side
 from .execution import ExecutionEngine, SlippageModel, VolumeAwareSlippage
 from .portfolio import Portfolio
 from .metrics import calculate_metrics
+from .strategy.base import Strategy
 
 
 class BacktestEngine:
@@ -189,7 +190,7 @@ class BacktestEngine:
 
         # Create closing order
         close_order = Order.market_sell(self.portfolio.position.size)
-        if self.portfolio.position.side.value == "short":
+        if self.portfolio.position.side == Side.SHORT:
             close_order = Order.market_buy(self.portfolio.position.size)
 
         submitted = self.portfolio.submit_order(close_order)
@@ -325,7 +326,3 @@ class BacktestEngine:
             })
 
         return {"folds": results, "n_folds": n_folds}
-
-
-# Import Strategy here to avoid circular import issues
-from .strategy.base import Strategy
