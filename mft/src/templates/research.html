@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Dashboard - ethanTGT</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔬</text></svg>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root {
+            --background-color: #1a1a1d;
+            --card-background-color: #2c2c34;
+            --border-color: #444;
+            --text-color: #f0f0f0;
+            --text-secondary-color: #a0a0a0;
+            --primary-color: #9d72ff;
+            --green-color: #2ecc71;
+            --red-color: #e74c3c;
+            --yellow-color: #f1c40f;
+            --confirmed-color: #27ae60;
+            --rejected-color: #e74c3c;
+            --inconclusive-color: #f39c12;
+        }
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 24px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: auto;
+        }
+        .nav-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .nav-links a {
+            color: var(--primary-color);
+            text-decoration: none;
+            margin-right: 20px;
+            font-weight: 500;
+        }
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+        h1 {
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 1.5em;
+        }
+        .card {
+            background-color: var(--card-background-color);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 1.1em;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+        }
+        h3 i { margin-right: 10px; }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: rgba(157, 114, 255, 0.1);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        .stat-label {
+            color: var(--text-secondary-color);
+            font-size: 0.9em;
+        }
+
+        /* Experiment List */
+        .experiment-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .experiment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.03);
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .experiment-item:hover {
+            background: rgba(255,255,255,0.08);
+        }
+        .experiment-info {
+            flex: 1;
+        }
+        .experiment-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .experiment-meta {
+            font-size: 0.85em;
+            color: var(--text-secondary-color);
+        }
+        .experiment-status {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+        .status-confirmed {
+            background: rgba(39, 174, 96, 0.2);
+            color: var(--confirmed-color);
+        }
+        .status-rejected {
+            background: rgba(231, 76, 60, 0.2);
+            color: var(--rejected-color);
+        }
+        .status-pending {
+            background: rgba(241, 196, 15, 0.2);
+            color: var(--yellow-color);
+        }
+        .status-running {
+            background: rgba(157, 114, 255, 0.2);
+            color: var(--primary-color);
+        }
+
+        /* Success Criteria */
+        .criteria-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .criteria-list li {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+        }
+        .criteria-list li i {
+            margin-right: 10px;
+            width: 20px;
+        }
+        .criteria-pass { color: var(--green-color); }
+        .criteria-fail { color: var(--red-color); }
+
+        /* Create Experiment Button */
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--card-background-color);
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--background-color);
+            color: var(--text-color);
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        /* Research Notes */
+        .note-item {
+            padding: 12px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 3px solid var(--primary-color);
+        }
+        .note-item.insight { border-left-color: var(--green-color); }
+        .note-item.warning { border-left-color: var(--yellow-color); }
+        .note-item.bug { border-left-color: var(--red-color); }
+        .note-item.idea { border-left-color: var(--primary-color); }
+        .note-meta {
+            font-size: 0.8em;
+            color: var(--text-secondary-color);
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav-header">
+            <h1><i class="fas fa-flask"></i> Research Dashboard</h1>
+            <div class="nav-links">
+                <a href="/"><i class="fas fa-chart-line"></i> Live Trading</a>
+                <a href="/logs"><i class="fas fa-file-alt"></i> Logs</a>
+            </div>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="total-experiments">-</div>
+                <div class="stat-label">Total Experiments</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="confirmed-count">-</div>
+                <div class="stat-label">Confirmed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="rejected-count">-</div>
+                <div class="stat-label">Rejected</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="pending-count">-</div>
+                <div class="stat-label">Pending</div>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+            <!-- Experiments List -->
+            <div class="card">
+                <h3><i class="fas fa-list"></i> Experiments</h3>
+                <button class="btn-primary" onclick="showCreateModal()" style="margin-bottom: 16px;">
+                    <i class="fas fa-plus"></i> New Experiment
+                </button>
+                <div class="experiment-list" id="experiment-list">
+                    <p style="color: var(--text-secondary-color);">Loading experiments...</p>
+                </div>
+            </div>
+
+            <!-- Success Criteria & Notes -->
+            <div>
+                <div class="card">
+                    <h3><i class="fas fa-check-circle"></i> Success Criteria</h3>
+                    <ul class="criteria-list">
+                        <li><i class="fas fa-check criteria-pass"></i> Test return > 0%</li>
+                        <li><i class="fas fa-check criteria-pass"></i> Win rate >= 40%</li>
+                        <li><i class="fas fa-check criteria-pass"></i> Trades >= 20 (significance)</li>
+                        <li><i class="fas fa-check criteria-pass"></i> Test within 20% of train</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h3><i class="fas fa-sticky-note"></i> Recent Notes</h3>
+                    <div id="notes-list">
+                        <p style="color: var(--text-secondary-color);">Loading notes...</p>
+                    </div>
+                    <button class="btn-primary" onclick="showAddNoteModal()" style="margin-top: 12px;">
+                        <i class="fas fa-plus"></i> Add Note
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Experiment Modal -->
+    <div class="modal" id="create-modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-plus-circle"></i> Create Experiment</h3>
+            <form id="create-form">
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" name="name" required placeholder="e.g., MACD Strategy on ETHUSDT">
+                </div>
+                <div class="form-group">
+                    <label>Hypothesis</label>
+                    <textarea name="hypothesis" required placeholder="I think this strategy works because..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Strategy</label>
+                    <select name="strategy" required>
+                        <option value="ma">Moving Average</option>
+                        <option value="macd">MACD</option>
+                        <option value="rsi_mr">RSI Mean Reversion</option>
+                        <option value="ml_rf">ML Random Forest</option>
+                        <option value="ml_lr">ML Logistic Regression</option>
+                        <option value="momentum_mr_hybrid">Momentum + MR Hybrid</option>
+                        <option value="volatility_breakout">Volatility Breakout</option>
+                        <option value="order_flow">Order Flow</option>
+                        <option value="volatility_clustering">Volatility Clustering</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Symbols (comma-separated)</label>
+                    <input type="text" name="symbols" value="ETHUSDT" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="hideCreateModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Note Modal -->
+    <div class="modal" id="note-modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-sticky-note"></i> Add Research Note</h3>
+            <form id="note-form">
+                <div class="form-group">
+                    <label>Type</label>
+                    <select name="note_type">
+                        <option value="insight">Insight</option>
+                        <option value="idea">Idea</option>
+                        <option value="warning">Warning</option>
+                        <option value="bug">Bug</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Content</label>
+                    <textarea name="content" required placeholder="Your note..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="hideNoteModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Add Note</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Load experiments
+        async function loadExperiments() {
+            try {
+                const response = await fetch('/api/experiments');
+                const data = await response.json();
+                const experiments = data.experiments || [];
+
+                // Update stats
+                document.getElementById('total-experiments').textContent = experiments.length;
+                document.getElementById('confirmed-count').textContent =
+                    experiments.filter(e => e.conclusion === 'confirmed').length;
+                document.getElementById('rejected-count').textContent =
+                    experiments.filter(e => e.conclusion === 'rejected').length;
+                document.getElementById('pending-count').textContent =
+                    experiments.filter(e => !e.conclusion || e.status === 'pending').length;
+
+                // Render list
+                const list = document.getElementById('experiment-list');
+                if (experiments.length === 0) {
+                    list.innerHTML = '<p style="color: var(--text-secondary-color);">No experiments yet. Create your first one!</p>';
+                    return;
+                }
+
+                list.innerHTML = experiments.map(exp => `
+                    <div class="experiment-item" onclick="window.location='/research/experiment/${exp.id}'">
+                        <div class="experiment-info">
+                            <div class="experiment-name">${exp.name}</div>
+                            <div class="experiment-meta">
+                                ${exp.strategy} | ${(exp.symbols || []).join(', ')} |
+                                ${new Date(exp.created_at).toLocaleDateString()}
+                            </div>
+                        </div>
+                        <span class="experiment-status status-${exp.conclusion || exp.status || 'pending'}">
+                            ${exp.conclusion || exp.status || 'pending'}
+                        </span>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading experiments:', error);
+            }
+        }
+
+        // Load research notes
+        async function loadNotes() {
+            try {
+                const response = await fetch('/api/research_notes');
+                const data = await response.json();
+                const notes = data.notes || [];
+
+                const list = document.getElementById('notes-list');
+                if (notes.length === 0) {
+                    list.innerHTML = '<p style="color: var(--text-secondary-color);">No notes yet.</p>';
+                    return;
+                }
+
+                list.innerHTML = notes.slice(0, 5).map(note => `
+                    <div class="note-item ${note.note_type}">
+                        ${note.content}
+                        <div class="note-meta">${note.note_type} - ${new Date(note.created_at).toLocaleDateString()}</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading notes:', error);
+            }
+        }
+
+        // Modal controls
+        function showCreateModal() {
+            document.getElementById('create-modal').classList.add('active');
+        }
+        function hideCreateModal() {
+            document.getElementById('create-modal').classList.remove('active');
+        }
+        function showAddNoteModal() {
+            document.getElementById('note-modal').classList.add('active');
+        }
+        function hideNoteModal() {
+            document.getElementById('note-modal').classList.remove('active');
+        }
+
+        // Create experiment
+        document.getElementById('create-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = {
+                name: formData.get('name'),
+                hypothesis: formData.get('hypothesis'),
+                strategy: formData.get('strategy'),
+                symbols: formData.get('symbols').split(',').map(s => s.trim())
+            };
+
+            try {
+                const response = await fetch('/api/experiments', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (response.ok) {
+                    hideCreateModal();
+                    loadExperiments();
+                    e.target.reset();
+                }
+            } catch (error) {
+                console.error('Error creating experiment:', error);
+            }
+        });
+
+        // Add note
+        document.getElementById('note-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = {
+                note_type: formData.get('note_type'),
+                content: formData.get('content')
+            };
+
+            try {
+                const response = await fetch('/api/research_notes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (response.ok) {
+                    hideNoteModal();
+                    loadNotes();
+                    e.target.reset();
+                }
+            } catch (error) {
+                console.error('Error adding note:', error);
+            }
+        });
+
+        // Initial load
+        loadExperiments();
+        loadNotes();
+    </script>
+</body>
+</html>

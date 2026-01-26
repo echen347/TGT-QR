@@ -263,6 +263,29 @@ class TradingDashboard:
                 'can_trade': True
             }
 
+    def get_trade_history(self, limit=50):
+        """Get recent trade history"""
+        try:
+            from database import TradeRecord
+            trades = self.db.session.query(TradeRecord)\
+                .order_by(TradeRecord.timestamp.desc())\
+                .limit(limit)\
+                .all()
+            
+            return [{
+                'symbol': t.symbol,
+                'side': t.side,
+                'entry_price': t.entry_price,
+                'exit_price': t.exit_price,
+                'size': t.size,
+                'pnl': t.pnl,
+                'timestamp': t.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+                'exit_reason': t.exit_reason
+            } for t in trades]
+        except Exception as e:
+            logging.error(f"Error fetching trade history: {e}")
+            return []
+
     def create_pnl_chart(self):
         """Create PnL chart using Plotly"""
         pnl_data = self.get_pnl_chart_data()
@@ -386,6 +409,19 @@ def api_signals():
         return jsonify(dashboard.get_signals_data()[:10])
     except Exception as e:
         logging.error(f"Error in /api/signals: {e}", exc_info=True)
+        return jsonify([])  # Return empty array on error
+
+@app.route('/api/trade_history')
+def api_trade_history():
+    """API endpoint for trade history"""
+    try:
+        if not strategy_instance or not risk_manager_instance:
+            return jsonify([])  # Return empty array if not initialized
+        
+        dashboard = TradingDashboard(strategy_instance, risk_manager_instance)
+        return jsonify(dashboard.get_trade_history())
+    except Exception as e:
+        logging.error(f"Error in /api/trade_history: {e}", exc_info=True)
         return jsonify([])  # Return empty array on error
 
 @app.route('/api/market_context')
@@ -711,6 +747,180 @@ def reset_stop():
     except Exception as e:
         logging.error(f"Error resetting emergency stop: {e}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
+
+# ============================================================================
+# RESEARCH DASHBOARD ROUTES
+# ============================================================================
+
+@app.route('/research')
+def research_dashboard():
+    """Main scientific research dashboard"""
+    return render_template('research.html')
+
+
+@app.route('/research/experiment/<int:experiment_id>')
+def experiment_detail(experiment_id):
+    """Detailed view of a single experiment with train/test comparison"""
+    return render_template('experiment_detail.html', experiment_id=experiment_id)
+
+
+@app.route('/api/experiments', methods=['GET', 'POST'])
+def api_experiments():
+    """List all experiments or create new one"""
+    if request.method == 'POST':
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+
+        experiment_id = db_manager.create_experiment(
+            name=data.get('name', 'Unnamed Experiment'),
+            hypothesis=data.get('hypothesis', ''),
+            strategy=data.get('strategy', 'ma'),
+            symbols=data.get('symbols', ['ETHUSDT']),
+            timeframe=data.get('timeframe'),
+            parameters=data.get('parameters'),
+            train_start=datetime.fromisoformat(data['train_start']) if data.get('train_start') else None,
+            train_end=datetime.fromisoformat(data['train_end']) if data.get('train_end') else None,
+            test_start=datetime.fromisoformat(data['test_start']) if data.get('test_start') else None,
+            test_end=datetime.fromisoformat(data['test_end']) if data.get('test_end') else None
+        )
+
+        if experiment_id:
+            return jsonify({'id': experiment_id, 'status': 'created'}), 201
+        return jsonify({'error': 'Failed to create experiment'}), 500
+
+    # GET - return all experiments
+    experiments = db_manager.get_all_experiments()
+    return jsonify({'experiments': experiments})
+
+
+@app.route('/api/experiments/<int:experiment_id>', methods=['GET', 'PUT'])
+def api_experiment_detail(experiment_id):
+    """Get or update specific experiment"""
+    if request.method == 'PUT':
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+
+        # Handle datetime conversion
+        update_data = {}
+        for key, value in data.items():
+            if key in ['train_start', 'train_end', 'test_start', 'test_end', 'completed_at'] and value:
+                update_data[key] = datetime.fromisoformat(value)
+            else:
+                update_data[key] = value
+
+        success = db_manager.update_experiment(experiment_id, **update_data)
+        if success:
+            return jsonify({'status': 'updated'})
+        return jsonify({'error': 'Failed to update experiment'}), 500
+
+    # GET
+    experiment = db_manager.get_experiment(experiment_id)
+    if experiment:
+        return jsonify(experiment)
+    return jsonify({'error': 'Experiment not found'}), 404
+
+
+@app.route('/api/experiments/<int:experiment_id>/results', methods=['GET', 'POST'])
+def api_experiment_results(experiment_id):
+    """Get or save experiment results"""
+    if request.method == 'POST':
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+
+        result_id = db_manager.save_experiment_result(
+            experiment_id=experiment_id,
+            symbol=data.get('symbol', 'ETHUSDT'),
+            phase=data.get('phase', 'train'),
+            metrics=data.get('metrics', {})
+        )
+
+        if result_id:
+            return jsonify({'id': result_id, 'status': 'saved'}), 201
+        return jsonify({'error': 'Failed to save result'}), 500
+
+    # GET
+    results = db_manager.get_experiment_results(experiment_id)
+    return jsonify({'results': results})
+
+
+@app.route('/api/research_notes', methods=['GET', 'POST'])
+def api_research_notes():
+    """Manage research notes"""
+    if request.method == 'POST':
+        data = request.get_json()
+        if not data or not data.get('content'):
+            return jsonify({'error': 'Content is required'}), 400
+
+        note_id = db_manager.add_research_note(
+            content=data['content'],
+            note_type=data.get('note_type', 'insight'),
+            experiment_id=data.get('experiment_id')
+        )
+
+        if note_id:
+            return jsonify({'id': note_id, 'status': 'created'}), 201
+        return jsonify({'error': 'Failed to create note'}), 500
+
+    # GET
+    experiment_id = request.args.get('experiment_id', type=int)
+    notes = db_manager.get_research_notes(experiment_id=experiment_id)
+    return jsonify({'notes': notes})
+
+
+@app.route('/api/statistics/<int:experiment_id>')
+def api_statistics(experiment_id):
+    """Calculate and return statistical analysis for an experiment"""
+    results = db_manager.get_experiment_results(experiment_id)
+
+    if not results:
+        return jsonify({'error': 'No results found'}), 404
+
+    # Separate train and test results
+    train_results = [r for r in results if r['phase'] == 'train']
+    test_results = [r for r in results if r['phase'] == 'test']
+
+    analysis = {
+        'train': train_results,
+        'test': test_results,
+        'warnings': []
+    }
+
+    # Check for suspicious identical results
+    if train_results and test_results:
+        train = train_results[0]
+        test = test_results[0]
+
+        if (train['total_return_pct'] == test['total_return_pct'] and
+            train['win_rate_pct'] == test['win_rate_pct'] and
+            train['total_trades'] == test['total_trades']):
+            analysis['warnings'].append({
+                'type': 'identical_results',
+                'message': 'Train and test results are IDENTICAL - possible bug in data filtering or model caching'
+            })
+
+        # Check for overfitting
+        if train['total_return_pct'] and test['total_return_pct']:
+            if train['total_return_pct'] > 0 and test['total_return_pct'] > 0:
+                ratio = test['total_return_pct'] / train['total_return_pct']
+                if ratio < 0.8:
+                    analysis['warnings'].append({
+                        'type': 'overfitting',
+                        'message': f'Test performance is {ratio:.1%} of train (< 80% suggests overfitting)'
+                    })
+
+    # Check for statistical significance
+    for r in test_results:
+        if r['total_trades'] and r['total_trades'] < 20:
+            analysis['warnings'].append({
+                'type': 'low_trades',
+                'message': f"Only {r['total_trades']} trades on {r['symbol']} (need ≥20 for statistical significance)"
+            })
+
+    return jsonify(analysis)
+
 
 # Function to run the dashboard with shared instances
 def run_dashboard(strategy, risk_manager):

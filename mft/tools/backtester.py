@@ -72,10 +72,14 @@ class Backtester:
                  slippage_bps: float = None, cache_ttl_sec: int = 3600, max_workers: int = 3,
                  no_db: bool = False, atr_mult: float = 2.0, min_stop_pct: float = 0.01,
                  enable_atr_gate: bool = False, atr_gate_mult: float = 0.5, cooldown_bars: int = 0,
+                 tp_mult: float = 2.0, trailing_stop: bool = False, ts_activation: float = 1.5, ts_delta: float = 0.5,
+                 adx_threshold: float = 25.0,
                  strategy: str = 'ma', fast_ma: int = 10, slow_ma: int = 50,
                  donchian_period: int = 20, rsi_period: int = 14, rsi_ob: int = 70, rsi_os: int = 30,
                  macd_fast: int = 12, macd_slow: int = 26, macd_signal: int = 9,
-                 htf_ma_1h: int = 50, pullback_ob: int = 65, pullback_os: int = 35):
+                 htf_ma_1h: int = 50, pullback_ob: int = 65, pullback_os: int = 35,
+                 min_trend_strength: float = None, vol_threshold_high: float = None,
+                 vol_threshold_normal: float = None, vol_threshold_low: float = None):
         self.db_manager = db_manager # Initialize db_manager
         self.symbols = symbols
         self.start_date = start_date
@@ -97,7 +101,13 @@ class Backtester:
         self.min_stop_pct = float(min_stop_pct)
         self.enable_atr_gate = bool(enable_atr_gate)
         self.atr_gate_mult = float(atr_gate_mult)
+        self.atr_gate_mult = float(atr_gate_mult)
         self.cooldown_bars = int(cooldown_bars)
+        self.tp_mult = float(tp_mult)
+        self.trailing_stop = bool(trailing_stop)
+        self.ts_activation = float(ts_activation)
+        self.ts_delta = float(ts_delta)
+        self.adx_threshold = float(adx_threshold)
         # Strategy selection and params
         self.strategy_name = str(strategy)
         self.fast_ma = int(fast_ma)
@@ -112,6 +122,20 @@ class Backtester:
         self.htf_ma_1h = int(htf_ma_1h)
         self.pullback_ob = int(pullback_ob)
         self.pullback_os = int(pullback_os)
+        
+        # Dynamic optimization parameters (fallback to config if None)
+        from config.config import MIN_TREND_STRENGTH, VOLATILITY_THRESHOLD_HIGH, VOLATILITY_THRESHOLD_NORMAL, VOLATILITY_THRESHOLD_LOW
+        self.min_trend_strength = float(min_trend_strength) if min_trend_strength is not None else MIN_TREND_STRENGTH
+        self.vol_threshold_high = float(vol_threshold_high) if vol_threshold_high is not None else VOLATILITY_THRESHOLD_HIGH
+        # Handle case where config might not have NORMAL/LOW defined (older config versions)
+        try:
+            self.vol_threshold_normal = float(vol_threshold_normal) if vol_threshold_normal is not None else VOLATILITY_THRESHOLD_NORMAL
+        except ImportError:
+             self.vol_threshold_normal = float(vol_threshold_normal) if vol_threshold_normal is not None else 0.0005
+        try:
+            self.vol_threshold_low = float(vol_threshold_low) if vol_threshold_low is not None else VOLATILITY_THRESHOLD_LOW
+        except ImportError:
+            self.vol_threshold_low = float(vol_threshold_low) if vol_threshold_low is not None else 0.0003
         # Force mainnet and provide keys for historical data fetching
         self.session = HTTP(
                 testnet=False,
@@ -154,9 +178,16 @@ class Backtester:
         # Try cache first
         cached_data = self._load_cached_data(symbol)
         if cached_data is not None:
-            self.progress += 1
-            print(f"✅ {symbol} loaded from cache ({self.progress}/{self.total_symbols})")
-            return symbol, cached_data
+            # Filter by date range
+            mask = (cached_data.index >= self.start_date) & (cached_data.index <= self.end_date)
+            filtered_data = cached_data.loc[mask]
+            
+            if not filtered_data.empty:
+                self.progress += 1
+                print(f"✅ {symbol} loaded from cache ({len(filtered_data)} candles) ({self.progress}/{self.total_symbols})")
+                return symbol, filtered_data
+            else:
+                 print(f"⚠️ Cached data for {symbol} is out of requested range. Trying API...")
 
         # Try database second (avoids rate limits)
         try:
@@ -282,7 +313,11 @@ class Backtester:
         # Use unified calculation
         signal_value, signal_name, metadata = calculate_signal(
             historical_prices, 
-            ma_period=self.ma_period
+            ma_period=self.ma_period,
+            min_trend_strength=self.min_trend_strength,
+            vol_threshold_high=self.vol_threshold_high,
+            vol_threshold_low=self.vol_threshold_low,
+            adx_threshold=self.adx_threshold
         )
         
         # Extract values for compatibility
@@ -597,13 +632,28 @@ class Backtester:
             except Exception as e:
                 return 0
 
+        if strat == 'ensemble':
+            # Ensemble Strategy - Combines multiple profitable strategies
+            # Uses weighted voting based on backtest performance
+            try:
+                import sys
+                import os
+                sys.path.insert(0, os.path.dirname(__file__))
+                from ensemble_strategy import ensemble_signal
+                return ensemble_signal(historical_prices, 
+                                      strategies=['ml_rf', 'macd', 'momentum_mr_hybrid', 'atr_dynamic', 'volatility_breakout'],
+                                      voting_method='weighted')
+            except Exception as e:
+                return 0
+
         # Default fallback to MA (Phase 1: no MA slope requirement)
-        if trend_strength < MIN_TREND_STRENGTH:
+        # Use instance variable for trend strength (allows optimization)
+        if trend_strength < self.min_trend_strength:
             return 0
-        # Use updated thresholds from config
-        if recent_volatility > VOLATILITY_THRESHOLD_HIGH:
+        # Use updated thresholds from instance variables (allows optimization)
+        if recent_volatility > self.vol_threshold_high:
             threshold = 0.002  # 0.2% (reduced from 0.3%)
-        elif recent_volatility > VOLATILITY_THRESHOLD_LOW:
+        elif recent_volatility > self.vol_threshold_low:
             threshold = 0.0005  # 0.05% (reduced from 0.1%)
         else:
             threshold = 0.0003  # 0.03% (reduced from 0.05%)
@@ -858,6 +908,7 @@ class Backtester:
             entry_price = 0
             stop_loss = 0
             take_profit = 0
+            stop_distance = 0 # Track initial risk for R-calcs
             
             # Iterate through the historical data, simulating the strategy
             cooldown = 0
@@ -891,6 +942,20 @@ class Backtester:
                             # execute buy with positive slippage
                             exit_exec = current_price * (1 + slip_pct)
                             pnl = (entry_price - exit_exec) / entry_price - (2 * fee_pct)
+                    
+                    # Trailing Stop Logic
+                    if not should_exit and self.trailing_stop and stop_distance > 0:
+                        reward = 0
+                        if position == 1:
+                            reward = current_price - entry_price
+                            if reward >= (stop_distance * self.ts_activation):
+                                new_stop = current_price - (stop_distance * self.ts_delta)
+                                stop_loss = max(stop_loss, new_stop)
+                        else: # Short
+                            reward = entry_price - current_price
+                            if reward >= (stop_distance * self.ts_activation):
+                                new_stop = current_price + (stop_distance * self.ts_delta)
+                                stop_loss = min(stop_loss, new_stop)
 
                     if should_exit:
                         trades[-1].update({'exit_date': df.index[i], 'exit_price': current_price, 'pnl': pnl})
@@ -915,8 +980,8 @@ class Backtester:
                         stop_distance = max(atr * self.atr_mult, entry_price * self.min_stop_pct)
                     else:
                         stop_distance = entry_price * max(self.min_stop_pct * 2, 0.02)  # fallback
-
-                    take_profit_distance = stop_distance * 2
+                    
+                    take_profit_distance = stop_distance * self.tp_mult
 
                     if signal == 1:  # Long
                         stop_loss = entry_price - stop_distance
@@ -942,7 +1007,7 @@ class Backtester:
                         stop_distance = max(atr * self.atr_mult, entry_price * self.min_stop_pct)
                     else:
                         stop_distance = entry_price * max(self.min_stop_pct * 2, 0.02)
-                    take_profit_distance = stop_distance * 2
+                    take_profit_distance = stop_distance * self.tp_mult
 
                     stop_loss = entry_price + stop_distance
                     take_profit = entry_price - take_profit_distance
@@ -964,7 +1029,7 @@ class Backtester:
                         stop_distance = max(atr * self.atr_mult, entry_price * self.min_stop_pct)
                     else:
                         stop_distance = entry_price * max(self.min_stop_pct * 2, 0.02)
-                    take_profit_distance = stop_distance * 2
+                    take_profit_distance = stop_distance * self.tp_mult
 
                     stop_loss = entry_price - stop_distance
                     take_profit = entry_price + take_profit_distance
@@ -984,9 +1049,11 @@ class Backtester:
         # Collect signal data for visualization
         self.signal_data = self._collect_signal_data()
         
-        self.calculate_metrics(all_results)
+        metrics = self.calculate_metrics(all_results)
         if not self.no_db:
             self.calculate_and_save_run_summary(all_results)
+            
+        return metrics
 
     def _collect_signal_data(self):
         """Collect signal data for visualization"""
@@ -1276,6 +1343,160 @@ class Backtester:
             logger.info(f"✅ Successfully saved summary for run_id {self.run_id}.")
 
 
+def verify_robustness(args):
+    """
+    Orchestrate Train/Test split verification to check for overfitting.
+    """
+    symbol = args.symbols.split(',')[0].strip() # Verify first symbol
+    days_train = 60
+    days_test = 30
+    
+    print(f"🛡️  VERIFYING ROBUSTNESS FOR {symbol}")
+    print("=" * 60)
+    
+    # Determine date range
+    if args.start and args.end:
+        start_date = datetime.strptime(args.start, '%Y-%m-%d')
+        end_date = datetime.strptime(args.end, '%Y-%m-%d')
+        total_days = (end_date - start_date).days
+        days_test = int(total_days * 0.33) # 1/3 for test
+        days_train = total_days - days_test
+        
+        test_start_date = end_date - timedelta(days=days_test)
+        train_start_date = start_date
+    else:
+        # Default to recent history
+        end_date = datetime.now()
+        days_train = 60
+        days_test = 30
+        test_start_date = end_date - timedelta(days=days_test)
+        train_start_date = test_start_date - timedelta(days=days_train)
+    
+    print(f"\n📅 Train Range: {train_start_date.strftime('%Y-%m-%d')} -> {test_start_date.strftime('%Y-%m-%d')} ({days_train} days)")
+    print(f"📅 Test Range : {test_start_date.strftime('%Y-%m-%d')} -> {end_date.strftime('%Y-%m-%d')} ({days_test} days)")
+
+    # Helper to create backtester with identical config
+    def create_bt(start, end):
+        return Backtester(
+            symbols=[symbol],
+            start_date=start,
+            end_date=end,
+            no_db=True,
+            cache_ttl_sec=args.cache_ttl,
+            ma_period=args.ma,
+            timeframe=args.timeframe,
+            strategy=args.strategy,
+            fast_ma=args.fast_ma,
+            slow_ma=args.slow_ma,
+            donchian_period=args.donchian_period,
+            rsi_period=args.rsi_period,
+            rsi_ob=args.rsi_ob,
+            rsi_os=args.rsi_os,
+            macd_fast=args.macd_fast,
+            macd_slow=args.macd_slow,
+            macd_signal=args.macd_signal,
+            htf_ma_1h=args.htf_ma_1h,
+            pullback_ob=args.pullback_ob,
+            pullback_os=args.pullback_os,
+            atr_mult=args.atr_mult,
+            min_stop_pct=args.min_stop_pct,
+            enable_atr_gate=args.atr_gate,
+            atr_gate_mult=args.atr_gate_mult,
+            cooldown_bars=args.cooldown_bars,
+            min_trend_strength=args.min_trend_strength,
+            tp_mult=args.tp_mult,
+            trailing_stop=args.trailing_stop,
+            ts_activation=args.ts_activation,
+            ts_delta=args.ts_delta,
+            adx_threshold=args.adx_threshold
+        )
+
+    # Clear ML model cache before train run (CRITICAL for proper OOD validation)
+    try:
+        from ml_strategy import clear_ml_cache
+        clear_ml_cache()
+        print("🧹 ML model cache cleared before TRAIN run")
+    except ImportError:
+        pass
+
+    # Run Train Backtest
+    print("\n🔄 Running TRAIN Backtest...")
+    train_bt = create_bt(train_start_date, test_start_date)
+    train_results_map = train_bt.run()
+    train_results = train_results_map.get(symbol, {})
+
+    # Clear ML model cache before test run (CRITICAL - ensures test uses fresh model)
+    try:
+        from ml_strategy import clear_ml_cache
+        clear_ml_cache()
+        print("🧹 ML model cache cleared before TEST run")
+    except ImportError:
+        pass
+
+    # Run Test Backtest
+    print("\n🔄 Running TEST Backtest (OOD)...")
+    test_bt = create_bt(test_start_date, end_date)
+    test_results_map = test_bt.run()
+    test_results = test_results_map.get(symbol, {})
+    
+    # Display Comparison
+    print("\n" + "=" * 60)
+    print("📊 COMPARISON RESULTS")
+    print("=" * 60)
+    print(f"{'Metric':<20} | {'TRAIN':<15} | {'TEST (OOD)':<15} | {'Diff':<10}")
+    print("-" * 65)
+    
+    metrics = [
+        ('total_return_pct', 'Return', '%'),
+        ('win_rate_pct', 'Win Rate', '%'),
+        ('total_trades', 'Total Trades', ''),
+        ('sharpe_ratio', 'Sharpe', ''),
+        ('max_drawdown_pct', 'Max Drawdown', '%')
+    ]
+    
+    for key, label, unit in metrics:
+        train_val = train_results.get(key, 0)
+        test_val = test_results.get(key, 0)
+        
+        # Handle formatting
+        if unit == '%':
+            train_str = f"{train_val:.2f}%"
+            test_str = f"{test_val:.2f}%"
+            diff = test_val - train_val
+            diff_str = f"{diff:+.2f}%"
+        else:
+            train_str = f"{train_val:.2f}"
+            test_str = f"{test_val:.2f}"
+            diff = test_val - train_val
+            diff_str = f"{diff:+.2f}"
+            
+        print(f"{label:<20} | {train_str:<15} | {test_str:<15} | {diff_str:<10}")
+    
+    # Robustness Analysis
+    print("\n" + "=" * 60)
+    print("🧠 ROBUSTNESS ANALYSIS")
+    print("=" * 60)
+    
+    is_profitable_ood = test_results.get('total_return', 0) > 0
+    # Allow some degradation but not catastrophic failure
+    win_rate_hold = test_results.get('win_rate', 0) >= (train_results.get('win_rate', 0) * 0.8) 
+    
+    if is_profitable_ood:
+        print("✅ OOD Profitability: System is profitable on unseen data.")
+    else:
+        print("❌ OOD Profitability: System LOST money on unseen data.")
+        
+    if win_rate_hold:
+        print("✅ Consistency: Win rate is stable.")
+    else:
+        print("⚠️ Consistency: Win rate dropped significantly in testing.")
+        
+    if is_profitable_ood and win_rate_hold:
+        print("\n🏆 CONCLUSION: System appears ROBUST and NOT OVERFIT.")
+    else:
+        print("\n⚠️ CONCLUSION: Signs of potential overfitting or regime change.")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Robust MA backtester (CLI)")
     parser.add_argument('--symbols', type=str, default=','.join(SYMBOLS), help='Comma-separated symbols, e.g. BTCUSDT,ETHUSDT')
@@ -1295,8 +1516,14 @@ if __name__ == "__main__":
     parser.add_argument('--atr-gate', action='store_true', help='Enable ATR distance gate from MA to avoid chop')
     parser.add_argument('--atr-gate-mult', type=float, default=0.5, help='ATR gate multiple for MA distance')
     parser.add_argument('--cooldown-bars', type=int, default=0, help='Bars to skip after a losing trade (per symbol)')
+    parser.add_argument('--tp-mult', type=float, default=2.0, help='Take profit multiplier (Reward:Risk ratio)')
+    parser.add_argument('--trailing-stop', action='store_true', help='Enable trailing stop')
+    parser.add_argument('--ts-activation', type=float, default=1.5, help='R-multiple to activate trailing stop')
+    parser.add_argument('--ts-delta', type=float, default=0.5, help='Trailing distance in R-multiples')
+    parser.add_argument('--adx-threshold', type=float, default=25.0, help='Minimum ADX for trending regime (0 to disable)')
     # Strategy selection
-    parser.add_argument('--strategy', type=str, default='ma', choices=['ma','ma_cross','donchian','macd','rsi_mr','htf_pullback','mean_reversion','vwma','atr_dynamic','pairs','volatility_breakout','momentum_mr_hybrid','ml_rf','ml_lr','order_flow','volatility_clustering'], help='Strategy to backtest')
+    parser.add_argument('--min-trend-strength', type=float, default=None, help='Minimum trend strength override')
+    parser.add_argument('--strategy', type=str, default='ma', choices=['ma','ma_cross','donchian','macd','rsi_mr','htf_pullback','mean_reversion','vwma','atr_dynamic','pairs','volatility_breakout','momentum_mr_hybrid','ml_rf','ml_lr','order_flow','volatility_clustering','ensemble'], help='Strategy to backtest')
     parser.add_argument('--fast-ma', type=int, default=10, help='Fast MA for crossover')
     parser.add_argument('--slow-ma', type=int, default=50, help='Slow MA for crossover')
     parser.add_argument('--donchian-period', type=int, default=20, help='Donchian channel period')
@@ -1310,8 +1537,14 @@ if __name__ == "__main__":
     parser.add_argument('--htf-ma-1h', type=int, default=50, help='1h MA length for HTF confirmation')
     parser.add_argument('--pullback-ob', type=int, default=65, help='RSI threshold for short-side pullback (overbought)')
     parser.add_argument('--pullback-os', type=int, default=35, help='RSI threshold for long-side pullback (oversold)')
+    # Verification
+    parser.add_argument('--verify-robustness', action='store_true', help='Run Train/Test split analysis to check for overfitting')
 
     args = parser.parse_args()
+
+    if args.verify_robustness:
+        verify_robustness(args)
+        sys.exit(0)
 
     if args.start and args.end:
         BACKTEST_START_DATE = datetime.strptime(args.start, '%Y-%m-%d')

@@ -139,6 +139,86 @@ class BacktestResult(Base):
     sortino_ratio = Column(Float, nullable=False)
     timestamp = Column(DateTime, nullable=False)
 
+# ============================================================================
+# SCIENTIFIC METHOD / RESEARCH DASHBOARD MODELS
+# ============================================================================
+
+class Experiment(Base):
+    """
+    Tracks hypothesis-driven experiments using scientific method.
+    Each experiment has a clear hypothesis, success criteria, and conclusions.
+    """
+    __tablename__ = 'experiments'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(200), nullable=False)
+    hypothesis = Column(Text, nullable=False)  # "Strategy X works because..."
+    strategy = Column(String(50), nullable=False)  # 'ml_rf', 'macd', 'ma', etc.
+    symbols = Column(String(200), nullable=False)  # JSON array of symbols
+    timeframe = Column(String(10), nullable=True)  # '15', '60', etc.
+    parameters = Column(Text, nullable=True)  # JSON of strategy parameters
+
+    # Scientific method fields
+    status = Column(String(20), default='pending')  # pending, running, completed, failed
+    conclusion = Column(String(20), nullable=True)  # confirmed, rejected, inconclusive
+    learnings = Column(Text, nullable=True)  # Key insights from experiment
+
+    # Date ranges for train/test
+    train_start = Column(DateTime, nullable=True)
+    train_end = Column(DateTime, nullable=True)
+    test_start = Column(DateTime, nullable=True)
+    test_end = Column(DateTime, nullable=True)
+
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    completed_at = Column(DateTime, nullable=True)
+
+    # Optional link to backtest run
+    backtest_run_id = Column(Integer, nullable=True)
+
+
+class ExperimentResult(Base):
+    """
+    Stores train/test split results for OOD validation.
+    Each experiment can have multiple results (one per symbol per phase).
+    """
+    __tablename__ = 'experiment_results'
+
+    id = Column(Integer, primary_key=True)
+    experiment_id = Column(Integer, nullable=False)  # FK to experiments
+    symbol = Column(String(20), nullable=False)
+    phase = Column(String(10), nullable=False)  # 'train' or 'test'
+
+    # Core metrics
+    total_return_pct = Column(Float, nullable=True)
+    total_trades = Column(Integer, nullable=True)
+    win_rate_pct = Column(Float, nullable=True)
+    sharpe_ratio = Column(Float, nullable=True)
+    sortino_ratio = Column(Float, nullable=True)
+    max_drawdown_pct = Column(Float, nullable=True)
+    avg_win_pct = Column(Float, nullable=True)
+    avg_loss_pct = Column(Float, nullable=True)
+
+    # Statistical significance
+    trades_sufficient = Column(Integer, nullable=True)  # 1 if trades >= 20, 0 otherwise
+    confidence_95_lower = Column(Float, nullable=True)  # Lower bound 95% CI
+    confidence_95_upper = Column(Float, nullable=True)  # Upper bound 95% CI
+
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
+class ResearchNote(Base):
+    """
+    Links notes to experiment timeline for tracking research progress.
+    """
+    __tablename__ = 'research_notes'
+
+    id = Column(Integer, primary_key=True)
+    experiment_id = Column(Integer, nullable=True)  # Optional FK to experiments
+    note_type = Column(String(20), nullable=False)  # 'insight', 'bug', 'idea', 'warning'
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
 class DatabaseManager:
     """Database operations manager"""
 
@@ -623,6 +703,189 @@ class DatabaseManager:
         except Exception as e:
             print(f"Error getting PnL summary: {e}")
             return {'total_trade_pnl': 0, 'total_funding_fees': 0, 'current_unrealized_pnl': 0, 'net_pnl': 0}
+
+    # =========================================================================
+    # EXPERIMENT / RESEARCH DASHBOARD METHODS
+    # =========================================================================
+
+    def create_experiment(self, name, hypothesis, strategy, symbols, timeframe=None,
+                          parameters=None, train_start=None, train_end=None,
+                          test_start=None, test_end=None):
+        """Create a new experiment"""
+        try:
+            experiment = Experiment(
+                name=name,
+                hypothesis=hypothesis,
+                strategy=strategy,
+                symbols=json.dumps(symbols) if isinstance(symbols, list) else symbols,
+                timeframe=timeframe,
+                parameters=json.dumps(parameters) if parameters else None,
+                train_start=train_start,
+                train_end=train_end,
+                test_start=test_start,
+                test_end=test_end,
+                status='pending'
+            )
+            self.session.add(experiment)
+            self.session.commit()
+            return experiment.id
+        except Exception as e:
+            self.session.rollback()
+            print(f"Error creating experiment: {e}")
+            return None
+
+    def get_experiment(self, experiment_id):
+        """Get a single experiment by ID"""
+        try:
+            exp = self.session.query(Experiment).filter(Experiment.id == experiment_id).first()
+            if exp:
+                return {
+                    'id': exp.id,
+                    'name': exp.name,
+                    'hypothesis': exp.hypothesis,
+                    'strategy': exp.strategy,
+                    'symbols': json.loads(exp.symbols) if exp.symbols else [],
+                    'timeframe': exp.timeframe,
+                    'parameters': json.loads(exp.parameters) if exp.parameters else {},
+                    'status': exp.status,
+                    'conclusion': exp.conclusion,
+                    'learnings': exp.learnings,
+                    'train_start': exp.train_start,
+                    'train_end': exp.train_end,
+                    'test_start': exp.test_start,
+                    'test_end': exp.test_end,
+                    'created_at': exp.created_at,
+                    'completed_at': exp.completed_at
+                }
+            return None
+        except Exception as e:
+            print(f"Error getting experiment: {e}")
+            return None
+
+    def get_all_experiments(self, limit=50):
+        """Get all experiments, most recent first"""
+        try:
+            exps = self.session.query(Experiment).order_by(Experiment.created_at.desc()).limit(limit).all()
+            return [{
+                'id': exp.id,
+                'name': exp.name,
+                'hypothesis': exp.hypothesis,
+                'strategy': exp.strategy,
+                'symbols': json.loads(exp.symbols) if exp.symbols else [],
+                'status': exp.status,
+                'conclusion': exp.conclusion,
+                'created_at': exp.created_at
+            } for exp in exps]
+        except Exception as e:
+            print(f"Error getting experiments: {e}")
+            return []
+
+    def update_experiment(self, experiment_id, **kwargs):
+        """Update an experiment"""
+        try:
+            exp = self.session.query(Experiment).filter(Experiment.id == experiment_id).first()
+            if exp:
+                for key, value in kwargs.items():
+                    if hasattr(exp, key):
+                        if key in ['symbols', 'parameters'] and isinstance(value, (list, dict)):
+                            value = json.dumps(value)
+                        setattr(exp, key, value)
+                self.session.commit()
+                return True
+            return False
+        except Exception as e:
+            self.session.rollback()
+            print(f"Error updating experiment: {e}")
+            return False
+
+    def save_experiment_result(self, experiment_id, symbol, phase, metrics):
+        """Save experiment result (train or test metrics)"""
+        try:
+            result = ExperimentResult(
+                experiment_id=experiment_id,
+                symbol=symbol,
+                phase=phase,
+                total_return_pct=metrics.get('total_return_pct'),
+                total_trades=metrics.get('total_trades'),
+                win_rate_pct=metrics.get('win_rate_pct'),
+                sharpe_ratio=metrics.get('sharpe_ratio'),
+                sortino_ratio=metrics.get('sortino_ratio'),
+                max_drawdown_pct=metrics.get('max_drawdown_pct'),
+                avg_win_pct=metrics.get('avg_win_pct'),
+                avg_loss_pct=metrics.get('avg_loss_pct'),
+                trades_sufficient=1 if metrics.get('total_trades', 0) >= 20 else 0,
+                confidence_95_lower=metrics.get('confidence_95_lower'),
+                confidence_95_upper=metrics.get('confidence_95_upper')
+            )
+            self.session.add(result)
+            self.session.commit()
+            return result.id
+        except Exception as e:
+            self.session.rollback()
+            print(f"Error saving experiment result: {e}")
+            return None
+
+    def get_experiment_results(self, experiment_id):
+        """Get all results for an experiment"""
+        try:
+            results = self.session.query(ExperimentResult)\
+                .filter(ExperimentResult.experiment_id == experiment_id)\
+                .order_by(ExperimentResult.phase, ExperimentResult.symbol).all()
+
+            return [{
+                'id': r.id,
+                'symbol': r.symbol,
+                'phase': r.phase,
+                'total_return_pct': r.total_return_pct,
+                'total_trades': r.total_trades,
+                'win_rate_pct': r.win_rate_pct,
+                'sharpe_ratio': r.sharpe_ratio,
+                'sortino_ratio': r.sortino_ratio,
+                'max_drawdown_pct': r.max_drawdown_pct,
+                'avg_win_pct': r.avg_win_pct,
+                'avg_loss_pct': r.avg_loss_pct,
+                'trades_sufficient': r.trades_sufficient,
+                'confidence_95_lower': r.confidence_95_lower,
+                'confidence_95_upper': r.confidence_95_upper
+            } for r in results]
+        except Exception as e:
+            print(f"Error getting experiment results: {e}")
+            return []
+
+    def add_research_note(self, content, note_type='insight', experiment_id=None):
+        """Add a research note"""
+        try:
+            note = ResearchNote(
+                experiment_id=experiment_id,
+                note_type=note_type,
+                content=content
+            )
+            self.session.add(note)
+            self.session.commit()
+            return note.id
+        except Exception as e:
+            self.session.rollback()
+            print(f"Error adding research note: {e}")
+            return None
+
+    def get_research_notes(self, experiment_id=None, limit=50):
+        """Get research notes"""
+        try:
+            query = self.session.query(ResearchNote)
+            if experiment_id:
+                query = query.filter(ResearchNote.experiment_id == experiment_id)
+            notes = query.order_by(ResearchNote.created_at.desc()).limit(limit).all()
+
+            return [{
+                'id': n.id,
+                'experiment_id': n.experiment_id,
+                'note_type': n.note_type,
+                'content': n.content,
+                'created_at': n.created_at
+            } for n in notes]
+        except Exception as e:
+            print(f"Error getting research notes: {e}")
+            return []
 
     def close(self):
         """Close database connection"""
