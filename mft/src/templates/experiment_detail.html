@@ -36,10 +36,32 @@
             padding-bottom: 16px;
             border-bottom: 1px solid var(--border-color);
         }
+        .nav-header h1 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 16px;
+        }
         .nav-links a {
-            color: var(--primary-color);
+            color: var(--text-color);
             text-decoration: none;
-            margin-right: 20px;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nav-links a:hover {
+            background-color: rgba(157, 114, 255, 0.2);
+            color: var(--primary-color);
+        }
+        .nav-links a.active {
+            background-color: var(--primary-color);
+            color: white;
         }
         h1, h2 { color: var(--primary-color); margin: 0; }
         h1 { font-size: 1.5em; }
@@ -193,12 +215,13 @@
     <div class="container">
         <div class="nav-header">
             <div>
-                <h1 id="experiment-name">Loading...</h1>
+                <h1 id="experiment-name"><i class="fas fa-flask"></i> Loading...</h1>
                 <span class="status-badge status-pending" id="experiment-status">-</span>
             </div>
             <div class="nav-links">
-                <a href="/research"><i class="fas fa-arrow-left"></i> Back to Research</a>
-                <a href="/"><i class="fas fa-chart-line"></i> Live Trading</a>
+                <a href="/"><i class="fas fa-tachometer-alt"></i> Live Trading</a>
+                <a href="/research" class="active"><i class="fas fa-flask"></i> Research</a>
+                <a href="/logs"><i class="fas fa-file-alt"></i> Logs</a>
             </div>
         </div>
 

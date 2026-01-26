@@ -94,6 +94,7 @@
         #current-positions { grid-column: span 12; min-height: 200px; }
         #alerts { grid-column: span 12; min-height: 150px; }
         #recent-signals { grid-column: span 12; min-height: 200px; }
+        #trade-history { grid-column: span 12; min-height: 300px; }
         #pnl-performance { grid-column: span 12; min-height: 400px; }
 
         @media (min-width: 768px) {
@@ -102,6 +103,7 @@
             #current-positions { grid-column: span 4; }
             #alerts { grid-column: span 4; }
             #recent-signals { grid-column: span 4; }
+            #trade-history { grid-column: span 12; }
             #pnl-performance { grid-column: span 12; }
         }
 
@@ -112,7 +114,8 @@
             #current-positions { grid-column: span 4; }
             #alerts { grid-column: span 4; }
             #recent-signals { grid-column: span 4; }
-            #pnl-performance { grid-column: span 12; }
+            #trade-history { grid-column: span 6; }
+            #pnl-performance { grid-column: span 6; }
         }
 
         @media (min-width: 1600px) {
@@ -122,7 +125,8 @@
             #current-positions { grid-column: span 4; }
             #alerts { grid-column: span 4; }
             #recent-signals { grid-column: span 4; }
-            #pnl-performance { grid-column: span 12; }
+            #trade-history { grid-column: span 6; }
+            #pnl-performance { grid-column: span 6; }
         }
         
         @media (min-width: 2000px) {
@@ -132,7 +136,8 @@
             #current-positions { grid-column: span 4; }
             #alerts { grid-column: span 4; }
             #recent-signals { grid-column: span 4; }
-            #pnl-performance { grid-column: span 12; }
+            #trade-history { grid-column: span 6; }
+            #pnl-performance { grid-column: span 6; }
         }
 
         .status-grid, .risk-grid {
@@ -312,10 +317,60 @@
             position: absolute;
             top: 50%;
         }
+
+        /* Navigation Header */
+        .nav-header {
+            grid-column: span 12;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 4px;
+        }
+        .nav-header h1 {
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 16px;
+        }
+        .nav-links a {
+            color: var(--text-color);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nav-links a:hover {
+            background-color: rgba(157, 114, 255, 0.2);
+            color: var(--primary-color);
+        }
+        .nav-links a.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Navigation Header -->
+        <div class="nav-header">
+            <h1><i class="fas fa-chart-line"></i> ethanTGT</h1>
+            <div class="nav-links">
+                <a href="/" class="active"><i class="fas fa-tachometer-alt"></i> Live Trading</a>
+                <a href="/research"><i class="fas fa-flask"></i> Research</a>
+                <a href="/logs"><i class="fas fa-file-alt"></i> Logs</a>
+            </div>
+        </div>
         <div class="card" id="system-control">
             <h3><i class="fas fa-power-off"></i>System Control</h3>
             <div class="status-grid">
@@ -329,7 +384,6 @@
                 <div class="system-control-buttons">
                     <button id="shutdown-btn">EMERGENCY STOP</button>
                     <button id="reset-stop-btn">RESET STOP</button>
-                    <a href="/logs" class="link-button">VIEW LOGS</a>
                 </div>
             </div>
         </div>
@@ -453,6 +507,28 @@
             {% else %}
             <p class="empty-placeholder">No recent signals</p>
             {% endif %}
+        </div>
+
+        <div class="card" id="trade-history">
+            <h3><i class="fas fa-history"></i>Trade History</h3>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Symbol</th>
+                            <th>Side</th>
+                            <th>Entry</th>
+                            <th>Exit</th>
+                            <th>PnL</th>
+                            <th>Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tradeHistoryTable">
+                        <tr><td colspan="7" class="empty-placeholder">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
         
         <div class="card" id="pnl-performance">
@@ -751,11 +827,21 @@
                     for (const [symbol, data] of Object.entries(marketContext)) {
                         const signalClass = (data.signal || 'NEUTRAL').toLowerCase().replace('_', '-');
                         const signalText = data.signal || 'NEUTRAL';
+                        const rsi = data.rsi !== undefined ? data.rsi.toFixed(1) : 'N/A';
+                        const atr = data.atr !== undefined ? data.atr.toFixed(4) : 'N/A';
+                        
+                        // RSI Color
+                        let rsiColor = 'var(--text-color)';
+                        if (data.rsi > 70) rsiColor = 'var(--red-color)';
+                        if (data.rsi < 30) rsiColor = 'var(--green-color)';
+
                         html += `
                             <div class="card market-card">
                                 <h4>${symbol}</h4>
                                 <p>Price: $${(data.price || 0).toFixed(2)}</p>
                                 <p>MA (m): $${(data.ma_value || 0).toFixed(2)}</p>
+                                <p>RSI: <span style="color: ${rsiColor}">${rsi}</span></p>
+                                <p>ATR: ${atr}</p>
                                 <p>24h Vol: $${(data.volume_24h || 0).toLocaleString()}</p>
                                 <p>Signal: <span class="signal-${signalClass}">${signalText}</span></p>
                             </div>
@@ -820,13 +906,53 @@
                        }
                    }
                })
-               .catch(error => {
-                   // Silently fail for network errors
-                   if (!error.message.includes('Failed to fetch') && !error.message.includes('ERR_EMPTY_RESPONSE')) {
-                       console.error('Error updating status:', error);
-                   }
-               });
-       }
+                .catch(error => {
+                    // Silently fail for network errors
+                    if (!error.message.includes('Failed to fetch') && !error.message.includes('ERR_EMPTY_RESPONSE')) {
+                        console.error('Error updating positions:', error);
+                    }
+                });
+        }
+
+        // Function to update trade history
+        function updateTradeHistory() {
+            fetch('/api/trade_history')
+                .then(response => {
+                    if (!response.ok) return [];
+                    return response.json();
+                })
+                .then(trades => {
+                    const tbody = document.getElementById('tradeHistoryTable');
+                    if (!tbody) return;
+
+                    if (trades && trades.length > 0) {
+                        let html = '';
+                        trades.forEach(trade => {
+                            const pnlClass = trade.pnl >= 0 ? 'signal-buy' : 'signal-sell';
+                            const pnlSign = trade.pnl >= 0 ? '+' : '';
+                            html += `
+                                <tr>
+                                    <td>${trade.timestamp}</td>
+                                    <td><strong>${trade.symbol}</strong></td>
+                                    <td>${trade.side}</td>
+                                    <td>$${trade.entry_price.toFixed(2)}</td>
+                                    <td>$${trade.exit_price.toFixed(2)}</td>
+                                    <td class="${pnlClass}">${pnlSign}$${trade.pnl.toFixed(4)}</td>
+                                    <td>${trade.exit_reason}</td>
+                                </tr>
+                            `;
+                        });
+                        tbody.innerHTML = html;
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="7" class="empty-placeholder">No recent trades</td></tr>';
+                    }
+                })
+                .catch(error => {
+                    if (!error.message.includes('Failed to fetch')) {
+                        console.error('Error updating trade history:', error);
+                    }
+                });
+        }
         
         // Update everything
         function updateAll() {
@@ -835,6 +961,7 @@
             updateAlerts();
             updateSignals();
             updateMarketContext();
+            updateTradeHistory();
         }
         
         // Auto-refresh every 2 seconds for faster sync between chart and positions
